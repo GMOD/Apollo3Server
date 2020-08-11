@@ -1,4 +1,4 @@
-# Apollo2.X
+# Apollo3.X
 FROM ubuntu:18.04
 MAINTAINER Nathan Dunn <nathandunn@lbl.gov>
 ENV DEBIAN_FRONTEND noninteractive
@@ -21,13 +21,8 @@ RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-
 
 RUN apt-get -qq update --fix-missing && \
 	apt-get --no-install-recommends -y install \
-	postgresql-9.6 postgresql-client-9.6  tomcat9 && \
+	tomcat9 && \
 	apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /apollo/
-
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
-RUN apt-get -qq update --fix-missing && \
-	apt-get --no-install-recommends -y install nodejs
-
 
 RUN curl -s "http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/blat/blat" -o /usr/local/bin/blat && \
  		chmod +x /usr/local/bin/blat && \
