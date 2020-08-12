@@ -2,6 +2,7 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
+import grails.gorm.transactions.Rollback
 import org.apache.shiro.crypto.hash.Sha256Hash
 import org.apache.shiro.util.ThreadContext
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager
@@ -19,7 +20,7 @@ import spock.lang.Specification
  * Created by nathandunn on 11/4/15.
  */
 @Integration
-@grails.gorm.transactions.Rollback
+@Rollback
 class AbstractIntegrationSpec extends Specification {
 
     def shiroSecurityManager

@@ -3,6 +3,7 @@ package org.bbop.apollo
 import grails.converters.JSON
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import grails.gorm.transactions.Rollback
 import org.bbop.apollo.feature.CDS
 import org.bbop.apollo.feature.Exon
 import org.bbop.apollo.feature.Gene
