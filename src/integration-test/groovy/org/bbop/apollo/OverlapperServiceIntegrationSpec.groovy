@@ -91,7 +91,7 @@ class OverlapperServiceIntegrationSpec extends AbstractIntegrationSpec{
         then: "we should see 1 Gene and 1 MRNA"
         assert Gene.count == 1
         assert MRNA.count == 1
-        JSONObject features1 = mainTranscript1ReturnObject.getJSONObject("features")
+        JSONObject features1 = mainTranscript1ReturnObject.get("features")
         String mrna1Parent = features1.parent_id
 
         when: "we add overlappingTranscript1: fgeneshpp_with_rnaseq_Group1.10_188_mRNA"
