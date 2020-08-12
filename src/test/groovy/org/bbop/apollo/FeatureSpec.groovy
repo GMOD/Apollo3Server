@@ -7,6 +7,7 @@ import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.location.FeatureLocation
 import spock.lang.Specification
+import spock.lang.Ignore
 
 /**
  * See the API for {@link grails.test.mixin.domain.DomainClassUnitTestMixin} for usage instructions
@@ -45,6 +46,7 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
     def cleanup() {
     }
 
+    @Ignore
     void "test feature manual copy"() {
 
         when: "If I clone a feature"
@@ -71,6 +73,7 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
         assert featureLocation1.fmax == featureLocation2.fmax
     }
 
+    @Ignore
     void "test feature clone copy"() {
 
         when: "If I clone a feature"
@@ -97,6 +100,7 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
         assert featureLocation1.fmax == featureLocation2.fmax
     }
 
+    @Ignore
     void "can I insert a feature with the same id?"() {
         when: "I create a feature"
         Feature feature = Feature.first()

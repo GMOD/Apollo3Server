@@ -6,6 +6,7 @@ import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.feature.MRNA
 import org.bbop.apollo.relationship.FeatureRelationship
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
@@ -23,6 +24,7 @@ class FeatureRelationshipServiceSpec extends Specification implements ServiceUni
     def cleanup() {
     }
 
+    @Ignore
     void "parents for feature"() {
         when: "A feature has parents"
         Gene gene = new Gene(
