@@ -24,8 +24,7 @@ class FeatureEventServiceSpec extends Specification implements ServiceUnitTest<F
     private static final String classUniqueName = "uniqueName"
 
     private static Date generateDate(long offset){
-        Date date = Date.from(today.minusDays(offset).atZone(ZoneId.systemDefault()).toInstant())
-        return date
+        return Date.from(today.minusDays(offset).atZone(ZoneId.systemDefault()).toInstant())
     }
 
     // create 5 FeatureEvents
