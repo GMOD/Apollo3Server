@@ -1,40 +1,41 @@
 package org.bbop.apollo
 
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+
+import grails.testing.gorm.DataTest
+import grails.testing.gorm.DomainUnitTest
 import org.bbop.apollo.feature.Feature
-import org.bbop.apollo.location.FeatureLocation
 import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.location.FeatureLocation
 import spock.lang.Specification
 
 /**
  * See the API for {@link grails.test.mixin.domain.DomainClassUnitTestMixin} for usage instructions
  */
-@TestFor(Feature)
-@Mock([Feature, FeatureLocation, Sequence])
-class FeatureSpec extends Specification {
+class FeatureSpec extends Specification implements DomainUnitTest<Feature>, DataTest {
 
     def setup() {
+        mockDomain FeatureLocation
+        mockDomain Sequence
         Sequence sequence = new Sequence(
-                name: "Chr1"
-                ,start: 1
-                ,end: 1013
-                ,length: 1013
-                ,seqChunkSize: 50
+            name: "Chr1"
+            , start: 1
+            , end: 1013
+            , length: 1013
+            , seqChunkSize: 50
         ).save(failOnError: true)
 
 
         Feature feature1 = new Feature(
-                name: "Sox9a"
-                ,uniqueName: "ABC123"
-                ,sequenceLength: 17
+            name: "Sox9a"
+            , uniqueName: "ABC123"
+            , sequenceLength: 17
         ).save(failOnError: true)
 
         FeatureLocation featureLocation = new FeatureLocation(
-                fmin: 13
-                ,fmax: 77
-                ,from: feature1
-                ,to: sequence
+            fmin: 13
+            , fmax: 77
+            , from: feature1
+            , to: sequence
         ).save()
 
         feature1.addToFeatureLocations(featureLocation)
@@ -45,23 +46,23 @@ class FeatureSpec extends Specification {
     }
 
     void "test feature manual copy"() {
-        
+
         when: "If I clone a feature"
         Feature feature1 = Feature.first()
         Feature feature2 = feature1.properties
         feature2.save()
-       
+
         then: "It should be identical in all properties but the id and uniquename and relationships"
         assert Feature.count == 2
         assert FeatureLocation.count == 1
         assert Sequence.count == 1
-        
 
-        assert feature1.name==feature2.name
-        assert feature1.uniqueName ==feature2.uniqueName
+
+        assert feature1.name == feature2.name
+        assert feature1.uniqueName == feature2.uniqueName
         assert feature1.featureLocations.size() == feature2.featureLocations.size()
         assert feature1.featureLocations.size() == 1
-       
+
         FeatureLocation featureLocation1 = feature1.featureLocation
         FeatureLocation featureLocation2 = feature2.featureLocation
 
@@ -83,8 +84,8 @@ class FeatureSpec extends Specification {
         assert Sequence.count == 1
 
 
-        assert feature1.name==feature2.name
-        assert feature1.uniqueName ==feature2.uniqueName
+        assert feature1.name == feature2.name
+        assert feature1.uniqueName == feature2.uniqueName
         assert feature1.featureLocations.size() == feature2.featureLocations.size()
         assert feature1.featureLocations.size() == 1
 
@@ -96,13 +97,13 @@ class FeatureSpec extends Specification {
         assert featureLocation1.fmax == featureLocation2.fmax
     }
 
-    void "can I insert a feature with the same id?"(){
+    void "can I insert a feature with the same id?"() {
         when: "I create a feature"
         Feature feature = Feature.first()
         Long id = feature.id
 
         then: "should be a total of one valid feature"
-        assert id!=null
+        assert id != null
         assert Feature.count == 1
         assert feature != null
         assert feature.name == "Sox9a"
@@ -115,9 +116,9 @@ class FeatureSpec extends Specification {
 
         when: "we create a feature when the same id"
         Feature feature1 = new Feature(
-                name: "Sox9a"
-                ,uniqueName: "ABC123"
-                ,sequenceLength: 17
+            name: "Sox9a"
+            , uniqueName: "ABC123"
+            , sequenceLength: 17
         )
         // NOTE: this has to be out here
         feature1.id = id
