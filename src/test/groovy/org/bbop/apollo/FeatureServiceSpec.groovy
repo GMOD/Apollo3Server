@@ -1,26 +1,27 @@
 package org.bbop.apollo
 
 import grails.converters.JSON
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.services.ServiceUnitTest
 import org.bbop.apollo.feature.Exon
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.location.FeatureLocation
-import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.Strand
 import org.grails.web.json.JSONObject
 import spock.lang.Specification
 
 /**
- * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
-@TestFor(FeatureService)
-@Mock([Sequence, FeatureLocation, Feature, MRNA])
-class FeatureServiceSpec extends Specification {
+class FeatureServiceSpec extends Specification implements ServiceUnitTest<FeatureService>, DataTest {
 
     def setup() {
+        mockDomain Sequence
+        mockDomain FeatureLocation
+        mockDomain Feature
+        mockDomain MRNA
     }
 
     def cleanup() {
@@ -31,11 +32,11 @@ class FeatureServiceSpec extends Specification {
         when: "We have a valid json object"
         JSONObject jsonObject = new JSONObject()
         Sequence sequence = new Sequence(
-                name: "Chr3",
-                seqChunkSize: 20,
-                start: 1,
-                end: 100,
-                length: 99,
+            name: "Chr3",
+            seqChunkSize: 20,
+            start: 1,
+            end: 100,
+            length: 99,
         ).save(failOnError: true)
         jsonObject.put(FeatureStringEnum.FMIN.value, 73)
         jsonObject.put(FeatureStringEnum.FMAX.value, 113)
@@ -63,7 +64,4 @@ class FeatureServiceSpec extends Specification {
     }
 
 
-    
-    
-    
 }
