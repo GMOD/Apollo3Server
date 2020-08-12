@@ -87,13 +87,59 @@ endpoints:
 
 ---
 
-grails:
-    neo4j:
-        url: bolt://localhost
-        username: "neo4j"
-        #        password: "movies"
-        password: "testpass"
-        flush.mode: 'MANUAL'
+environments:
+    development:
+        grails:
+            neo4j:
+                url: bolt://localhost
+                username: "neo4j"
+                #        password: "movies"
+                password: "testpass"
+                flush.mode: 'manual'
+    test:
+        grails:
+            neo4j:
+                type: embedded
+                embedded:
+                    ephemeral: true
+                options:
+                    encryptionLevel: NONE
+    production:
+        grails:
+            neo4j:
+                url: bolt://localhost
+                username: "neo4j"
+                #        password: "movies"
+                password: "testpass"
+                flush.mode: 'manual'
+        #        neo4j:
+        #            url: bolt://localhost
+        #            username: "neo4j"
+        #            #        password: "movies"
+        #            password: "testpass"
+        #            flush.mode: 'MANUAL'
+
+# http://gorm.grails.org/latest/neo4j/manual/#configurationOptions
+#environments:
+#    development:
+#        neo4j:
+#            url: bolt://localhost
+#            username: "neo4j"
+#            #        password: "movies"
+#            password: "testpass"
+#            flush.mode: 'MANUAL'
+#    test:
+#        neo4j:
+#            type: embedded
+#    production:
+#        neo4j:
+#            url: bolt://localhost
+#            username: "neo4j"
+#            #        password: "movies"
+#            password: "testpass"
+#            flush.mode: 'MANUAL'
+#            options:
+#                encryption: true
 
         #hibernate:
         #    cache:
