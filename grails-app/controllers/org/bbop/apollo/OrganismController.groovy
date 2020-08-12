@@ -1,7 +1,6 @@
 package org.bbop.apollo
 
 import grails.converters.JSON
-import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import htsjdk.samtools.reference.FastaSequenceIndexCreator
 import io.swagger.annotations.Api

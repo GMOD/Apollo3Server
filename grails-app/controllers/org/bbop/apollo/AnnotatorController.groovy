@@ -12,14 +12,7 @@ import org.bbop.apollo.attributes.FeatureSynonym
 import org.bbop.apollo.attributes.Status
 import org.bbop.apollo.attributes.Synonym
 import org.bbop.apollo.event.AnnotationEvent
-import org.bbop.apollo.feature.Feature
-import org.bbop.apollo.feature.Gene
-import org.bbop.apollo.feature.ProcessedPseudogene
-import org.bbop.apollo.feature.Pseudogene
-import org.bbop.apollo.feature.PseudogenicRegion
-import org.bbop.apollo.feature.RepeatRegion
-import org.bbop.apollo.feature.Terminator
-import org.bbop.apollo.feature.TransposableElement
+import org.bbop.apollo.feature.*
 import org.bbop.apollo.gwt.shared.ClientTokenGenerator
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
@@ -40,7 +33,7 @@ import org.springframework.http.HttpStatus
 /**
  * This is server-side code supporting the high-level functionality of the GWT AnnotatorPanel class.
  */
-// @Api(value = "Annotator Engine Services", description = "Methods for running the annotation engine")
+@Api(value = "Annotator Engine Services", description = "Methods for running the annotation engine")
 class AnnotatorController {
 
     def featureService

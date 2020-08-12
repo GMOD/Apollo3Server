@@ -1,9 +1,6 @@
 package org.bbop.apollo
 
 import grails.converters.JSON
-import org.bbop.apollo.gwt.shared.FeatureStringEnum
-import org.grails.web.json.JSONArray
-import org.grails.web.json.JSONException
 import org.grails.web.json.JSONObject
 
 abstract class AbstractApolloController {

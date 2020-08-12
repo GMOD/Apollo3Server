@@ -7,8 +7,11 @@ import org.bbop.apollo.gwt.shared.ClientTokenGenerator
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.organism.Organism
 import org.bbop.apollo.organism.Sequence
-import org.bbop.apollo.sequence.Range // this line is needed, even if the import doesn't show it
+import org.bbop.apollo.sequence.Range
 import org.grails.web.json.JSONArray
+
+// this line is needed, even if the import doesn't show it
+
 import org.grails.web.json.JSONObject
 
 import javax.servlet.ServletContext
