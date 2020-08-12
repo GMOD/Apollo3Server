@@ -2,12 +2,14 @@ package org.bbop.apollo
 
 
 import grails.converters.JSON
+import org.bbop.apollo.attributes.CannedValue
+import org.bbop.apollo.attributes.CannedValueOrganismFilter
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
+import org.bbop.apollo.organism.Organism
 
 import static org.springframework.http.HttpStatus.*
 import grails.gorm.transactions.Transactional
-import org.bbop.apollo.gwt.shared.PermissionEnum
 import org.grails.web.json.JSONObject
 // import io.swagger.annotations.*
 

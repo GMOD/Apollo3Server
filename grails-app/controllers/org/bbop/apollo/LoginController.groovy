@@ -11,6 +11,7 @@ import org.apache.shiro.subject.Subject
 import org.apache.shiro.web.util.SavedRequest
 import org.apache.shiro.web.util.WebUtils
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.user.User
 import org.grails.web.json.JSONException
 import org.grails.web.json.JSONObject
 

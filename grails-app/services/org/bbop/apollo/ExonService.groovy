@@ -2,6 +2,12 @@ package org.bbop.apollo
 
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.relationship.FeatureRelationship
 
 //import grails.compiler.GrailsCompileStatic
 import org.bbop.apollo.sequence.SequenceTranslationHandler
@@ -388,7 +394,7 @@ class ExonService {
 
 
         FeatureLocation rightFeatureLocation = new FeatureLocation(
-                feature: rightExon
+                from: rightExon
                 ,fmin: leftFeatureLocation.fmin
                 ,isFminPartial: leftFeatureLocation.isFminPartial
                 ,fmax: leftFeatureLocation.fmax
@@ -398,7 +404,7 @@ class ExonService {
                 ,residueInfo: leftFeatureLocation.residueInfo
                 ,locgroup: leftFeatureLocation.locgroup
                 ,rank: leftFeatureLocation.rank
-                ,sequence: leftFeatureLocation.sequence
+                ,to: leftFeatureLocation.to
         ).save(insert:true)
         rightExon.addToFeatureLocations(rightFeatureLocation)
 
@@ -426,7 +432,7 @@ class ExonService {
         }
 
         String residues = sequenceService.getGenomicResiduesFromSequenceWithAlterations(
-                exon.featureLocation.sequence
+                exon.featureLocation.to
                 ,exon.fmin < cds.fmin ? cds.fmin : exon.fmin
                 ,exon.fmax > cds.fmax ? cds.fmax : exon.fmax
                 ,Strand.getStrandForValue(exon.featureLocation.strand)

@@ -2,6 +2,8 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.TrackCache
 import org.bbop.apollo.sequence.SequenceDTO
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
@@ -47,7 +49,7 @@ class TrackController {
     @Transactional
     def clearTrackCache(String organismName, String trackName) {
         if (!trackService.checkPermission(response, organismName)) return
-        int removed = TrackCache.executeUpdate("delete from TrackCache tc where tc.organismName = :commonName and tc.trackName = :trackName",[commonName:organismName,trackName: trackName])
+        int removed = TrackCache.executeUpdate("delete from TrackCache tc where tc.organismName = :commonName and tc.trackName = :trackName",[commonName:organismName, trackName: trackName])
         render new JSONObject(removed: removed) as JSON
     }
 

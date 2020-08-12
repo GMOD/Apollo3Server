@@ -2,8 +2,16 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
-import grails.gorm.transactions.Rollback
+import grails.transaction.Rollback
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.relationship.FeatureRelationship
 import org.grails.web.json.JSONObject
 
 import java.util.zip.CRC32
@@ -37,11 +45,12 @@ class SequenceServiceIntegrationSpec extends AbstractIntegrationSpec{
 
         String getSequenceString = "{${testCredentials} \"operation\":\"get_sequence\",\"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"track\":\"Group1.10\",\"type\":\"@SEQUENCE_TYPE@\"}"
         String uniqueName = MRNA.findByName("GB40722-RA-00001").uniqueName
-
+        JSONObject commandObject = new JSONObject()
+        
         when: "A request is sent for the peptide sequence of the mRNA"
         String getPeptideSequenceString = getSequenceString.replaceAll("@UNIQUENAME@", uniqueName)
         getPeptideSequenceString = getPeptideSequenceString.replaceAll("@SEQUENCE_TYPE@", FeatureStringEnum.TYPE_PEPTIDE.value)
-        JSONObject commandObject = JSON.parse(getPeptideSequenceString) as JSONObject
+        commandObject = JSON.parse(getPeptideSequenceString) as JSONObject
         JSONObject getPeptideSequenceReturnObject = sequenceService.getSequenceForFeatures(commandObject)
         
         then: "we should get back the expected peptide sequence"

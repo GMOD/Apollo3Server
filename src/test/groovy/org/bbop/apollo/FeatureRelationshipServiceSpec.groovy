@@ -1,23 +1,21 @@
 package org.bbop.apollo
 
-//import grails.test.mixin.Mock
-//import grails.test.mixin.TestFor
-import grails.testing.gorm.DataTest
-import grails.testing.services.ServiceUnitTest
+import grails.test.mixin.Mock
+import grails.test.mixin.TestFor
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.relationship.FeatureRelationship
 import spock.lang.Specification
 
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
-//@TestFor(FeatureRelationshipService)
-//@Mock([FeatureRelationship,Feature,Gene,MRNA])
-class FeatureRelationshipServiceSpec extends Specification implements ServiceUnitTest<FeatureRelationshipService>, DataTest{
+@TestFor(FeatureRelationshipService)
+@Mock([FeatureRelationship, Feature, Gene, MRNA])
+class FeatureRelationshipServiceSpec extends Specification {
 
     def setup() {
-        mockDomain Gene
-        mockDomain MRNA
-        mockDomain Feature
-        mockDomain FeatureRelationship
     }
 
     def cleanup() {
@@ -34,8 +32,8 @@ class FeatureRelationshipServiceSpec extends Specification implements ServiceUni
                 ,uniqueName: "MRNA"
         ).save(failOnError: true)
         FeatureRelationship fr=new FeatureRelationship(
-                parentFeature: gene
-                , childFeature: mrna
+                from: gene
+                , to: mrna
         ).save(failOnError: true)
         mrna.addToChildFeatureRelationships(fr)
         gene.addToParentFeatureRelationships(fr)

@@ -2,11 +2,22 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
-import grails.gorm.transactions.Rollback
+import grails.transaction.Rollback
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.feature.NonCanonicalFivePrimeSpliceSite
+import org.bbop.apollo.feature.NonCanonicalThreePrimeSpliceSite
+import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.history.FeatureEvent
 import org.bbop.apollo.history.FeatureOperation
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
 import org.grails.web.json.JSONArray
-import org.grails.web.json.JSONException
 import org.grails.web.json.JSONObject
 
 @Integration
@@ -32,7 +43,7 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
     void "we can undo and redo a transcript split"() {
 
         given: "transcript data"
-        setupDefaultUserOrg()
+        println "pre-setup"
         String jsonString = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40736-RA\",\"children\":[{\"location\":{\"fmin\":938708,\"fmax\":938770,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":939570,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}],\"operation\":\"add_transcript\"}"
         String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@EXON_1@\" }, { \"uniquename\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
         String undoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
@@ -41,7 +52,41 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         when: "we insert a transcript"
         println "org count ${Organism.count} and credentials ${getTestCredentials()}"
+//        setupDefaultUserOrg()
+        Organism organism = new Organism(
+            directory: "src/integration-test/groovy/resources/sequences/honeybee-Group1.10/"
+            , commonName: "sampleAnimal"
+            , genus: "Sample"
+            , species: "animal"
+        ).save(failOnError: true, flush: true)
+
+        Sequence sequence = new Sequence(
+            length: 1405242
+            , seqChunkSize: 20000
+            , id: 9999
+            , start: 0
+            , end: 1405242
+            , organism: organism
+            , organismId: organism.id
+            , name: "Group1.10"
+        ).save(failOnError: true, flush: true)
+
+        Sequence.executeQuery("MATCH (o:Organism {commonName:'sampleAnimal'}),(s:Sequence {name:'Group1.10'}) create (o)-[seq:SEQUENCES]->(s)")
+
+        println "organism ${organism} abnd ${organism as JSON}"
+        println "sequence ${sequence} and ${sequence as JSON}"
+        println "sequence organism ${sequence.organism} "
+//        sequence.organism = organism
+//        sequence.organismId = organism.id
+//        organism.addToSequences(sequence)
+        println "2 organism ${organism} abnd ${organism as JSON}"
+        println "2 sequence ${sequence} and ${sequence as JSON}"
+        println "2 sequence organism ${sequence.organism} "
+        organism.save(flush: true, failOnError: true)
+        sequence.save(flush: true, failOnError: true)
+        println "2 org count ${Organism.count} and credentials ${getTestCredentials()}"
         JSONObject returnObject = requestHandlingService.addTranscript(JSON.parse(jsonString) as JSONObject)
+        println "return object ${returnObject}"
 
         then: "we have a transcript"
         assert Exon.count == 2

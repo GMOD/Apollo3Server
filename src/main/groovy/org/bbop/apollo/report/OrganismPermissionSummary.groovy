@@ -1,7 +1,7 @@
 package org.bbop.apollo.report
 
-import org.bbop.apollo.User
-import org.bbop.apollo.UserOrganismPermission
+
+import org.bbop.apollo.permission.UserOrganismPermission
 
 /**
  * Created by nathandunn on 7/19/15.

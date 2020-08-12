@@ -1,6 +1,16 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.NonCanonicalFivePrimeSpliceSite
+import org.bbop.apollo.feature.NonCanonicalThreePrimeSpliceSite
+import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.variant.Allele
+import org.bbop.apollo.variant.SequenceAlteration
 
 @Transactional(readOnly = true)
 class NameService {
@@ -15,7 +25,7 @@ class NameService {
         UUID.randomUUID().toString()
     }
 
-    String generateUniqueName(Feature thisFeature,String principalName = null ) {
+    String generateUniqueName(Feature thisFeature, String principalName = null ) {
         Organism organism = thisFeature?.featureLocation?.sequence?.organism
         if(thisFeature.name) {
             if (thisFeature instanceof Transcript) {
@@ -66,11 +76,13 @@ class NameService {
     }
 
 
+    // TODO: add proper criteria query here
     boolean isUniqueGene(Organism organism,String name){
-        Integer numberResults = Gene.findAllByName(name).findAll(){
-            it.featureLocation.sequence.organism == organism
-        }.size()
-        return 0 == numberResults
+//        Integer numberResults = Gene.findAllByName(name).findAll(){
+//            it.featureLocation.to.organism == organism
+//        }.size()
+//        return 0 == numberResults
+        return true
     }
 
     boolean isUnique(Organism organism,String name){
@@ -79,16 +91,17 @@ class NameService {
 //        }
 //        List results = (Feature.executeQuery("select count(f) from Feature f join f.featureLocations fl join fl.sequence s where s.organism = :org and f.name = :name ",[org:organism,name:name]))
         Integer numberResults = Feature.findAllByName(name).findAll(){
-            it.featureLocation.sequence.organism == organism
+            it.featureLocation.to.organism == organism
         }.size()
         return 0 == numberResults
     }
 
     String makeUniqueTranscriptName(Organism organism,String principalName){
         String name
-
         name = principalName + leftPaddingStrategy.pad(0)
-        if(Transcript.countByName(name)==0){
+        def queryResults =  Transcript.executeQuery("MATCH (t:Transcript) where t.name='bob' RETURN count(t)").first()
+        int tCount = Transcript.executeQuery("MATCH (t:Transcript) where t.name='bob' RETURN count(t)").first()
+        if(tCount==0){
             return name
         }
 
@@ -121,7 +134,7 @@ class NameService {
         String name = principalName + letterPaddingStrategy.pad(0)
 
         List<String> results= Gene.findAllByNameLike(principalName+"%").findAll(){
-            it.featureLocation.sequence.organism == organism
+            it.featureLocation.to.organism == organism
         }.name
         int count = results.size()
         while(results.contains(name)){
@@ -160,7 +173,7 @@ class NameService {
         String position = variant.featureLocation.fmin + 1
         def alternateAlleles = []
         String referenceAllele
-        for (Allele allele : variant.alleles.sort { a,b -> a.id <=> b.id }) {
+        for (Allele allele : variant.alleles.sort { a, b -> a.id <=> b.id }) {
             if (allele.reference) {
                 referenceAllele = allele.bases
             }

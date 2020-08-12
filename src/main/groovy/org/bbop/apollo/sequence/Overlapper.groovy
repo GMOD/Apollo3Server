@@ -1,7 +1,7 @@
 package org.bbop.apollo.sequence
 
-import org.bbop.apollo.Gene
-import org.bbop.apollo.Transcript
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.Transcript
 
 /**
  * Created by ndunn on 10/29/14.

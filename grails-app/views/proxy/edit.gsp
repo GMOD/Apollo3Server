@@ -1,4 +1,4 @@
-<%@ page import="org.bbop.apollo.Proxy" %>
+<%@ page import="org.bbop.apollo.system.Proxy" %>
 <!DOCTYPE html>
 <html>
 	<head>

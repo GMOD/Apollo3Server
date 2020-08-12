@@ -1,5 +1,5 @@
 
-<%@ page import="org.bbop.apollo.FeatureType" %>
+<%@ page import="org.bbop.apollo.attributes.FeatureType" %>
 <!DOCTYPE html>
 <html>
 	<head>

@@ -2,8 +2,8 @@ package org.bbop.apollo.go
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
-import org.bbop.apollo.Feature
-import org.bbop.apollo.User
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.user.User
 import org.bbop.apollo.gwt.shared.PermissionEnum
 import org.bbop.apollo.history.FeatureOperation
 import org.grails.web.json.JSONArray

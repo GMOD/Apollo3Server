@@ -5,6 +5,8 @@ import grails.core.GrailsApplication
 import org.apache.shiro.SecurityUtils
 import org.bbop.apollo.gwt.shared.ClientTokenGenerator
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.Range // this line is needed, even if the import doesn't show it
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
@@ -179,7 +181,7 @@ class JbrowseController {
                 if (organism.sequences) {
 //                    User user = permissionService.currentUser
 //                    UserOrganismPreference userOrganismPreference = UserOrganismPreference.findByUserAndOrganism(user, organism, [max: 1, sort: "lastUpdated", order: "desc"])
-                    Sequence sequence =  Sequence.findAllByOrganism(organism,[sort:"end",order:"desc",max: 1]).first()
+                    Sequence sequence =  Sequence.findAllByOrganism(organism,[sort:"end", order:"desc", max: 1]).first()
 //                    if (userOrganismPreference == null) {
 //                        userOrganismPreference = new UserOrganismPreference(
 //                                user: user
@@ -394,7 +396,6 @@ class JbrowseController {
 
      * @param tracksArray
      */
-//    def pruneTracks(JSONArray tracksArray){
     def pruneTracks(def tracksArray){
         JSONArray returnArray = new JSONArray()
 

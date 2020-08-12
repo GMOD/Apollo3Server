@@ -2,9 +2,40 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
-import grails.gorm.transactions.Rollback
+import grails.transaction.Rollback
+import org.bbop.apollo.attributes.Comment
+import org.bbop.apollo.attributes.DBXref
+import org.bbop.apollo.attributes.FeatureProperty
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.feature.NcRNA
+import org.bbop.apollo.feature.NonCanonicalFivePrimeSpliceSite
+import org.bbop.apollo.feature.NonCanonicalThreePrimeSpliceSite
+import org.bbop.apollo.feature.Pseudogene
+import org.bbop.apollo.feature.RepeatRegion
+import org.bbop.apollo.feature.StopCodonReadThrough
+import org.bbop.apollo.feature.Terminator
+import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.feature.TransposableElement
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.relationship.FeatureRelationship
 import org.bbop.apollo.sequence.Strand
+import org.bbop.apollo.variant.Allele
+import org.bbop.apollo.variant.AlleleInfo
+import org.bbop.apollo.variant.Deletion
+import org.bbop.apollo.variant.DeletionArtifact
+import org.bbop.apollo.variant.Insertion
+import org.bbop.apollo.variant.InsertionArtifact
+import org.bbop.apollo.variant.SNV
+import org.bbop.apollo.variant.SequenceAlterationArtifact
+import org.bbop.apollo.variant.SubstitutionArtifact
+import org.bbop.apollo.variant.VariantInfo
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
@@ -3816,8 +3847,8 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert SequenceAlterationArtifact.count == 3
 
         when: "do a GFF3 export"
-        Organism organism = Gene.all.get(0).featureLocation.sequence.organism
-        Sequence sequence = Gene.all.get(0).featureLocation.sequence
+        Organism organism = Gene.all.get(0).featureLocation.to.organism
+        Sequence sequence = Gene.all.get(0).featureLocation.to
         File tempFile = File.createTempFile("round-trip-output", ".gff3")
         String filePath = tempFile.absolutePath
         tempFile.deleteOnExit()

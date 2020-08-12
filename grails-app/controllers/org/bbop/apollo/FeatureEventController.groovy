@@ -2,15 +2,16 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.attributes.AvailableStatus
+import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.history.FeatureEvent
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
-// import io.swagger.annotations.*
+import io.swagger.annotations.*
 
-import static org.springframework.http.HttpStatus.*
-
-// @Api(value = "History Services: Methods for querying history")
+@Api(value = "History Services: Methods for querying history")
 @Transactional(readOnly = true)
 class FeatureEventController {
 
@@ -30,17 +31,17 @@ class FeatureEventController {
      * @param beforeDate
      * @return
      */
-    // @ApiOperation(value = "Returns a JSON representation of all current Annotations before or after a given date.", nickname = "/featureEvent/findChanges", httpMethod = "POST")
-    // @ApiImplicitParams([
-            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            // , @ApiImplicitParam(name = "date", type = "Date", paramType = "query", example = "Date to query yyyy-MM-dd:HH:mm:ss or yyyy-MM-dd")
-            // , @ApiImplicitParam(name = "afterDate", type = "Boolean", paramType = "query", example = "Search after or on the given date.")
-            // , @ApiImplicitParam(name = "beforeDate", type = "Boolean", paramType = "query", example = "Search before or on the given date.")
-            // , @ApiImplicitParam(name = "max", type = "Integer", paramType = "query", example = "Max to return")
-            // , @ApiImplicitParam(name = "sort", type = "String", paramType = "query", example = "Sort parameter (lastUpdated).  See FeatureEvent object/table.")
-            // , @ApiImplicitParam(name = "order", type = "String", paramType = "query", example = "desc/asc sort order by sort param")
-//    ])
+    @ApiOperation(value = "Returns a JSON representation of all current Annotations before or after a given date.", nickname = "/featureEvent/findChanges", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "date", type = "Date", paramType = "query", example = "Date to query yyyy-MM-dd:HH:mm:ss or yyyy-MM-dd")
+            , @ApiImplicitParam(name = "afterDate", type = "Boolean", paramType = "query", example = "Search after or on the given date.")
+            , @ApiImplicitParam(name = "beforeDate", type = "Boolean", paramType = "query", example = "Search before or on the given date.")
+            , @ApiImplicitParam(name = "max", type = "Integer", paramType = "query", example = "Max to return")
+            , @ApiImplicitParam(name = "sort", type = "String", paramType = "query", example = "Sort parameter (lastUpdated).  See FeatureEvent object/table.")
+            , @ApiImplicitParam(name = "order", type = "String", paramType = "query", example = "desc/asc sort order by sort param")
+    ])
     def findChanges() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (!permissionService.hasGlobalPermissions(inputObject, org.bbop.apollo.gwt.shared.GlobalPermissionEnum.ADMIN)) {

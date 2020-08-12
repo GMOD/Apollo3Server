@@ -1,10 +1,10 @@
 package org.bbop.apollo
 
 
-
-import grails.test.mixin.*
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
+import org.bbop.apollo.attributes.CannedComment
+import org.bbop.apollo.attributes.CannedCommentOrganismFilter
 import spock.lang.*
 
 //@TestFor(CannedCommentController)

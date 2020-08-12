@@ -3,9 +3,12 @@ package org.bbop.apollo
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.go.GoAnnotation
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.preference.OrganismDTO
 import org.bbop.apollo.preference.SequenceDTO
 import org.bbop.apollo.preference.UserOrganismPreferenceDTO
+import org.bbop.apollo.user.User
 
 @Transactional
 class DomainMarshallerService {
@@ -40,7 +43,7 @@ class DomainMarshallerService {
             returnArray['directory'] = it.directory
             returnArray['annotationCount'] = it.annotationCount
             returnArray['variantEffectCount'] = it.variantEffectCount
-            returnArray['officialGeneSetTrack'] = it?.officialGeneSetTrack
+//            returnArray['officialGeneSetTrack'] = it?.officialGeneSetTrack
             return returnArray
         }
 
@@ -48,6 +51,8 @@ class DomainMarshallerService {
             def returnArray = [:]
             returnArray['id'] = it.id
             returnArray['name'] = it.name
+            returnArray['organismId'] = it.organismId
+            returnArray['organism'] = it.organism
             returnArray['length'] = it?.length
             returnArray['start'] = it?.start
             returnArray['end'] = it.end

@@ -2,9 +2,11 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.attributes.CannedComment
+import org.bbop.apollo.attributes.CannedCommentOrganismFilter
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
-import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.organism.Organism
 import org.grails.web.json.JSONObject
 // import io.swagger.annotations.*
 

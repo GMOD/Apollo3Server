@@ -1,6 +1,12 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.attributes.CannedKey
+import org.bbop.apollo.attributes.CannedKeyOrganismFilter
+import org.bbop.apollo.attributes.CannedValue
+import org.bbop.apollo.attributes.CannedValueOrganismFilter
+import org.bbop.apollo.attributes.FeatureType
+import org.bbop.apollo.organism.Organism
 import org.grails.web.json.JSONArray
 
 @Transactional

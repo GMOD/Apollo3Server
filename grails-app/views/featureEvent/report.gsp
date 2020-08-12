@@ -1,4 +1,4 @@
-<%@ page import="org.bbop.apollo.RequestHandlingService; org.bbop.apollo.Organism; org.bbop.apollo.User; org.bbop.apollo.Feature" %>
+<%@ page import="org.bbop.apollo.user.User; org.bbop.apollo.RequestHandlingService; org.bbop.apollo.Organism; org.bbop.apollo.User; org.bbop.apollo.feature.Feature" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -27,7 +27,7 @@
                 %{--<label for="ownerName">Owner:</label>--}%
                 <g:select name='ownerName' value="${ownerName}"
                           noSelection="${[null: 'Select User ...']}"
-                          from='${User.listOrderByUsername()}'
+                          from='${org.bbop.apollo.user.User.listOrderByUsername()}'
                           optionKey="username" optionValue="username" onchange="doSearch();"/>
             </div>
 

@@ -2,10 +2,13 @@ package org.bbop.apollo
 
 
 import grails.converters.JSON
+import org.bbop.apollo.attributes.AvailableStatus
+import org.bbop.apollo.attributes.AvailableStatusOrganismFilter
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.organism.Organism
 import org.grails.web.json.JSONObject
 // import io.swagger.annotations.*
 

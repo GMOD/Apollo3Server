@@ -4,9 +4,10 @@ import grails.testing.gorm.DataTest
 
 //import grails.test.mixin.Mock
 //import grails.test.mixin.TestFor
-import grails.testing.gorm.DomainUnitTest
+
 import grails.testing.web.controllers.ControllerUnitTest
-import org.bbop.apollo.geneProduct.GeneProduct
+import org.bbop.apollo.attributes.AvailableStatus
+import org.bbop.apollo.attributes.AvailableStatusOrganismFilter
 import spock.lang.Specification
 //@TestFor(AvailableStatusController)
 //@Mock([AvailableStatus,AvailableStatusOrganismFilter])

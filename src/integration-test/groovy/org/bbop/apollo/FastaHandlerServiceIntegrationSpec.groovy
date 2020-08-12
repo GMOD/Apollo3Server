@@ -2,7 +2,11 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
-import grails.gorm.transactions.Rollback
+import grails.transaction.Rollback
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.MRNA
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 
 @Integration

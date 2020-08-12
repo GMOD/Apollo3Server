@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import htsjdk.variant.vcf.VCFFileReader
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.organism.Organism
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 // import io.swagger.annotations.*

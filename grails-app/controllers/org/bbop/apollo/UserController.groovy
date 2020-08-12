@@ -2,11 +2,17 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
-import org.apache.shiro.authc.UsernamePasswordToken
 import org.apache.shiro.crypto.hash.Sha256Hash
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.history.FeatureEvent
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.permission.UserOrganismPermission
+import org.bbop.apollo.permission.UserTrackPermission
+import org.bbop.apollo.user.Role
+import org.bbop.apollo.user.User
+import org.bbop.apollo.user.UserGroup
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 // import io.swagger.annotations.*
@@ -58,7 +64,9 @@ class UserController {
             }
             List<String> allUserGroupsName = allUserGroups.name
             Map<String, List<UserOrganismPermission>> userOrganismPermissionMap = new HashMap<>()
-            List<UserOrganismPermission> userOrganismPermissionList = UserOrganismPermission.findAllByOrganismInList(allowableOrganisms as List)
+            // TODO: fix query
+//            List<UserOrganismPermission> userOrganismPermissionList = UserOrganismPermission.findAllByOrganismInList(allowableOrganisms as List)
+            List<UserOrganismPermission> userOrganismPermissionList = []
             for (UserOrganismPermission userOrganismPermission in userOrganismPermissionList) {
                 List<UserOrganismPermission> userOrganismPermissionListTemp = userOrganismPermissionMap.get(userOrganismPermission.user.username)
                 if (userOrganismPermissionListTemp == null) {
@@ -108,6 +116,7 @@ class UserController {
             }.unique { a, b ->
                 a.id <=> b.id
             }
+            println "G"
 
             int userCount = User.withCriteria {
                 if (dataObject.userId && dataObject.userId in Integer) {
@@ -130,6 +139,8 @@ class UserController {
             }.unique { a, b ->
                 a.id <=> b.id
             }.size()
+
+            println "found uesers ${users}"
 
             users.each {
                 def userObject = new JSONObject()
@@ -220,7 +231,8 @@ class UserController {
         catch (Exception e) {
             response.status = HttpStatus.INTERNAL_SERVER_ERROR.value()
             def error = [error: e.message]
-            log.error error
+            println "error: ${error as JSON}"
+//            log.error error
             render error as JSON
         }
     }
@@ -243,7 +255,7 @@ class UserController {
 //                // sets it by default
 //                userOrganismPreference = preferenceService.getCurrentOrganismPreferenceInDB(params[FeatureStringEnum.CLIENT_TOKEN.value])
 //            } catch (e) {
-//                log.error(e)
+//                log.error(e.toString())
 //            }
 
             def userObject = userService.convertUserToJson(currentUser)
@@ -362,6 +374,7 @@ class UserController {
         try {
             log.info "Creating user"
             JSONObject dataObject = permissionService.handleInput(request, params)
+            println "input object ${dataObject as JSON}"
             // allow instructor to create user
             if (!permissionService.hasGlobalPermissions(dataObject, GlobalPermissionEnum.INSTRUCTOR)) {
                 render status: HttpStatus.UNAUTHORIZED
@@ -382,30 +395,46 @@ class UserController {
                     , metadata: dataObject.metadata ? dataObject.metadata.toString() : null
                     , passwordHash: new Sha256Hash(dataObject.newPassword ?: dataObject.password).toHex()
             )
-            user.save(insert: true)
+            user.save(insert: true,failOnError: true)
+            println "created user ${user as JSON}"
             // to support webservice, get current user from session or input object
             def currentUser = permissionService.getCurrentUser(dataObject)
+            println "current user ${currentUser}"
             // allow specify the metadata creator through webservice, if not specified, take current user as the creator
             if (!user.getMetaData(FeatureStringEnum.CREATOR.value)) {
-                log.debug "creator does not exist, set current user as the creator"
+                println "creator does not exist, set current user as the creator"
                 user.addMetaData(FeatureStringEnum.CREATOR.value, currentUser.id.toString())
+                println "C"
             }
+            println "creator does not exist, set current user as the creator"
             String roleString = dataObject.role ?: GlobalPermissionEnum.USER.name()
+            println "D"
             Role role = Role.findByName(roleString.toUpperCase())
+            println "# of roles ${Role.count}"
+            println "E ${role}"
             if (!role) {
+                println "F"
                 role = Role.findByName(GlobalPermissionEnum.USER.name())
+                println "G"
             }
-            log.debug "adding role: ${role}"
+            println "adding role: ${role}"
             user.addToRoles(role)
             role.addToUsers(user)
             role.save()
             user.save(flush: true)
 
-            log.info "Added user ${user.username} with role ${role.name}"
-
-            render new JSONObject() as JSON
+            println "Added user ${user.username} with role ${role.name}"
+            JSONObject jsonObject = user.properties
+//            jsonObject = user.properties
+            println "json object ${jsonObject as JSON}"
+            jsonObject.email = user.username
+            jsonObject.username = user.username
+            jsonObject.id = user.id
+            jsonObject.userId = user.id
+            println "return object ${jsonObject as  JSON}"
+            render jsonObject as JSON
         } catch (e) {
-            log.error(e.fillInStackTrace())
+            log.error(e.toString())
             JSONObject jsonObject = new JSONObject()
             jsonObject.put(FeatureStringEnum.ERROR.value, "Failed to add the user " + e.message)
             render jsonObject as JSON
@@ -467,7 +496,7 @@ class UserController {
 
             render new JSONObject() as JSON
         } catch (e) {
-            log.error(e.fillInStackTrace())
+            log.error(e.toString())
             JSONObject jsonObject = new JSONObject()
             jsonObject.put(FeatureStringEnum.ERROR.value, "Failed to inactivate the user " + e.message+". Remove users and groups first.")
             render jsonObject as JSON
@@ -521,7 +550,7 @@ class UserController {
 
             render new JSONObject() as JSON
         } catch (e) {
-            log.error(e.fillInStackTrace())
+            log.error(e.toString())
             JSONObject jsonObject = new JSONObject()
             jsonObject.put(FeatureStringEnum.ERROR.value, "Failed to activate the user " + e.message)
             render jsonObject as JSON
@@ -548,7 +577,7 @@ class UserController {
             if (!user && dataObject.has("userToDelete")) {
                 user = User.findByUsername(dataObject.userToDelete)
             }
-
+//
             if (!user) {
                 def error = [error: 'The user does not exist']
                 log.error(error.error)
@@ -556,11 +585,11 @@ class UserController {
                 return
             }
             String creatorMetaData = user.getMetaData(FeatureStringEnum.CREATOR.value)
-            // to support webservice, get current user from session or input object
+//            // to support webservice, get current user from session or input object
             def currentUser = permissionService.getCurrentUser(dataObject)
-
-            // instead of using !permissionService.isAdmin() because it only works for login user but doesn't work for webservice
-            // allow delete a user if the current user is global admin or the current user is the creator of the user
+//
+//            // instead of using !permissionService.isAdmin() because it only works for login user but doesn't work for webservice
+//            // allow delete a user if the current user is global admin or the current user is the creator of the user
             if (!permissionService.hasGlobalPermissions(dataObject, GlobalPermissionEnum.ADMIN) && !(creatorMetaData && currentUser.id.toString() == creatorMetaData)) {
                 //render status: HttpStatus.UNAUTHORIZED
                 def error = [error: 'not authorized to delete the user']
@@ -569,20 +598,27 @@ class UserController {
                 return
             }
 
-            user.userGroups.each { it ->
-                it.removeFromUsers(user)
-            }
-            FeatureEvent.deleteAll(FeatureEvent.findAllByEditor(user))
-            UserTrackPermission.deleteAll(UserTrackPermission.findAllByUser(user))
-            UserOrganismPermission.deleteAll(UserOrganismPermission.findAllByUser(user))
-//            UserOrganismPreference.deleteAll(UserOrganismPreference.findAllByUser(user))
-            user.delete(flush: true)
+//            user.userGroups.each { it ->
+//                it.removeFromUsers(user)
+//            }
+//            FeatureEvent.deleteAll(FeatureEvent.findAllByEditor(user))
+//            UserTrackPermission.deleteAll(UserTrackPermission.findAllByUser(user))
+//            UserOrganismPermission.deleteAll(UserOrganismPermission.findAllByUser(user))
+////            UserOrganismPreference.deleteAll(UserOrganismPreference.findAllByUser(user))
+//            user.delete(flush: true)
+
+            println "input object ${dataObject as JSON}"
+            String query = "match (u:User)-[r]-() where (u.username = '${dataObject.userToDelete}' or u.id=${dataObject.userId ?: Math.random()}) delete u,r"
+            println "input query"
+            println query
+            def updates = User.executeUpdate(query)
+            println "updates ${updates}"
 
             log.info "Removed user ${user.username}"
 
             render new JSONObject() as JSON
         } catch (e) {
-            log.error(e.fillInStackTrace())
+            log.error(e.toString())
             JSONObject jsonObject = new JSONObject()
             jsonObject.put(FeatureStringEnum.ERROR.value, "Failed to delete the user " + e.message)
             render jsonObject as JSON
@@ -662,7 +698,7 @@ class UserController {
             user.save(flush: true)
             render new JSONObject() as JSON
         } catch (e) {
-            log.error(e.fillInStackTrace())
+            log.error(e.toString())
             JSONObject jsonObject = new JSONObject()
             jsonObject.put(FeatureStringEnum.ERROR.value, "Failed to update the user " + e.message)
             render jsonObject as JSON

@@ -1,6 +1,8 @@
 package org.bbop.apollo
 
 import grails.async.Promise
+import org.bbop.apollo.system.ServerData
+
 import static grails.async.Promises.*
 import grails.gorm.transactions.Transactional
 import groovy.json.JsonSlurper

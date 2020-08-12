@@ -1,6 +1,6 @@
 package org.bbop.apollo.filter
 
-import org.bbop.apollo.Feature
+import org.bbop.apollo.feature.Feature
 
 /**
  * Created by ndunn on 2/3/15.

@@ -1,6 +1,6 @@
 package org.bbop.apollo
 
-import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.attributes.FeatureType
 
 import static org.springframework.http.HttpStatus.*
 import grails.gorm.transactions.Transactional

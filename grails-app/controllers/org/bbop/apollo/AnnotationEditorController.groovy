@@ -4,11 +4,20 @@ import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import groovy.json.JsonBuilder
 import org.apache.shiro.SecurityUtils
+import org.bbop.apollo.attributes.Comment
+import org.bbop.apollo.attributes.FeatureType
 import org.bbop.apollo.event.AnnotationEvent
 import org.bbop.apollo.event.AnnotationListener
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.TranslationTable
+import org.bbop.apollo.user.User
+import org.bbop.apollo.variant.SequenceAlteration
+import org.bbop.apollo.variant.SequenceAlterationArtifact
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONException
 import org.grails.web.json.JSONObject
@@ -330,7 +339,6 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
 //    ])
     def addTranscript() {
         try {
-            log.debug "addTranscript ${params}"
             JSONObject inputObject = permissionService.handleInput(request, params)
             if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
                 render requestHandlingService.addTranscript(inputObject)
