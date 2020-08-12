@@ -1,13 +1,10 @@
 package org.bbop.apollo
 
-import grails.converters.JSON
 import grails.testing.gorm.DataTest
-import grails.testing.gorm.DomainUnitTest
 import grails.testing.services.ServiceUnitTest
 import org.bbop.apollo.history.FeatureOperation
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
-import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.time.LocalDate
@@ -16,8 +13,6 @@ import java.time.ZoneId
 
 /**
  */
-//@TestFor(FeatureEventService)
-//@Mock([FeatureEvent])
 class FeatureEventServiceSpec extends Specification implements ServiceUnitTest<FeatureEventService>, DataTest {
 
     private static final LocalDateTime today = LocalDateTime.now()
@@ -49,7 +44,6 @@ class FeatureEventServiceSpec extends Specification implements ServiceUnitTest<F
         FeatureEvent.deleteAll(FeatureEvent.all)
     }
 
-//    @Ignore
     void "make sure we sort okay for previous events from most current"() {
         when: "we query the past events"
         FeatureEvent featureEvent = FeatureEvent.findByUniqueName(classUniqueName, [sort: "dateCreated", order: "desc", max: 1, offset: 1])
