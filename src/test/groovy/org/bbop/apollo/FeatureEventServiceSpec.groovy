@@ -1,5 +1,6 @@
 package org.bbop.apollo
 
+import grails.converters.JSON
 import grails.testing.gorm.DataTest
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.services.ServiceUnitTest
@@ -10,6 +11,8 @@ import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 /**
  */
@@ -17,39 +20,38 @@ import java.time.LocalDate
 //@Mock([FeatureEvent])
 class FeatureEventServiceSpec extends Specification implements ServiceUnitTest<FeatureEventService>, DataTest {
 
-    LocalDate today = LocalDate.now()
-    String classUniqueName = "uniqueName"
+    private static final LocalDateTime today = LocalDateTime.now()
+    private static final String classUniqueName = "uniqueName"
+
+    private static Date generateDate(long offset){
+        Date date = Date.from(today.minusDays(offset).atZone(ZoneId.systemDefault()).toInstant())
+        println "generated date ${date}"
+        return date
+    }
 
     // create 5 FeatureEvents
     def setup() {
         mockDomain FeatureEvent
 
-        FeatureEvent f1 = new FeatureEvent(operation: FeatureOperation.ADD_FEATURE, name: "Gene123", uniqueName: classUniqueName, dateCreated: today.minusDays(7), current: false).save(failOnError: true)
-        FeatureEvent f2 = new FeatureEvent(operation: FeatureOperation.SPLIT_TRANSCRIPT, parentId: f1.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: today.minusDays(6), current: false).save(failOnError: true)
+        FeatureEvent f1 = new FeatureEvent(operation: FeatureOperation.ADD_FEATURE, name: "Gene123", uniqueName: classUniqueName, dateCreated: generateDate(7), current: false).save(failOnError: true,flush: true)
+        FeatureEvent f2 = new FeatureEvent(operation: FeatureOperation.SPLIT_TRANSCRIPT, parentId: f1.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: generateDate(6), current: false).save(failOnError: true,flush: true)
         f1.childId = f2.id
-        FeatureEvent f3 = new FeatureEvent(operation: FeatureOperation.SET_TRANSLATION_END, parentId: f2.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: today.minusDays(5), current: false).save(failOnError: true)
+        FeatureEvent f3 = new FeatureEvent(operation: FeatureOperation.SET_TRANSLATION_END, parentId: f2.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: generateDate(5), current: false).save(failOnError: true,flush: true)
         f2.childId = f3.id
-        FeatureEvent f4 = new FeatureEvent(operation: FeatureOperation.SET_READTHROUGH_STOP_CODON, parentId: f3.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: today.minusDays(4), current: false).save(failOnError: true)
+        FeatureEvent f4 = new FeatureEvent(operation: FeatureOperation.SET_READTHROUGH_STOP_CODON, parentId: f3.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: generateDate(4), current: false).save(failOnError: true,flush: true)
         f3.childId = f4.id
-        FeatureEvent f5 = new FeatureEvent(operation: FeatureOperation.SET_BOUNDARIES, parentId: f4.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: today.minusDays(3), current: true).save(failOnError: true)
+        FeatureEvent f5 = new FeatureEvent(operation: FeatureOperation.SET_BOUNDARIES, parentId: f4.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: generateDate(3), current: true).save(failOnError: true,flush: true)
         f4.childId = f5.id
-        FeatureEvent f6 = new FeatureEvent(operation: FeatureOperation.ADD_EXON, parentId: f5.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: today.minusDays(2), current: false).save(failOnError: true)
+        FeatureEvent f6 = new FeatureEvent(operation: FeatureOperation.ADD_EXON, parentId: f5.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: generateDate(2), current: false).save(failOnError: true,flush: true)
         f5.childId = f6.id
-        FeatureEvent f7 = new FeatureEvent(operation: FeatureOperation.MERGE_TRANSCRIPTS, parentId: f6.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: today.minusDays(1), current: false).save(failOnError: true)
-        f1.save()
-        f2.save()
-        f3.save()
-        f4.save()
-        f5.save()
-        f6.save()
-        f7.save()
+        FeatureEvent f7 = new FeatureEvent(operation: FeatureOperation.MERGE_TRANSCRIPTS, parentId: f6.id, name: "Gene123", uniqueName: classUniqueName, dateCreated: generateDate(1), current: false).save(failOnError: true,flush: true)
     }
 
     def cleanup() {
         FeatureEvent.deleteAll(FeatureEvent.all)
     }
 
-    @Ignore
+//    @Ignore
     void "make sure we sort okay for previous events from most current"() {
         when: "we query the past events"
         FeatureEvent featureEvent = FeatureEvent.findByUniqueName(classUniqueName, [sort: "dateCreated", order: "desc", max: 1, offset: 1])
