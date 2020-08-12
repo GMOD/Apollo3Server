@@ -25,7 +25,6 @@ class FeatureEventServiceSpec extends Specification implements ServiceUnitTest<F
 
     private static Date generateDate(long offset){
         Date date = Date.from(today.minusDays(offset).atZone(ZoneId.systemDefault()).toInstant())
-        println "generated date ${date}"
         return date
     }
 
