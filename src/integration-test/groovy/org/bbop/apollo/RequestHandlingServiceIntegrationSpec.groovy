@@ -2,7 +2,7 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
-import grails.transaction.Rollback
+import grails.gorm.transactions.Rollback
 import org.bbop.apollo.attributes.Comment
 import org.bbop.apollo.attributes.DBXref
 import org.bbop.apollo.attributes.FeatureProperty
