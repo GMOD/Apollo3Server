@@ -37,12 +37,11 @@ class SequenceServiceIntegrationSpec extends AbstractIntegrationSpec{
 
         String getSequenceString = "{${testCredentials} \"operation\":\"get_sequence\",\"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"track\":\"Group1.10\",\"type\":\"@SEQUENCE_TYPE@\"}"
         String uniqueName = MRNA.findByName("GB40722-RA-00001").uniqueName
-        JSONObject commandObject = new JSONObject()
-        
+
         when: "A request is sent for the peptide sequence of the mRNA"
         String getPeptideSequenceString = getSequenceString.replaceAll("@UNIQUENAME@", uniqueName)
         getPeptideSequenceString = getPeptideSequenceString.replaceAll("@SEQUENCE_TYPE@", FeatureStringEnum.TYPE_PEPTIDE.value)
-        commandObject = JSON.parse(getPeptideSequenceString) as JSONObject
+        JSONObject commandObject = JSON.parse(getPeptideSequenceString) as JSONObject
         JSONObject getPeptideSequenceReturnObject = sequenceService.getSequenceForFeatures(commandObject)
         
         then: "we should get back the expected peptide sequence"
