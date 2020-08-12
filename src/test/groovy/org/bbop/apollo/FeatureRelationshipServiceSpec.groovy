@@ -11,8 +11,6 @@ import spock.lang.Specification
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
-//@TestFor(FeatureRelationshipService)
-//@Mock([FeatureRelationship,Feature,Gene,MRNA])
 class FeatureRelationshipServiceSpec extends Specification implements ServiceUnitTest<FeatureRelationshipService>, DataTest{
 
     def setup() {

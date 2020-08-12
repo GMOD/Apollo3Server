@@ -67,7 +67,7 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
         FeatureLocation featureLocation2 = feature2.featureLocation
 
         assert featureLocation1.fmin == featureLocation2.fmin
-        assert featureLocation1.sequence == featureLocation2.sequence
+        assert featureLocation1.to == featureLocation2.to
         assert featureLocation1.fmax == featureLocation2.fmax
     }
 
@@ -93,7 +93,7 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
         FeatureLocation featureLocation2 = feature2.featureLocation
 
         assert featureLocation1.fmin == featureLocation2.fmin
-        assert featureLocation1.sequence == featureLocation2.sequence
+        assert featureLocation1.to == featureLocation2.to
         assert featureLocation1.fmax == featureLocation2.fmax
     }
 
