@@ -308,10 +308,10 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
             assert locationObject.strand == -1
             assert locationObject != null
         }
-        assert MRNA.first().featureLocations.first().strand == -1
-        assert Gene.first().featureLocations.first().strand == -1
-        assert Exon.first().featureLocations.first().strand == -1
-        assert Exon.last().featureLocations.first().strand == -1
+        assert MRNA.first().featureLocation.strand == -1
+        assert Gene.first().featureLocation.strand == -1
+        assert Exon.first().featureLocation.strand == -1
+        assert Exon.last().featureLocation.strand == -1
 
 
         when: "we flip the strand"
@@ -335,10 +335,10 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert NonCanonicalFivePrimeSpliceSite.count == 1
         assert NonCanonicalThreePrimeSpliceSite.count == 1
         assert childrenArray.size() == 5
-        assert MRNA.first().featureLocations.first().strand == 1
-        assert Gene.first().featureLocations.first().strand == 1
-        assert Exon.first().featureLocations.first().strand == 1
-        assert Exon.last().featureLocations.first().strand == 1
+        assert MRNA.first().featureLocation.strand == 1
+        assert Gene.first().featureLocation.strand == 1
+        assert Exon.first().featureLocation.strand == 1
+        assert Exon.last().featureLocation.strand == 1
 
         when: "we flip it back the other way"
         returnedAfterExonObject = requestHandlingService.flipStrand(commandObject)
@@ -358,10 +358,10 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert CDS.count == 1
         assert NonCanonicalFivePrimeSpliceSite.count == 0
         assert NonCanonicalThreePrimeSpliceSite.count == 0
-        assert MRNA.first().featureLocations.first().strand == -1
-        assert Gene.first().featureLocations.first().strand == -1
-        assert Exon.first().featureLocations.first().strand == -1
-        assert Exon.last().featureLocations.first().strand == -1
+        assert MRNA.first().featureLocation.strand == -1
+        assert Gene.first().featureLocation.strand == -1
+        assert Exon.first().featureLocation.strand == -1
+        assert Exon.last().featureLocation.strand == -1
     }
 
     void "flip strand on an existing transcript with two isoforms"() {
@@ -414,11 +414,11 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         }
 
         then: "the strand should be correct"
-        assert mrna00001.featureLocations.first().strand == -1
-        assert mrna00002.featureLocations.first().strand == -1
-        assert gene.featureLocations.first().strand == -1
+        assert mrna00001.featureLocation.strand == -1
+        assert mrna00002.featureLocation.strand == -1
+        assert gene.featureLocation.strand == -1
         for (exon in Exon.all) {
-            assert exon.featureLocations.first().strand == -1
+            assert exon.featureLocation.strand == -1
         }
 
 
@@ -457,24 +457,24 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
 
         // have to rename the new gene
-        assert mrna00001.featureLocations.first().strand == 1
+        assert mrna00001.featureLocation.strand == 1
         assert mrna00001.name == 'GB40772-RAa-00001'
         assert newGene.name == 'GB40772-RAa'
-        assert newGene.featureLocations.first().strand == 1
-        assert cds00001.featureLocations.first().strand == 1
+        assert newGene.featureLocation.strand == 1
+        assert cds00001.featureLocation.strand == 1
         for (exon in exons00001) {
-            assert exon.featureLocations.first().strand == 1
+            assert exon.featureLocation.strand == 1
         }
 
-        assert originalGene.featureLocations.first().strand == -1
+        assert originalGene.featureLocation.strand == -1
         // sae gene
         assert originalGene.name == 'GB40772-RA'
-        assert mrna00002.featureLocations.first().strand == -1
+        assert mrna00002.featureLocation.strand == -1
         // sae transcript
         assert mrna00002.name == 'GB40772-RA-00002'
-        assert cds00002.featureLocations.first().strand == -1
+        assert cds00002.featureLocation.strand == -1
         for (exon in exons00002) {
-            assert exon.featureLocations.first().strand == -1
+            assert exon.featureLocation.strand == -1
         }
 
         when: "we flip it back the other way"
@@ -504,22 +504,22 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         assert newGene == originalGene
 
-        assert newGene.featureLocations.first().strand == -1
+        assert newGene.featureLocation.strand == -1
         assert newGene.name == 'GB40772-RA'
-        assert mrna00001.featureLocations.first().strand == -1
+        assert mrna00001.featureLocation.strand == -1
         assert mrna00001.name == 'GB40772-RA-00001'
-        assert cds00001.featureLocations.first().strand == -1
+        assert cds00001.featureLocation.strand == -1
         for (exon in exons00001) {
-            assert exon.featureLocations.first().strand == -1
+            assert exon.featureLocation.strand == -1
         }
 
-        assert originalGene.featureLocations.first().strand == -1
+        assert originalGene.featureLocation.strand == -1
         assert originalGene.name == 'GB40772-RA'
-        assert mrna00002.featureLocations.first().strand == -1
+        assert mrna00002.featureLocation.strand == -1
         assert mrna00002.name == 'GB40772-RA-00002'
-        assert cds00002.featureLocations.first().strand == -1
+        assert cds00002.featureLocation.strand == -1
         for (exon in exons00002) {
-            assert exon.featureLocations.first().strand == -1
+            assert exon.featureLocation.strand == -1
         }
 
 

@@ -118,7 +118,7 @@ class CdsService {
                 ,fmax: cds.featureLocation.fmax
         ).save(failOnError: true)
 
-        stopCodonReadThrough.addToFeatureLocations(featureLocation)
+        stopCodonReadThrough.setFeatureLocation(featureLocation)
         stopCodonReadThrough.featureLocation.setStrand(cds.getStrand());
 
         stopCodonReadThrough.save(flush: true)

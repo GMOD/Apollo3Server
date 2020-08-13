@@ -30,6 +30,7 @@ class Feature implements Ontological{
         symbol nullable: true // TODO: should be false and unique per organism
         description nullable: true
         status nullable: true
+        featureLocation nullable: true
     }
 
     String symbol
@@ -44,11 +45,12 @@ class Feature implements Ontological{
     boolean isObsolete;
     Date dateCreated;
     Date lastUpdated ;
+    FeatureLocation featureLocation
 
     static hasMany = [
-            featureLocations: FeatureLocation
+//            featureLocations: FeatureLocation
 //            ,featureGenotypes: FeatureGenotype
-            ,parentFeatureRelationships: FeatureRelationship  // relationships where I am the parent feature relationship
+            parentFeatureRelationships: FeatureRelationship  // relationships where I am the parent feature relationship
             ,childFeatureRelationships: FeatureRelationship // relationships where I am the child feature relationship
 //            ,featureCVTerms: FeatureCVTerm
             ,featureSynonyms: FeatureSynonym // remove?
@@ -73,7 +75,7 @@ class Feature implements Ontological{
             featureSynonyms cascade: 'all-delete-orphan'
             childFeatureRelationships cascade: 'all-delete-orphan'
             parentFeatureRelationships cascade: 'all-delete-orphan'
-            featureLocations cascade: 'all-delete-orphan' // lazy: false  since most / all feature locations have a single element join is more efficient
+//            featureLocations cascade: 'all-delete-orphan' // lazy: false  since most / all feature locations have a single element join is more efficient
             goAnnotations cascade: 'all-delete-orphan'
             geneProducts cascade: 'all-delete-orphan'
             provenances cascade: 'all-delete-orphan'
@@ -112,22 +114,22 @@ class Feature implements Ontological{
 
     Feature generateClone() {
         Feature cloned = this.getClass().newInstance()
-        cloned.dbxref = this.dbxref;
-        cloned.name = this.name;
-        cloned.uniqueName = this.uniqueName;
-        cloned.sequenceLength = this.sequenceLength;
-        cloned.md5checksum = this.md5checksum;
-        cloned.isAnalysis = this.isAnalysis;
-        cloned.isObsolete = this.isObsolete;
-        cloned.dateCreated = this.dateCreated;
-        cloned.lastUpdated = this.lastUpdated;
-        cloned.featureLocations = this.featureLocations;
-        cloned.parentFeatureRelationships = this.parentFeatureRelationships;
-        cloned.childFeatureRelationships = this.childFeatureRelationships;
-        cloned.featureSynonyms = this.featureSynonyms;
-        cloned.featureDBXrefs = this.featureDBXrefs;
-        cloned.featureProperties = this.featureProperties;
-        return cloned;
+        cloned.dbxref = this.dbxref
+        cloned.name = this.name
+        cloned.uniqueName = this.uniqueName
+        cloned.sequenceLength = this.sequenceLength
+        cloned.md5checksum = this.md5checksum
+        cloned.isAnalysis = this.isAnalysis
+        cloned.isObsolete = this.isObsolete
+        cloned.dateCreated = this.dateCreated
+        cloned.lastUpdated = this.lastUpdated
+        cloned.featureLocation = this.featureLocation
+        cloned.parentFeatureRelationships = this.parentFeatureRelationships
+        cloned.childFeatureRelationships = this.childFeatureRelationships
+        cloned.featureSynonyms = this.featureSynonyms
+        cloned.featureDBXrefs = this.featureDBXrefs
+        cloned.featureProperties = this.featureProperties
+        return cloned
     }
 
 
@@ -138,10 +140,10 @@ class Feature implements Ontological{
      *
      * @return FeatureLocation of this object
      */
-    FeatureLocation getFeatureLocation() {
-        Collection<FeatureLocation> locs = getFeatureLocations();
-        return locs ? locs.first() : null
-    }
+//    FeatureLocation getFeatureLocation() {
+//        Collection<FeatureLocation> locs = getFeatureLocations();
+//        return locs ? locs.first() : null
+//    }
 
 
     /** Get the length of this feature.
@@ -149,7 +151,7 @@ class Feature implements Ontological{
      * @return Length of feature
      */
     int getLength() {
-        return getFeatureLocation().calculateLength()
+        return featureLocation.calculateLength()
     }
 
     Integer getFmin(){

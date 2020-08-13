@@ -51,15 +51,15 @@ class SequenceService {
      */
     String getResiduesFromFeature(Feature feature) {
         String returnResidues = ""
-        def orderedFeatureLocations = feature.featureLocations.sort { it.fmin }
-        for (FeatureLocation featureLocation in orderedFeatureLocations) {
-            String residues = getResidueFromFeatureLocation(featureLocation)
-            if (featureLocation.strand == Strand.NEGATIVE.value) {
-                returnResidues += SequenceTranslationHandler.reverseComplementSequence(residues)
-            } else {
-                returnResidues += residues
-            }
+//        def orderedFeatureLocations = feature.featureLocations.sort { it.fmin }
+//        for (FeatureLocation featureLocation in feature.featureLocation) {
+        String residues = getResidueFromFeatureLocation(feature.featureLocation)
+        if (feature.featureLocation.strand == Strand.NEGATIVE.value) {
+            returnResidues += SequenceTranslationHandler.reverseComplementSequence(residues)
+        } else {
+            returnResidues += residues
         }
+//        }
 
         return returnResidues
     }
@@ -701,8 +701,9 @@ class SequenceService {
             Sequence sequence = gbolFeature.featureLocation.to
 
             // TODO: does strand and alteration length matter here?
-            List<Feature> listOfSequenceAlterations = Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl join fl.sequence s where s = :sequence and f.class in :sequenceTypes and fl.fmin >= :fmin and fl.fmax <= :fmax ", [sequence: sequence, sequenceTypes: requestHandlingService.viewableAlterations, fmin: fmin, fmax: fmax])
-            featuresToWrite += listOfSequenceAlterations
+            // TODO: fix query
+//            List<Feature> listOfSequenceAlterations = Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl join fl.sequence s where s = :sequence and f.class in :sequenceTypes and fl.fmin >= :fmin and fl.fmax <= :fmax ", [sequence: sequence, sequenceTypes: requestHandlingService.viewableAlterations, fmin: fmin, fmax: fmax])
+//            featuresToWrite += listOfSequenceAlterations
         }
         gff3HandlerService.writeFeaturesToText(outputFile.absolutePath, featuresToWrite, grailsApplication.config.apollo.gff3.source as String)
     }

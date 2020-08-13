@@ -419,7 +419,7 @@ class AnnotatorController {
 
             //use two step query. step 1 gets genes in a page
             def pagination = Feature.createCriteria().list(max: max, offset: offset) {
-                featureLocations {
+                featureLocation {
                     if (sequenceName) {
                         eq('sequence', sequenceObj)
                     }

@@ -116,7 +116,7 @@ class IOServiceController extends AbstractApolloController {
             if (typeOfExport == FeatureStringEnum.TYPE_VCF.value) {
                 queryParams['viewableAnnotationList'] = requestHandlingService.viewableSequenceAlterationList
                 features = SequenceAlteration.createCriteria().list() {
-                    featureLocations {
+                    featureLocation {
                         sequence {
                             eq('organism', organism)
                             if (sequences) {

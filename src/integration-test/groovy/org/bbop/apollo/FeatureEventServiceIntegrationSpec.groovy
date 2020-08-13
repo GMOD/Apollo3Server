@@ -17,6 +17,7 @@ import org.bbop.apollo.history.FeatureOperation
 import org.bbop.apollo.location.FeatureLocation
 import org.bbop.apollo.organism.Organism
 import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.relationship.FeatureRelationship
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
@@ -87,12 +88,15 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         println "2 org count ${Organism.count} and credentials ${getTestCredentials()}"
         JSONObject returnObject = requestHandlingService.addTranscript(JSON.parse(jsonString) as JSONObject)
         println "return object ${returnObject}"
+        println "return object string ${returnObject.toString()}"
 
         then: "we have a transcript"
         assert Exon.count == 2
         assert CDS.count == 1
         assert MRNA.count == 1
         assert Gene.count == 1
+        assert FeatureLocation.count == 5
+        assert FeatureRelationship.count == 4
 
 
         when: "we split the transcript"

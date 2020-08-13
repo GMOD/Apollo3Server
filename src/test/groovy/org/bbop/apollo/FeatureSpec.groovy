@@ -39,7 +39,7 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
             , to: sequence
         ).save()
 
-        feature1.addToFeatureLocations(featureLocation)
+        feature1.setFeatureLocation(featureLocation)
         feature1.save()
     }
 
@@ -62,8 +62,8 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
 
         assert feature1.name == feature2.name
         assert feature1.uniqueName == feature2.uniqueName
-        assert feature1.featureLocations.size() == feature2.featureLocations.size()
-        assert feature1.featureLocations.size() == 1
+        assert feature1.featureLocation != null
+        assert feature2.featureLocation != null
 
         FeatureLocation featureLocation1 = feature1.featureLocation
         FeatureLocation featureLocation2 = feature2.featureLocation
@@ -89,8 +89,8 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
 
         assert feature1.name == feature2.name
         assert feature1.uniqueName == feature2.uniqueName
-        assert feature1.featureLocations.size() == feature2.featureLocations.size()
-        assert feature1.featureLocations.size() == 1
+        assert feature1.featureLocation != null
+        assert feature2.featureLocation != hull
 
         FeatureLocation featureLocation1 = feature1.featureLocation
         FeatureLocation featureLocation2 = feature2.featureLocation
