@@ -110,13 +110,13 @@ class CdsService {
                 ,name: uniqueName
                 , isAnalysis: cds.isIsAnalysis()
                 , isObsolete: cds.isIsObsolete()
-        ).save(failOnError: true)
+        ).save(failOnError: true,flush: true)
         FeatureLocation featureLocation = new FeatureLocation(
                 to: cds.featureLocation.to
                 , from: stopCodonReadThrough
                 ,fmin: cds.featureLocation.fmin
                 ,fmax: cds.featureLocation.fmax
-        ).save(failOnError: true)
+        ).save(failOnError: true,flush: true)
 
         stopCodonReadThrough.setFeatureLocation(featureLocation)
         stopCodonReadThrough.featureLocation.setStrand(cds.getStrand());

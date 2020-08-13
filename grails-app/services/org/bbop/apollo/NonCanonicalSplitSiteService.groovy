@@ -218,7 +218,7 @@ class NonCanonicalSplitSiteService {
             , isAnalysis: transcript.isAnalysis
             , isObsolete: transcript.isObsolete
             , name: uniqueName
-        ).save()
+        ).save(flush: true)
 
         spliceSite.setFeatureLocation(new FeatureLocation(
             strand: transcript.strand
@@ -226,7 +226,7 @@ class NonCanonicalSplitSiteService {
             , fmin: position
             , fmax: position
             , from: spliceSite
-        ).save());
+        ).save(flush: true));
         return spliceSite;
     }
 
@@ -239,14 +239,14 @@ class NonCanonicalSplitSiteService {
             , isAnalysis: transcript.isAnalysis
             , isObsolete: transcript.isObsolete
 //                ,timeAccessioned: new Date()
-        ).save()
+        ).save(flush: true )
         spliceSite.setFeatureLocation(new FeatureLocation(
             strand: transcript.strand
             , to: transcript.featureLocation.to
             , fmin: position
             , fmax: position
             , from: spliceSite
-        ).save());
+        ).save(flush: true));
         return spliceSite;
     }
 

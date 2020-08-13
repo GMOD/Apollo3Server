@@ -95,6 +95,10 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert CDS.count == 1
         assert MRNA.count == 1
         assert Gene.count == 1
+        println Exon.all.each{println "exon feature location ${it.featureLocation}"}
+        println CDS.all.each{println "CDS feature location ${it.featureLocation}"}
+        println MRNA.all.each{println "MRNA feature location ${it.featureLocation}"}
+        println Gene.all.each{println "Gene feature location ${it.featureLocation}"}
         assert FeatureLocation.count == 5
         assert FeatureRelationship.count == 4
 

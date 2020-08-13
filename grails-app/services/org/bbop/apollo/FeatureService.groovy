@@ -77,6 +77,7 @@ class FeatureService {
             gsolLocation.setStrand(defaultStrand)
         }
         gsolLocation.to = sequence
+        gsolLocation.save(flush: true)
 //        gsolLocation.setSequence(sequence)
         return gsolLocation;
     }
@@ -573,11 +574,14 @@ class FeatureService {
         if (gene.getFeatureLocation() == null) {
             FeatureLocation transcriptFeatureLocation = transcript.getFeatureLocation()
             FeatureLocation featureLocation = new FeatureLocation()
-            featureLocation.properties = transcriptFeatureLocation.properties
-            featureLocation.id = null
+//            featureLocation.properties = transcriptFeatureLocation.properties
+            featureLocation.strand = transcriptFeatureLocation.strand
+            featureLocation.fmin = transcriptFeatureLocation.fmin
+            featureLocation.fmax = transcriptFeatureLocation.fmax
+//            featureLocation.id = null
             featureLocation.to = transcript.featureLocation.to
-            featureLocation.save()
             featureLocation.from = gene
+            featureLocation.save(flush: true)
 //            gene.addToFeatureLocations(featureLocation);
         } else {
             // if the transcript's bounds are beyond the gene's bounds, need to adjust the gene's bounds
@@ -1224,8 +1228,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 deletion.setFeatureLocation(featureLocation)
 
                 frameshifts.add(deletion);
-                featureLocation.save()
-                deletion.save()
+                featureLocation.save(flush: true)
+                deletion.save(flush: true )
                 frameshift.save(flush: true)
 
 //                deletion.setFeatureLocation(frameshift.getCoordinate(),
@@ -1267,7 +1271,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 frameshifts.add(insertion);
 
                 insertion.save()
-                featureLocation.save()
+                featureLocation.save(flush: true )
                 frameshift.save(flush: true)
             }
         }
@@ -3047,6 +3051,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 //            jsonFeatureLocation.put(FeatureStringEnum.IS_FMAX_PARTIAL.value, true);
 //        }
 //        jsonFeatureLocation.put(FeatureStringEnum.STRAND.value, featureLocationNode.get(FeatureStringEnum.STRAND.value).asInt())
+        featureLocation.save(flush: true )
         return featureLocation
     }
 

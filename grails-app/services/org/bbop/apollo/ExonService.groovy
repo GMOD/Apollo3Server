@@ -391,7 +391,7 @@ class ExonService {
                 ,name: uniqueName
                 ,isAnalysis: leftExon.isAnalysis
                 ,isObsolete: leftExon.isObsolete
-        ).save(insert:true)
+        ).save(insert:true,flush: true)
 
 
         FeatureLocation rightFeatureLocation = new FeatureLocation(
@@ -406,20 +406,20 @@ class ExonService {
                 ,locgroup: leftFeatureLocation.locgroup
                 ,rank: leftFeatureLocation.rank
                 ,to: leftFeatureLocation.to
-        ).save(insert:true)
+        ).save(insert:true,flush: true )
         rightExon.setFeatureLocation(rightFeatureLocation)
 
         leftFeatureLocation.fmax = newLeftMax
         rightFeatureLocation.fmin = newRightMin
 
-        leftFeatureLocation.save()
-        rightFeatureLocation.save()
+        leftFeatureLocation.save(flush: true)
+        rightFeatureLocation.save(flush: true)
 
         Transcript transcript = getTranscript(leftExon)
         transcriptService.addExon(transcript,rightExon)
 
-        transcript.save()
-        rightExon.save()
+        transcript.save(flush: true)
+        rightExon.save(flush: true )
 
         return rightExon
 
