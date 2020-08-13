@@ -41,3 +41,4 @@ yarn.lock
 bin
 build
 apollo_data
+apollo.yml

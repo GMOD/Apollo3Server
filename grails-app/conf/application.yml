@@ -11,9 +11,12 @@ grails:
             events: false
     config:
         locations:
+            - file:./apollo.groovy
+            - file:./apollo.yml
+            - file:./apollo.properties
+            - classpath:apollo.properties
             - classpath:apollo.groovy
             - classpath:apollo.yml
-            - classpath:apollo.properties
             - file:${catalina.base}/apollo.groovy
             - file:${catalina.base}/apollo.yml
             - file:${catalina.base}/apollo.properties
