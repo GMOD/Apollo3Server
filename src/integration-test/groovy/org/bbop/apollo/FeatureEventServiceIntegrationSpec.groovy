@@ -91,14 +91,36 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         println "return object string ${returnObject.toString()}"
 
         then: "we have a transcript"
-        assert Exon.count == 2
-        assert CDS.count == 1
-        assert MRNA.count == 1
-        assert Gene.count == 1
+
+        FeatureLocation featureLocation = new FeatureLocation(
+            from: Feature.all.first()
+            ,to: Sequence.all.first()
+            ,fmin: 10
+            ,fmax: 20
+        ).save(flush: true , failOnError: true )
+        String updateQuery = "MATCH (f:Feature),(s:Sequence)\n" +
+            "where s.name = '${Sequence.all.first().name}' and f.uniqueName = '${Feature.all.first().uniqueName}' \n" +
+            "CREATE (f)-[fr:FEATURELOCATION { fmin: 3,fmax: 10,strand: 1}]->(s)\n" +
+            "RETURN type(fr), fr.fmin LIMIT 25"
+        FeatureLocation.executeUpdate(updateQuery)
+        println "feature cournt ${Feature.count}"
+        println "feature cournt 2 ${Feature.count()}"
+        println "feature locatino ${FeatureLocation.count}"
+        println "feature relation  ${FeatureRelationship.count}"
+        println "feature locatino ${FeatureLocation.count()}"
+        println "feature relation  ${FeatureRelationship.count()}"
+        def locationCount = FeatureLocation.executeQuery("MATCH (n:Feature)-[fl]-(s:Sequence) RETURN count(fl)")
+        def relationshipCount = FeatureRelationship.executeQuery("MATCH (n:Feature)-[fr]-(g:Feature) RETURN count(fr)")
+        println "location coiunt ${locationCount}"
+        println "relationship count ${relationshipCount}"
         println Exon.all.each{println "exon feature location ${it.featureLocation}"}
         println CDS.all.each{println "CDS feature location ${it.featureLocation}"}
         println MRNA.all.each{println "MRNA feature location ${it.featureLocation}"}
         println Gene.all.each{println "Gene feature location ${it.featureLocation}"}
+        assert Exon.count == 2
+        assert CDS.count == 1
+        assert MRNA.count == 1
+        assert Gene.count == 1
         assert FeatureLocation.count == 5
         assert FeatureRelationship.count == 4
 

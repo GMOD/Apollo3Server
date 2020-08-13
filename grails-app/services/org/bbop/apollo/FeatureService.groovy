@@ -64,20 +64,25 @@ class FeatureService {
 
 
     @Transactional
-    FeatureLocation convertJSONToFeatureLocation(JSONObject jsonLocation, Sequence sequence, int defaultStrand = Strand.POSITIVE.value) throws JSONException {
-        FeatureLocation gsolLocation = new FeatureLocation();
+    FeatureLocation convertJSONToFeatureLocation(JSONObject jsonLocation, Sequence sequence, Feature feature, int defaultStrand = Strand.POSITIVE.value) throws JSONException {
+        FeatureLocation gsolLocation = new FeatureLocation()
         if (jsonLocation.has(FeatureStringEnum.ID.value)) {
-            gsolLocation.setId(jsonLocation.getLong(FeatureStringEnum.ID.value));
+            gsolLocation.setId(jsonLocation.getLong(FeatureStringEnum.ID.value))
         }
-        gsolLocation.setFmin(jsonLocation.getInt(FeatureStringEnum.FMIN.value));
-        gsolLocation.setFmax(jsonLocation.getInt(FeatureStringEnum.FMAX.value));
+        gsolLocation.setFmin(jsonLocation.getInt(FeatureStringEnum.FMIN.value))
+        gsolLocation.setFmax(jsonLocation.getInt(FeatureStringEnum.FMAX.value))
         if (jsonLocation.getInt(FeatureStringEnum.STRAND.value) == Strand.POSITIVE.value || jsonLocation.getInt(FeatureStringEnum.STRAND.value) == Strand.NEGATIVE.value) {
-            gsolLocation.setStrand(jsonLocation.getInt(FeatureStringEnum.STRAND.value));
+            gsolLocation.setStrand(jsonLocation.getInt(FeatureStringEnum.STRAND.value))
         } else {
             gsolLocation.setStrand(defaultStrand)
         }
         gsolLocation.to = sequence
-        gsolLocation.save(flush: true)
+        gsolLocation.from = feature
+//        gsolLocation.save(flush: true)
+        if(feature){
+            feature.featureLocation = gsolLocation
+//            feature.save(flush: true)
+        }
 //        gsolLocation.setSequence(sequence)
         return gsolLocation;
     }
@@ -246,13 +251,17 @@ class FeatureService {
             setOwner(transcript, owner);
 
             CDS cds = transcriptService.getCDS(transcript)
+            println "had a CDS ${cds}"
             if (cds) {
                 readThroughStopCodon = cdsService.getStopCodonReadThrough(cds) ? true : false
             }
 
             if (!useCDS || cds == null) {
+                println "generating CDS ${cds}"
                 calculateCDS(transcript, readThroughStopCodon)
+                println "generatED CDS ${cds}"
             } else {
+                printlnn "not generated a CDS for some reason "
                 // if there are any sequence alterations that overlaps this transcript then
                 // recalculate the CDS to account for these changes
                 def sequenceAlterations = getSequenceAlterationsForFeature(transcript)
@@ -274,7 +283,7 @@ class FeatureService {
 
             boolean createGeneFromJSON = false
             if (jsonTranscript.containsKey(FeatureStringEnum.PARENT.value) && jsonTranscript.containsKey(FeatureStringEnum.PROPERTIES.value)) {
-                for (JSONObject property : jsonTranscript.getJSONArray(FeatureStringEnum.PROPERTIES.value)) {
+                for (def property : jsonTranscript.getJSONArray(FeatureStringEnum.PROPERTIES.value)) {
                     if (property.containsKey(FeatureStringEnum.NAME.value)
                         && property.get(FeatureStringEnum.NAME.value) == FeatureStringEnum.COMMENT.value
                         && property.get(FeatureStringEnum.VALUE.value) == MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE) {
@@ -287,7 +296,7 @@ class FeatureService {
             if (!createGeneFromJSON) {
                 println "Gene from parent_id doesn't exist; trying to find overlapping isoform"
                 // Scenario II - find an overlapping isoform and if present, add current transcript to its gene
-                FeatureLocation featureLocation = convertJSONToFeatureLocation(jsonTranscript.getJSONObject(FeatureStringEnum.LOCATION.value), sequence)
+                FeatureLocation featureLocation = convertJSONToFeatureLocation(jsonTranscript.getJSONObject(FeatureStringEnum.LOCATION.value), sequence, null)
                 Collection<Feature> overlappingFeatures = getOverlappingFeatures(featureLocation).findAll() {
                     it = Feature.get(it.id)
                     it instanceof Gene
@@ -569,10 +578,13 @@ class FeatureService {
 
     @Transactional
     def addTranscriptToGene(Gene gene, Transcript transcript) {
+        println "input gene ${gene}"
+        println "and transcxript ${transcript}"
         removeExonOverlapsAndAdjacencies(transcript);
         // no feature location, set location to transcript's
-        if (gene.getFeatureLocation() == null) {
-            FeatureLocation transcriptFeatureLocation = transcript.getFeatureLocation()
+        if (gene.featureLocation == null) {
+            println "gene has no feature location "
+            FeatureLocation transcriptFeatureLocation = transcript.featureLocation
             FeatureLocation featureLocation = new FeatureLocation()
 //            featureLocation.properties = transcriptFeatureLocation.properties
             featureLocation.strand = transcriptFeatureLocation.strand
@@ -582,14 +594,16 @@ class FeatureService {
             featureLocation.to = transcript.featureLocation.to
             featureLocation.from = gene
             featureLocation.save(flush: true)
+            gene.featureLocation = featureLocation
+            gene.save(flush: true)
 //            gene.addToFeatureLocations(featureLocation);
         } else {
             // if the transcript's bounds are beyond the gene's bounds, need to adjust the gene's bounds
             if (transcript.getFeatureLocation().getFmin() < gene.getFeatureLocation().getFmin()) {
-                gene.getFeatureLocation().setFmin(transcript.getFeatureLocation().getFmin());
+                gene.featureLocation.setFmin(transcript.featureLocation.fmin);
             }
             if (transcript.getFeatureLocation().getFmax() > gene.getFeatureLocation().getFmax()) {
-                gene.getFeatureLocation().setFmax(transcript.getFeatureLocation().getFmax());
+                gene.featureLocation.setFmax(transcript.featureLocation.fmax);
             }
         }
 
@@ -597,12 +611,16 @@ class FeatureService {
         FeatureRelationship featureRelationship = new FeatureRelationship(
             from: gene
             , to: transcript
-        ).save(failOnError: true)
+        ).save(failOnError: true, flush: true)
+        println "feature relationship count in method ${FeatureRelationship.count}"
         gene.addToParentFeatureRelationships(featureRelationship)
         transcript.addToChildFeatureRelationships(featureRelationship)
 
 
-        updateGeneBoundaries(gene);
+        updateGeneBoundaries(gene)
+
+        gene.save(flush: true)
+        transcript.save(flush: true)
 
 //        getSession().indexFeature(transcript);
 
@@ -1192,7 +1210,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 //        return features
 //        }
 //        else{
-            return []
+        return []
 //        }
     }
 
@@ -1229,7 +1247,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
                 frameshifts.add(deletion);
                 featureLocation.save(flush: true)
-                deletion.save(flush: true )
+                deletion.save(flush: true)
                 frameshift.save(flush: true)
 
 //                deletion.setFeatureLocation(frameshift.getCoordinate(),
@@ -1271,7 +1289,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 frameshifts.add(insertion);
 
                 insertion.save()
-                featureLocation.save(flush: true )
+                featureLocation.save(flush: true)
                 frameshift.save(flush: true)
             }
         }
@@ -1505,9 +1523,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 JSONObject jsonLocation = jsonFeature.getJSONObject(FeatureStringEnum.LOCATION.value);
                 FeatureLocation featureLocation
                 if (SINGLETON_FEATURE_TYPES.contains(type.getString(FeatureStringEnum.NAME.value))) {
-                    featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, Strand.NONE.value)
+                    featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, gsolFeature, Strand.NONE.value)
                 } else {
-                    featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence)
+                    featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, gsolFeature)
                 }
                 featureLocation.to = sequence
                 featureLocation.from = gsolFeature
@@ -1744,16 +1762,15 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         return gsolFeature;
     }
 
-    String findMostSpecificLabel(ArrayList labels){
-        def filteredLabels = labels.findAll{  it!="Feature" && !it.contains("TranscriptRegion") && it!="SpliceSite"}
+    String findMostSpecificLabel(ArrayList labels) {
+        def filteredLabels = labels.findAll { it != "Feature" && !it.contains("TranscriptRegion") && it != "SpliceSite" }
         println "filtered labels ${labels} -> ${filteredLabels}"
-        if(filteredLabels.indexOf("Transcript")>=0){
+        if (filteredLabels.indexOf("Transcript") >= 0) {
             println "A"
-            if(filteredLabels.size()>1){
+            if (filteredLabels.size() > 1) {
                 println "B"
-                return filteredLabels.findAll{  it!="Transcript"}.first()
-            }
-            else{
+                return filteredLabels.findAll { it != "Transcript" }.first()
+            } else {
                 println "C"
                 return filteredLabels.first()
             }
@@ -1779,7 +1796,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 //        }
         println "specific type ${specificType}"
 //        println "specific type class ${Class.forName("org.bbop.apollo.feature.${specificType}")}"
-        return  Class.forName("org.bbop.apollo.feature.${specificType}")?.cvTerm
+        return Class.forName("org.bbop.apollo.feature.${specificType}")?.cvTerm
 //        println "specific type ${specificType} ${ontologyId} "
 ////        String cvTerm = feature.cvTerm
 ////        return cvTerm
@@ -2095,14 +2112,14 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         println "converting features to json ${neo4jObject}"
         def neo4jFeature = neo4jObject.feature
-        if(!neo4jFeature.keys()) return null
+        if (!neo4jFeature.keys()) return null
         println "feature ${neo4jFeature} "
         println "feature as JSON ${neo4jFeature} "
         def neo4jLocation = neo4jObject.location
         println "locaitons ${neo4jLocation} "
         def neo4jOwners = neo4jObject.owners
         println "owners ${neo4jOwners} "
-        def neo4jSequence= neo4jObject.sequence
+        def neo4jSequence = neo4jObject.sequence
 
         def neo4jChildren = neo4jObject.children
         println "children ${neo4jChildren} "
@@ -2143,8 +2160,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         long start = System.currentTimeMillis()
 //        String finalOwnerString = generateOwnerString(neo4jObject)
-        if(neo4jOwners){
-            String finalOwnerString = neo4jOwners.collect{ it.get(FeatureStringEnum.USERNAME.value).asString()}.join(" ")
+        if (neo4jOwners) {
+            String finalOwnerString = neo4jOwners.collect { it.get(FeatureStringEnum.USERNAME.value).asString() }.join(" ")
 //        String finalOwnerString = "asdfasdf"
 //            feature.owners =
 //            for(def owner in neo4jOwners){
@@ -2190,7 +2207,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         durationInMilliseconds = System.currentTimeMillis() - start;
 //        println"has a child ${neo4jChildren} . . ${neo4jChildren == null} ${neo4jChildren[0].feature}"
-        if (neo4jChildren!= null && neo4jChildren[0].feature!=null) {
+        if (neo4jChildren != null && neo4jChildren[0].feature != null) {
             println "finding children"
 //            JSONArray children = new JSONArray();
 //            jsonFeature.put(FeatureStringEnum.CHILDREN.value, children);
@@ -2201,7 +2218,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 ////                Feature childFeature = f
 ////                children.put(convertFeatureToJSON(childFeature, includeSequence));
                 Feature child = convertNeo4jFeatureToFeature(childNode.feature, includeSequence)
-                FeatureRelationship parentFeatureRelationship = new FeatureRelationship(from: feature,to: child)
+                FeatureRelationship parentFeatureRelationship = new FeatureRelationship(from: feature, to: child)
                 feature.addToParentFeatureRelationships(parentFeatureRelationship);
             }
         }
@@ -2214,12 +2231,12 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         durationInMilliseconds = System.currentTimeMillis() - start;
         //println "parents ${durationInMilliseconds}"
-        if (neo4jParent!=null && neo4jParent.feature!=null) {
+        if (neo4jParent != null && neo4jParent.feature != null) {
 //            Feature parent = parentFeatures.iterator().next();
             def parentTypes = neo4jParent.feature.labels()
             def parentType = parentTypes.last()
             Feature parent = convertNeo4jFeatureToFeature(neo4jParent.feature, includeSequence)
-            FeatureRelationship childFeatureRelationship = new FeatureRelationship(from: parent,to: feature)
+            FeatureRelationship childFeatureRelationship = new FeatureRelationship(from: parent, to: feature)
             feature.addToChildFeatureRelationships(childFeatureRelationship);
 
 //            jsonFeature.put(FeatureStringEnum.PARENT_ID.value, neo4jParent.feature.get(FeatureStringEnum.ID.value).asString());
@@ -2379,7 +2396,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         println "locaitons ${neo4jLocation} "
         def neo4jOwners = neo4jObject.owners
         println "owners ${neo4jOwners} "
-        def neo4jSequence= neo4jObject.sequence
+        def neo4jSequence = neo4jObject.sequence
 
         def neo4jChildren = neo4jObject.children
         println "children ${neo4jChildren} "
@@ -2392,7 +2409,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         println "ID ${neo4jFeature.id()}"
         println "labels ${neo4jFeature.labels().join(",")}"
         println "keys ${neo4jFeature.keys().join(",")}"
-        if (neo4jFeature.id()!=null) {
+        if (neo4jFeature.id() != null) {
             jsonFeature.put(FeatureStringEnum.ID.value, neo4jFeature.id())
         }
         def types = neo4jFeature.labels()
@@ -2417,10 +2434,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         long start = System.currentTimeMillis()
 //        String finalOwnerString = generateOwnerString(neo4jObject)
-        if(neo4jOwners){
-            String finalOwnerString = neo4jOwners.collect{ it.get(FeatureStringEnum.USERNAME.value).asString()}.join(" ")
+        if (neo4jOwners) {
+            String finalOwnerString = neo4jOwners.collect { it.get(FeatureStringEnum.USERNAME.value).asString() }.join(" ")
 //        String finalOwnerString = "asdfasdf"
-            for(def owner in neo4jOwners){
+            for (def owner in neo4jOwners) {
                 println "owner ${owner} "
                 println "value ${owner.get(FeatureStringEnum.USERNAME.value)} "
             }
@@ -2439,7 +2456,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
 //        if (neo4jObject.featureLocation) {
 //            Sequence sequence = neo4jObject.featureLocation.to
-        if(neo4jSequence){
+        if (neo4jSequence) {
             jsonFeature.put(FeatureStringEnum.SEQUENCE.value, neo4jSequence.get(FeatureStringEnum.NAME.value).asString())
         }
 //        }
@@ -2461,7 +2478,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         durationInMilliseconds = System.currentTimeMillis() - start;
 //        println"has a child ${neo4jChildren} . . ${neo4jChildren == null} ${neo4jChildren[0].feature}"
-        if (neo4jChildren!= null && neo4jChildren[0].feature!=null) {
+        if (neo4jChildren != null && neo4jChildren[0].feature != null) {
             println "finding children"
             JSONArray children = new JSONArray();
             jsonFeature.put(FeatureStringEnum.CHILDREN.value, children);
@@ -2483,7 +2500,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         durationInMilliseconds = System.currentTimeMillis() - start;
         //println "parents ${durationInMilliseconds}"
-        if (neo4jParent!=null && neo4jParent.feature!=null) {
+        if (neo4jParent != null && neo4jParent.feature != null) {
 //            Feature parent = parentFeatures.iterator().next();
             def parentTypes = neo4jParent.feature.labels()
             def parentType = parentTypes.last()
@@ -3032,7 +3049,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         return jsonObject
     }
 
-    FeatureLocation convertNeo4jFeatureLocationToFeatureLocation(def featureLocationNode){
+    FeatureLocation convertNeo4jFeatureLocationToFeatureLocation(def featureLocationNode) {
         FeatureLocation featureLocation = new FeatureLocation()
 //        println " "
 //        if (featureLocationNode.id) {
@@ -3051,7 +3068,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 //            jsonFeatureLocation.put(FeatureStringEnum.IS_FMAX_PARTIAL.value, true);
 //        }
 //        jsonFeatureLocation.put(FeatureStringEnum.STRAND.value, featureLocationNode.get(FeatureStringEnum.STRAND.value).asInt())
-        featureLocation.save(flush: true )
+        featureLocation.save(flush: true)
         return featureLocation
     }
 
@@ -3133,15 +3150,15 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     def flipStrand(Feature feature) {
 
 //        for (FeatureLocation featureLocation in feature.featureLocations) {
-            feature.featureLocation.strand = featureLocation.strand == Strand.POSITIVE.value ? Strand.NEGATIVE.value : Strand.POSITIVE.value
-            feature.featureLocation.save(flush: true )
+        feature.featureLocation.strand = featureLocation.strand == Strand.POSITIVE.value ? Strand.NEGATIVE.value : Strand.POSITIVE.value
+        feature.featureLocation.save(flush: true)
 //        }
 
         for (Feature childFeature : feature?.parentFeatureRelationships?.childFeature) {
             flipStrand(childFeature)
         }
 
-        feature.save(flush: true )
+        feature.save(flush: true)
         return feature
 
     }

@@ -915,7 +915,9 @@ class RequestHandlingService {
                 useCDS = jsonTranscript.getBoolean(FeatureStringEnum.USE_CDS.value)
             }
             useName = jsonTranscript.has(FeatureStringEnum.USE_NAME.value) ? jsonTranscript.getBoolean(FeatureStringEnum.USE_NAME.value) : false
+            println "generate transcript ${useName}"
             Transcript transcript = featureService.generateTranscript(jsonTranscript, sequence, suppressHistory, useCDS, useName)
+            println "generateD transcript ${transcript}"
 
             // should automatically write to history
             transcript.save(flush: true)

@@ -107,11 +107,12 @@ environments:
                 username: "neo4j"
                 #        password: "movies"
                 password: "testpass"
-#                flush.mode: AUTO
+                flush.mode: 'manual'
     test:
         grails:
             neo4j:
                 type: embedded
+                flush.mode: AUTO
                 embedded:
                     ephemeral: true
                 options:
@@ -123,7 +124,7 @@ environments:
                 username: "neo4j"
                 #        password: "movies"
                 password: "testpass"
-#                flush.mode: 'manual'
+                flush.mode: 'manual'
         #        neo4j:
         #            url: bolt://localhost
         #            username: "neo4j"
