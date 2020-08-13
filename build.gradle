@@ -38,6 +38,8 @@ repositories {
          url 'http://oss.jfrog.org/artifactory/oss-snapshot-local/'
 
     }
+    maven { url "https://oss.jfrog.org/repo/" }
+
 
 
 }
@@ -119,6 +121,7 @@ dependencies {
 //    compile "org.hibernate:hibernate-validator:5.4.3.Final"
     compile 'org.springframework.boot:spring-boot-starter-validation'
     compile "org.grails.plugins:gsp"
+    compile 'org.grails.plugins:external-config:2.0.0' // or latest version
     console "org.grails:grails-console"
     profile "org.grails.profiles:web"
     runtime "org.glassfish.web:el-impl:2.1.2-b03"

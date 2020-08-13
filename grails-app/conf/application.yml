@@ -1,4 +1,5 @@
 ---
+
 grails:
     profile: web
     codegen:
@@ -8,6 +9,14 @@ grails:
             # Whether to translate GORM events into Reactor events
             # Disabled by default for performance reasons
             events: false
+    config:
+        locations:
+            - classpath:apollo.groovy
+            - classpath:apollo.yml
+            - classpath:apollo.properties
+            - file:${catalina.base}/apollo.groovy
+            - file:${catalina.base}/apollo.yml
+            - file:${catalina.base}/apollo.properties
 info:
     app:
         name: '@info.app.name@'

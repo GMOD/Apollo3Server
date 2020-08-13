@@ -1,3 +1,4 @@
+# copy to apollo.yml / apollo.groovy / apollo.properties
 environments:
   development:
     grails:
