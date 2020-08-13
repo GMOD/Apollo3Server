@@ -109,7 +109,7 @@ class SequenceServiceIntegrationSpec extends AbstractIntegrationSpec{
         JSONObject inputObject = JSON.parse(getGff3String) as JSONObject
         Sequence refSequence = Sequence.first()
         FeatureLocation.all.each { featureLocation->
-            refSequence.addToFeatureLocations(featureLocation)
+            refSequence.setFeatureLocation(featureLocation)
         }
         File gffFile = File.createTempFile("feature", ".gff3")
         sequenceService.getGff3ForFeature(inputObject, gffFile)
@@ -204,7 +204,7 @@ class SequenceServiceIntegrationSpec extends AbstractIntegrationSpec{
         JSONObject inputObject = JSON.parse(getGff3String) as JSONObject
         Sequence refSequence = Sequence.first()
         FeatureLocation.all.each { featureLocation->
-            refSequence.addToFeatureLocations(featureLocation)
+            refSequence.setFeatureLocation(featureLocation)
         }
         
         File gffFile = File.createTempFile("feature", ".gff3")
@@ -243,7 +243,7 @@ class SequenceServiceIntegrationSpec extends AbstractIntegrationSpec{
         JSONObject inputObject = JSON.parse(getGff3String) as JSONObject
         Sequence refSequence = Sequence.first()
         FeatureLocation.all.each { featureLocation->
-            refSequence.addToFeatureLocations(featureLocation)
+            refSequence.setFeatureLocation(featureLocation)
         }
         File gffFile = File.createTempFile("feature", ".gff3");
         sequenceService.getGff3ForFeature(inputObject, gffFile)

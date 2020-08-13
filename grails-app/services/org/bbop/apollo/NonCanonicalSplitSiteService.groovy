@@ -93,7 +93,7 @@ class NonCanonicalSplitSiteService {
         List<Exon> exons = transcriptService.getSortedExons(transcript, true)
         int fmin = transcript.getFeatureLocation().fmin
         int fmax = transcript.getFeatureLocation().fmax
-        Sequence sequence = transcript.featureLocations.first().to
+        Sequence sequence = transcript.featureLocation.to
         Strand strand = transcript.getFeatureLocation().strand == -1 ? Strand.NEGATIVE : Strand.POSITIVE
 
         String residues = sequenceService.getGenomicResiduesFromSequenceWithAlterations(sequence, fmin, fmax, strand);
@@ -218,15 +218,15 @@ class NonCanonicalSplitSiteService {
             , isAnalysis: transcript.isAnalysis
             , isObsolete: transcript.isObsolete
             , name: uniqueName
-        ).save()
+        ).save(flush: true)
 
-        spliceSite.addToFeatureLocations(new FeatureLocation(
+        spliceSite.setFeatureLocation(new FeatureLocation(
             strand: transcript.strand
             , to: transcript.featureLocation.to
             , fmin: position
             , fmax: position
             , from: spliceSite
-        ).save());
+        ).save(flush: true));
         return spliceSite;
     }
 
@@ -239,14 +239,14 @@ class NonCanonicalSplitSiteService {
             , isAnalysis: transcript.isAnalysis
             , isObsolete: transcript.isObsolete
 //                ,timeAccessioned: new Date()
-        ).save()
-        spliceSite.addToFeatureLocations(new FeatureLocation(
+        ).save(flush: true )
+        spliceSite.setFeatureLocation(new FeatureLocation(
             strand: transcript.strand
             , to: transcript.featureLocation.to
             , fmin: position
             , fmax: position
             , from: spliceSite
-        ).save());
+        ).save(flush: true));
         return spliceSite;
     }
 

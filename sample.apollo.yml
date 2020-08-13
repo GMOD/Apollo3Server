@@ -7,7 +7,7 @@ environments:
         username: "neo4j"
         #        password: "movies"
         password: "testpass"
-        flush.mode: 'manual'
+#        flush.mode: 'manual'
   test:
     grails:
       neo4j:
@@ -23,4 +23,4 @@ environments:
         username: "neo4j"
         #        password: "movies"
         password: "testpass"
-        flush.mode: 'manual'
+#        flush.mode: 'manual'

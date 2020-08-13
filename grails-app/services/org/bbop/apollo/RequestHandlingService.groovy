@@ -915,7 +915,9 @@ class RequestHandlingService {
                 useCDS = jsonTranscript.getBoolean(FeatureStringEnum.USE_CDS.value)
             }
             useName = jsonTranscript.has(FeatureStringEnum.USE_NAME.value) ? jsonTranscript.getBoolean(FeatureStringEnum.USE_NAME.value) : false
+            println "generate transcript ${useName}"
             Transcript transcript = featureService.generateTranscript(jsonTranscript, sequence, suppressHistory, useCDS, useName)
+            println "generateD transcript ${transcript}"
 
             // should automatically write to history
             transcript.save(flush: true)
@@ -1453,7 +1455,7 @@ class RequestHandlingService {
             SequenceAlterationArtifact sequenceAlteration = SequenceAlterationArtifact.findByUniqueName(jsonFeature.getString(FeatureStringEnum.UNIQUENAME.value))
             FeatureLocation sequenceAlterationFeatureLocation = sequenceAlteration.getFeatureLocation()
             deleteFeatureContainer.getJSONArray(FeatureStringEnum.FEATURES.value).put(featureService.convertFeatureToJSON(sequenceAlteration, true));
-            FeatureLocation.deleteAll(sequenceAlteration.featureLocations)
+            FeatureLocation.deleteAll(sequenceAlteration.featureLocation)
             sequenceAlteration.delete(flush: true)
 
             for (Feature feature : featureService.getOverlappingFeatures(sequenceAlterationFeatureLocation, false)) {
@@ -2412,7 +2414,14 @@ class RequestHandlingService {
         Exon exon1 = Exon.findByUniqueName(featuresArray.getJSONObject(0).getString(FeatureStringEnum.UNIQUENAME.value))
         Exon exon2 = Exon.findByUniqueName(featuresArray.getJSONObject(1).getString(FeatureStringEnum.UNIQUENAME.value))
 
+        println "exon1 ${exon1}"
+        println "exon2 ${exon2}"
         Transcript transcript1 = exonService.getTranscript(exon1)
+        println "transcript ${transcript1}"
+        def cypherTranscripts = Transcript.executeQuery("MATCH (e:Exon)-[fr:FEATURERELATIONSHIP]-(t:Transcript) where e.uniqueName='${exon1.uniqueName}' RETURN t LIMIT 1")
+        println "get cypher transcript ${cypherTranscripts}"
+        println "first as Tarnscript ${cypherTranscripts.first() as Transcript}"
+
         User activeUser = permissionService.getCurrentUser(inputObject)
         transcript1.addToOwners(activeUser)
         // transcript2 should contain the second part of transcript1 starting from exon2
@@ -2915,7 +2924,7 @@ class RequestHandlingService {
                 for (SequenceAlterationArtifact sequenceAlteration in sequenceAlterations) {
                     FeatureLocation sequenceAlterationFeatureLocation = sequenceAlteration.getFeatureLocation()
                     deleteFeatureContainer.getJSONArray(FeatureStringEnum.FEATURES.value).put(featureService.convertFeatureToJSON(sequenceAlteration, true));
-                    FeatureLocation.deleteAll(sequenceAlteration.featureLocations)
+                    FeatureLocation.deleteAll(sequenceAlteration.featureLocation)
                     sequenceAlteration.delete(flush: true)
 
                     for (Feature feature : featureService.getOverlappingFeatures(sequenceAlterationFeatureLocation, false)) {
@@ -2952,7 +2961,7 @@ class RequestHandlingService {
                 for (SequenceAlterationArtifact sequenceAlteration in sequenceAlterations) {
                     FeatureLocation sequenceAlterationFeatureLocation = sequenceAlteration.getFeatureLocation()
                     deleteFeatureContainer.getJSONArray(FeatureStringEnum.FEATURES.value).put(featureService.convertFeatureToJSON(sequenceAlteration, true));
-                    FeatureLocation.deleteAll(sequenceAlteration.featureLocations)
+                    FeatureLocation.deleteAll(sequenceAlteration.featureLocation)
                     sequenceAlteration.delete(flush: true)
                     for (Feature feature : featureService.getOverlappingFeatures(sequenceAlterationFeatureLocation, false)) {
                         if (feature instanceof Gene) {

@@ -1,5 +1,6 @@
 package org.bbop.apollo
 
+import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.attributes.*
 import org.bbop.apollo.feature.*
@@ -47,9 +48,20 @@ class TranscriptService {
 
     Collection<Exon> getSortedExons(Transcript transcript, boolean sortByStrand) {
         Collection<Exon> exons = getExons(transcript)
-//        println "exons ${exons}"
+        println "input transcript ${transcript as JSON}"
+        println "exons ${exons}"
         List<Exon> sortedExons = new LinkedList<Exon>(exons);
-//        println "sorted exonds ${sortedExons}"
+        println "sorted exonds ${sortedExons}"
+        println " sorted locations "
+        sortedExons.each {
+            println it.featureLocation
+            println it.featureLocation as JSON
+        }
+        def inputQuery ="MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = '${sortedExons.first().uniqueName}' RETURN fl "
+        def cypherLocations = FeatureLocation.executeQuery(inputQuery)
+        println "cypher location ${cypherLocations}"
+//        def cypherExon = FeatureLocation.executeQuery("MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = ${sortedExons.first().uniqueName} RETURN fl LIMIT 1")?.first() as Exon
+//        println "cypher exon ${cypherExon}"
         Collections.sort(sortedExons, new FeaturePositionComparator<Exon>(sortByStrand))
         return sortedExons
     }
@@ -103,8 +115,8 @@ class TranscriptService {
             , fmax: transcriptFeatureLocation.fmax
             , from: cds
             , to: transcriptFeatureLocation.to
-        ).save(failOnError: true)
-        cds.addToFeatureLocations(featureLocation);
+        ).save(failOnError: true,flush: true)
+        cds.setFeatureLocation(featureLocation);
         cds.save(flush: true)
         return cds;
     }
@@ -344,17 +356,18 @@ class TranscriptService {
 
 
         // copying featureLocation of transcript to splitTranscript
-        transcript.featureLocations.each { featureLocation ->
-            FeatureLocation newFeatureLocation = new FeatureLocation(
-                fmin: featureLocation.fmin
-                , fmax: featureLocation.fmax
-                , rank: featureLocation.rank
-                , to: featureLocation.to
-                , strand: featureLocation.strand
-                , from: splitTranscript
-            ).save()
-            splitTranscript.addToFeatureLocations(newFeatureLocation)
-        }
+//        transcript.featureLocations.each { featureLocation ->
+        FeatureLocation newFeatureLocation = new FeatureLocation(
+            fmin: transcript.featureLocation.fmin
+            , fmax: transcript.featureLocation.fmax
+            , rank: transcript.featureLocation.rank
+            , to: transcript.featureLocation.to
+            , strand: transcript.featureLocation.strand
+            , from: splitTranscript
+        ).save(flush: true)
+        // NOTE: do I need to crate and set it properly here?
+        splitTranscript.featureLocation = newFeatureLocation
+//        }
         splitTranscript.save(flush: true)
 
         Gene gene = getGene(transcript)
@@ -369,17 +382,17 @@ class TranscriptService {
         }
 
         FeatureLocation splitTranscriptGeneFeatureLocation = new FeatureLocation(
-                from: splitTranscriptGene,
-                fmin: splitTranscript.fmin,
-                fmax: splitTranscript.fmax,
-                strand: splitTranscript.strand,
-                to: splitTranscript.featureLocation.to,
-                residueInfo: splitTranscript.featureLocation.residueInfo,
-                locgroup: splitTranscript.featureLocation.locgroup,
-                rank: splitTranscript.featureLocation.rank
+            from: splitTranscriptGene,
+            fmin: splitTranscript.fmin,
+            fmax: splitTranscript.fmax,
+            strand: splitTranscript.strand,
+            to: splitTranscript.featureLocation.to,
+            residueInfo: splitTranscript.featureLocation.residueInfo,
+            locgroup: splitTranscript.featureLocation.locgroup,
+            rank: splitTranscript.featureLocation.rank
         ).save(flush: true)
 
-        splitTranscriptGene.addToFeatureLocations(splitTranscriptGeneFeatureLocation)
+        splitTranscriptGene.setFeatureLocation(splitTranscriptGeneFeatureLocation)
         splitTranscript.name = nameService.generateUniqueName(splitTranscript, splitTranscriptGene.name)
         featureService.addTranscriptToGene(splitTranscriptGene, splitTranscript)
 

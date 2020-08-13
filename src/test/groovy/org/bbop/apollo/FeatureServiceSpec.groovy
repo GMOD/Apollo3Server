@@ -12,6 +12,7 @@ import org.bbop.apollo.location.FeatureLocation
 import org.bbop.apollo.sequence.Strand
 import org.grails.web.json.JSONObject
 import spock.lang.Specification
+import spock.lang.Ignore
 
 /**
  */
@@ -27,6 +28,7 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
     def cleanup() {
     }
 
+    @Ignore
     void "convert JSON to Feature Location"() {
 
         when: "We have a valid json object"

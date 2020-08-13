@@ -112,6 +112,7 @@ environments:
         grails:
             neo4j:
                 type: embedded
+                flush.mode: AUTO
                 embedded:
                     ephemeral: true
                 options:

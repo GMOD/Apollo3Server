@@ -98,7 +98,7 @@ class FeatureEventController {
                 }
             }
             if (params.sort == "sequencename") {
-                featureLocations {
+                featureLocation {
                     sequence {
                         order('name', params.order)
                     }
@@ -108,7 +108,7 @@ class FeatureEventController {
             } else if (params.sort == "cvTerm") {
                 order('class', params.order)
             } else if (params.sort == "organism") {
-                featureLocations {
+                featureLocation {
                     sequence {
                         organism {
                             order('commonName', params.order)
@@ -146,7 +146,7 @@ class FeatureEventController {
                 }
             }
             if (params.organismName && params.organismName != "null") {
-                featureLocations {
+                featureLocation {
                     sequence {
                         organism {
                             eq('commonName', params.organismName)
@@ -154,7 +154,7 @@ class FeatureEventController {
                     }
                 }
             } else {
-                featureLocations {
+                featureLocation {
                     sequence {
                         organism {
                             inList('commonName', organisms.commonName as List)
@@ -163,7 +163,7 @@ class FeatureEventController {
                 }
             }
             if (params.sequenceName && params.sequenceName != "null") {
-                featureLocations {
+                featureLocation {
                     sequence {
                         ilike('name', '%' + params.sequenceName + '%')
                     }

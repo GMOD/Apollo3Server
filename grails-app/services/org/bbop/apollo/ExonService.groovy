@@ -131,12 +131,13 @@ class ExonService {
 
 //        FeatureLocation.deleteAll(exon.featureLocations)
         exon.save(flush: true)
-        exon.featureLocations.clear()
+        exon.featureLocation.delete()
+        exon.featureLocation = null
         exon.parentFeatureRelationships?.clear()
         exon.childFeatureRelationships?.clear()
         exon.featureProperties?.clear()
-        List<FeatureRelationship> parentFeatures = FeatureRelationship.findAllByChildFeature(exon)
-        def childFeatures = FeatureRelationship.findAllByParentFeature(exon)
+        List<FeatureRelationship> parentFeatures = FeatureRelationship.findAllByFrom(exon)
+        def childFeatures = FeatureRelationship.findAllByTo(exon)
         if(parentFeatures){
             parentFeatures.each { FeatureRelationship it ->
                 FeatureRelationship.executeUpdate("delete from FeatureRelationship fr where fr.id = :frid",[frid:it.id])
@@ -390,7 +391,7 @@ class ExonService {
                 ,name: uniqueName
                 ,isAnalysis: leftExon.isAnalysis
                 ,isObsolete: leftExon.isObsolete
-        ).save(insert:true)
+        ).save(insert:true,flush: true)
 
 
         FeatureLocation rightFeatureLocation = new FeatureLocation(
@@ -405,20 +406,20 @@ class ExonService {
                 ,locgroup: leftFeatureLocation.locgroup
                 ,rank: leftFeatureLocation.rank
                 ,to: leftFeatureLocation.to
-        ).save(insert:true)
-        rightExon.addToFeatureLocations(rightFeatureLocation)
+        ).save(insert:true,flush: true )
+        rightExon.setFeatureLocation(rightFeatureLocation)
 
         leftFeatureLocation.fmax = newLeftMax
         rightFeatureLocation.fmin = newRightMin
 
-        leftFeatureLocation.save()
-        rightFeatureLocation.save()
+        leftFeatureLocation.save(flush: true)
+        rightFeatureLocation.save(flush: true)
 
         Transcript transcript = getTranscript(leftExon)
         transcriptService.addExon(transcript,rightExon)
 
-        transcript.save()
-        rightExon.save()
+        transcript.save(flush: true)
+        rightExon.save(flush: true )
 
         return rightExon
 
