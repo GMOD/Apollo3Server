@@ -12,14 +12,12 @@ import org.bbop.apollo.variant.SequenceAlteration
 import org.grails.web.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 
-@Integration(applicationClass = Application)
+@Integration
 @Rollback
 class VcfHandlerServiceIntegrationSpec extends AbstractIntegrationSpec {
 
 
-    @Autowired
     def vcfHandlerService
-    @Autowired
     def requestHandlingService
 
 //    @Shared @AutoCleanup Neo4jDatastore datastore = new Neo4jDatastore(getClass().getPackage())
