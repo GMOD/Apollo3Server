@@ -11,8 +11,8 @@ import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.location.FeatureLocation
 import org.bbop.apollo.sequence.Strand
 import org.grails.web.json.JSONObject
-import org.junit.Ignore
 import spock.lang.Specification
+import spock.lang.Ignore
 
 /**
  */
