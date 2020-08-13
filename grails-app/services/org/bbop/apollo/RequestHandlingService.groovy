@@ -2987,10 +2987,13 @@ class RequestHandlingService {
     }
 
     def addVariant(JSONObject inputObject) {
-        log.debug "${inputObject.toString()}"
+        println "${inputObject.toString()}"
         JSONObject returnObject = jsonWebUtilityService.createJSONFeatureContainer();
         JSONArray features = inputObject.getJSONArray(FeatureStringEnum.FEATURES.value)
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.WRITE)
+
+
+        println "output sequence ${sequence} ${sequence as JSON}"
         boolean suppressHistory = false
         boolean suppressEvents = false
 

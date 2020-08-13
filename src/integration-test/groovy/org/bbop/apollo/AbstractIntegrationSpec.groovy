@@ -45,7 +45,6 @@ class AbstractIntegrationSpec extends Specification {
     }
 
     def setupDefaultUserOrg() {
-        println "setup default user org ${Organism.count}"
         if (User.findByUsername('test@test.com')) {
             return
         }

@@ -47,9 +47,9 @@ class TranscriptService {
 
     Collection<Exon> getSortedExons(Transcript transcript, boolean sortByStrand) {
         Collection<Exon> exons = getExons(transcript)
-        println "exons ${exons}"
+//        println "exons ${exons}"
         List<Exon> sortedExons = new LinkedList<Exon>(exons);
-        println "sorted exonds ${sortedExons}"
+//        println "sorted exonds ${sortedExons}"
         Collections.sort(sortedExons, new FeaturePositionComparator<Exon>(sortByStrand))
         return sortedExons
     }
