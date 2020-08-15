@@ -137,10 +137,6 @@ class ExonService {
         exon.parentFeatureRelationships?.clear()
         exon.childFeatureRelationships?.clear()
         exon.featureProperties?.clear()
-        println "EXON to delete ${exon}"
-        def featureRelationships = FeatureRelationship.executeQuery("MATCH (f:Feature)-[fr]->(e:Exon) where e.uniqueName = ${exon.uniqueName} RETURN f")
-        println "Exon parents ${featureRelationships}"
-        println "Exon FR parents ${featureRelationships as List<Feature>}"
         List<FeatureRelationship> parentFeatures = FeatureRelationship.findAllByFrom(exon)
         def childFeatures = FeatureRelationship.findAllByTo(exon)
         if(parentFeatures){

@@ -81,6 +81,7 @@ class FeatureSpec extends Neo4jSpec implements DomainUnitTest<Feature>, DataTest
         fr.from.name == Feature.findByUniqueName("ABC123").name
         fr.to.name == Feature.findByUniqueName("ABC123-mrna").name
 
+
     }
 
 
