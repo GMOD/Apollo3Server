@@ -4,6 +4,7 @@ package org.bbop.apollo
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.feature.CDS
 import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.location.FeatureLocation
@@ -136,6 +137,10 @@ class ExonService {
         exon.parentFeatureRelationships?.clear()
         exon.childFeatureRelationships?.clear()
         exon.featureProperties?.clear()
+        println "EXON to delete ${exon}"
+        def featureRelationships = FeatureRelationship.executeQuery("MATCH (f:Feature)-[fr]->(e:Exon) where e.uniqueName = ${exon.uniqueName} RETURN f")
+        println "Exon parents ${featureRelationships}"
+        println "Exon FR parents ${featureRelationships as List<Feature>}"
         List<FeatureRelationship> parentFeatures = FeatureRelationship.findAllByFrom(exon)
         def childFeatures = FeatureRelationship.findAllByTo(exon)
         if(parentFeatures){
