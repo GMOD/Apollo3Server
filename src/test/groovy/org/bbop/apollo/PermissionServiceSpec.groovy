@@ -4,6 +4,10 @@ package org.bbop.apollo
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest
 import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.user.User
+import org.bbop.apollo.user.UserGroup
+import org.bbop.apollo.permission.*
 import spock.lang.Specification
 
 /**

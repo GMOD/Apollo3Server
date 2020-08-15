@@ -1,11 +1,15 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.attributes.Comment
+import org.bbop.apollo.attributes.FeatureProperty
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.StopCodonReadThrough
 
 class FeaturePropertyService {
 
 
-    public static List<String> nonReservedClasses = ["Comment","Owner","Description","Symbol","Status",StopCodonReadThrough.cvTerm]
+    public static List<String> nonReservedClasses = ["Comment", "Owner", "Description", "Symbol", "Status", StopCodonReadThrough.cvTerm]
 
 
 /** Get comments for this feature.

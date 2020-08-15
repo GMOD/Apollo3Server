@@ -1,6 +1,6 @@
 package org.bbop.apollo.report
 
-import org.bbop.apollo.User
+import org.bbop.apollo.user.User
 
 /**
  * Created by nathandunn on 7/17/15.

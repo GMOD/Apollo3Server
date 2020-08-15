@@ -3,6 +3,14 @@ package org.bbop.apollo
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
 import grails.gorm.transactions.Rollback
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.feature.Pseudogene
+import org.bbop.apollo.feature.RepeatRegion
+import org.bbop.apollo.variant.InsertionArtifact
+import org.bbop.apollo.variant.SequenceAlterationArtifact
 
 @Integration
 @Rollback
@@ -43,8 +51,7 @@ class Gff3HandlerServiceIntegrationSpec extends AbstractIntegrationSpec{
         when: "we write the feature to test"
         File tempFile = File.createTempFile("output", ".gff3")
         tempFile.deleteOnExit()
-//        def featuresToWrite = Gene.list(sort: "class") + SequenceAlterationArtifact.findAll() + RepeatRegion.findAll()
-        def featuresToWrite = Gene.findAll() + SequenceAlterationArtifact.findAll() + RepeatRegion.findAll()
+        def featuresToWrite = Gene.list(sort: "class") + SequenceAlterationArtifact.findAll() + RepeatRegion.findAll()
         gff3HandlerService.writeFeaturesToText(tempFile.absolutePath,featuresToWrite,".")
         String tempFileText = tempFile.text
 

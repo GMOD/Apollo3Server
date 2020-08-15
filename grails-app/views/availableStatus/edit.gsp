@@ -1,4 +1,4 @@
-<%@ page import="org.bbop.apollo.AvailableStatus" %>
+<%@ page import="org.bbop.apollo.attributes.AvailableStatus" %>
 <!DOCTYPE html>
 <html>
 	<head>

@@ -1,4 +1,4 @@
-<%@ page import="org.bbop.apollo.Feature" %>
+<%@ page import="org.bbop.apollo.feature.Feature" %>
 <!DOCTYPE html>
 <html>
 <head>

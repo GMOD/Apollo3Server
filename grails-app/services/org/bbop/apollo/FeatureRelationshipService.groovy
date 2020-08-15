@@ -1,6 +1,11 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.attributes.FeatureProperty
+import org.bbop.apollo.attributes.Frameshift
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.relationship.FeatureRelationship
 
 @Transactional(readOnly = true)
 class FeatureRelationshipService {
@@ -9,8 +14,8 @@ class FeatureRelationshipService {
         def list = new ArrayList<Feature>()
         if (feature?.parentFeatureRelationships != null) {
             feature.parentFeatureRelationships.each { it ->
-                if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.childFeature.ontologyId))) {
-                    list.push(it.childFeature)
+                if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.to.ontologyId))) {
+                    list.push(it.to)
                 }
             }
         }
@@ -54,8 +59,8 @@ class FeatureRelationshipService {
         def list = new ArrayList<Feature>()
         if (feature?.childFeatureRelationships != null) {
             feature.childFeatureRelationships.each { it ->
-                if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.parentFeature.ontologyId))) {
-                    list.push(it.parentFeature)
+                if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.from.ontologyId))) {
+                    list.push(it.from)
                 }
             }
         }
@@ -71,13 +76,13 @@ class FeatureRelationshipService {
 
     @Transactional
     def setChildForType(Feature parentFeature, Feature childFeature) {
-        List<FeatureRelationship> results = FeatureRelationship.findAllByParentFeature(parentFeature).findAll() {
-            it.childFeature.ontologyId == childFeature.ontologyId
+        List<FeatureRelationship> results = FeatureRelationship.findAllByFrom(parentFeature).findAll() {
+            it.to.ontologyId == childFeature.ontologyId
         }
 
 
         if (results.size() == 1) {
-            results.get(0).childFeature = childFeature
+            results.get(0).to = childFeature
             return true
         } else {
             if (results.size() == 0) {
@@ -96,15 +101,15 @@ class FeatureRelationshipService {
         def criteria = FeatureRelationship.createCriteria()
 
         def featureRelationships = criteria {
-            eq("parentFeature", feature)
+            eq("from", feature)
         }.findAll() {
-            ontologyIds.length == 0 || it.childFeature.ontologyId in ontologyIds
+            ontologyIds.length == 0 || it.to.ontologyId in ontologyIds
         }
 
         int numRelationships = featureRelationships.size()
         for (int i = 0; i < numRelationships; i++) {
             FeatureRelationship featureRelationship = featureRelationships.get(i)
-            removeFeatureRelationship(featureRelationship.parentFeature, featureRelationship.childFeature)
+            removeFeatureRelationship(featureRelationship.from, featureRelationship.to)
         }
     }
 
@@ -114,9 +119,9 @@ class FeatureRelationshipService {
         def criteria = FeatureRelationship.createCriteria()
 
         criteria {
-            eq("childFeature", feature)
+            eq("to", feature)
         }.findAll() {
-            it.parentFeature.ontologyId in ontologyIds
+            it.from.ontologyId in ontologyIds
         }.each {
             feature.removeFromChildFeatureRelationships(it)
         }
@@ -132,14 +137,14 @@ class FeatureRelationshipService {
             boolean found = false
             def criteria = FeatureRelationship.createCriteria()
             criteria {
-                eq("parentFeature", parent)
+                eq("from", parent)
             }
             .findAll() {
-                it.childFeature.ontologyId == child.ontologyId
+                it.to.ontologyId == child.ontologyId
             }
             .each {
                 found = true
-                it.childFeature = child
+                it.to= child
                 it.save()
                 return
             }
@@ -153,8 +158,8 @@ class FeatureRelationshipService {
 
 
         FeatureRelationship fr = new FeatureRelationship(
-                parentFeature: parent
-                , childFeature: child
+                from: parent
+                , to: child
         ).save(flush: true);
         parent.addToParentFeatureRelationships(fr)
         child.addToChildFeatureRelationships(fr)
@@ -174,14 +179,15 @@ class FeatureRelationshipService {
         }
     }
 
-    List<Frameshift> getFeaturePropertyForTypes(Transcript transcript, List<String> strings) {
-        return (List<Frameshift>) FeatureProperty.findAllByFeaturesInListAndOntologyIdsInList([transcript], strings)
-    }
+    // TODO: re-enable ?
+//    List<Frameshift> getFeaturePropertyForTypes(Transcript transcript, List<String> strings) {
+//        return (List<Frameshift>) FeatureProperty.findAllByFeaturesInListAndOntologyIdsInList([transcript], strings)
+//    }
 
     List<Feature> getChildren(Feature feature) {
         def exonRelations = feature.parentFeatureRelationships.findAll()
         return exonRelations.collect { it ->
-            it.childFeature
+            it.to
         }
     }
 
@@ -210,7 +216,7 @@ class FeatureRelationshipService {
 
         // actually delete those
         relationshipsToRemove.each {
-            it.childFeature.delete()
+            it.to.delete()
             feature.removeFromParentFeatureRelationships(it)
             it.delete()
         }

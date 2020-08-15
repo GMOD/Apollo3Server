@@ -2,10 +2,11 @@ package org.bbop.apollo
 
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
-import org.bbop.apollo.preference.OrganismDTO
-import org.bbop.apollo.preference.UserOrganismPreferenceDTO
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 

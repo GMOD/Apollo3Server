@@ -1,18 +1,29 @@
 package org.bbop.apollo
 
 import grails.converters.JSON
-import grails.gorm.transactions.Transactional
 import groovy.json.JsonBuilder
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiImplicitParam
+import io.swagger.annotations.ApiImplicitParams
+import io.swagger.annotations.ApiOperation
 import org.apache.shiro.SecurityUtils
+import org.bbop.apollo.attributes.Comment
+import org.bbop.apollo.attributes.FeatureType
 import org.bbop.apollo.event.AnnotationEvent
 import org.bbop.apollo.event.AnnotationListener
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.TranslationTable
+import org.bbop.apollo.user.User
+import org.bbop.apollo.variant.SequenceAlteration
+import org.bbop.apollo.variant.SequenceAlterationArtifact
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONException
 import org.grails.web.json.JSONObject
-//// import io.swagger.annotations.*
 import org.springframework.http.HttpStatus
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.SendTo
@@ -30,8 +41,7 @@ import static grails.async.Promises.task
  *
  * This code primarily provides integration with genomic editing functionality visible in the JBrowse window.
  */
-//// @Api(value = "Annotation Services: Methods for running the annotation engine")
-@Transactional
+@Api(value = "Annotation Services: Methods for running the annotation engine")
 class AnnotationEditorController extends AbstractApolloController implements AnnotationListener {
 
 
@@ -120,13 +130,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render jre as JSON
     }
 
-//    // @ApiOperation(value = "Gets history for features", nickname = "/annotationEditor/getHistoryForFeatures", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "Sequence name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects unique names.")
-//    ])
+    @ApiOperation(value = "Gets history for features", nickname = "/annotationEditor/getHistoryForFeatures", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "Sequence name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects unique names.")
+    ])
+
     def getHistoryForFeatures() {
         log.debug "getHistoryForFeatures ${params}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -144,8 +155,8 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-//    // @ApiOperation(value = "Returns a translation table as JSON", nickname = "/annotationEditor/getTranslationTable", httpMethod = "POST")
-//    // @ApiImplicitParams([])
+    @ApiOperation(value = "Returns a translation table as JSON", nickname = "/annotationEditor/getTranslationTable", httpMethod = "POST")
+    @ApiImplicitParams([])
     def getTranslationTable() {
         log.debug "getTranslationTable"
         JSONObject returnObject = permissionService.handleInput(request, params)
@@ -178,16 +189,16 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-//    // @ApiOperation(value = "Add non-coding genomic feature", nickname = "/annotationEditor/addFeature", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "suppressHistory", type = "boolean", paramType = "query", example = "Suppress the history of this operation")
-//            // , @ApiImplicitParam(name = "suppressEvents", type = "boolean", paramType = "query", example = "Suppress instant update of the user interface")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
-//    ])
+    @ApiOperation(value = "Add non-coding genomic feature", nickname = "/annotationEditor/addFeature", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "suppressHistory", type = "boolean", paramType = "query", example = "Suppress the history of this operation")
+            , @ApiImplicitParam(name = "suppressEvents", type = "boolean", paramType = "query", example = "Suppress instant update of the user interface")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
+    ])
     def addFeature() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -197,17 +208,17 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Set exon feature boundaries", nickname = "/annotationEditor/setExonBoundaries", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "suppressHistory", type = "boolean", paramType = "query", example = "Suppress the history of this operation")
-//            // , @ApiImplicitParam(name = "suppressEvents", type = "boolean", paramType = "query", example = "Suppress instant update of the user interface")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
-//    ]
-//    )
+    @ApiOperation(value = "Set exon feature boundaries", nickname = "/annotationEditor/setExonBoundaries", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "suppressHistory", type = "boolean", paramType = "query", example = "Suppress the history of this operation")
+            , @ApiImplicitParam(name = "suppressEvents", type = "boolean", paramType = "query", example = "Suppress instant update of the user interface")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
+    ]
+    )
     def setExonBoundaries() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -218,18 +229,18 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-//    // @ApiOperation(value = "Add an exon", nickname = "/annotationEditor/addExon", httpMethod = "POST"
-//    )
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "suppressHistory", type = "boolean", paramType = "query", example = "Suppress the history of this operation")
-//            // , @ApiImplicitParam(name = "suppressEvents", type = "boolean", paramType = "query", example = "Suppress instant update of the user interface")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
-//    ]
-//    )
+    @ApiOperation(value = "Add an exon", nickname = "/annotationEditor/addExon", httpMethod = "POST"
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "suppressHistory", type = "boolean", paramType = "query", example = "Suppress the history of this operation")
+            , @ApiImplicitParam(name = "suppressEvents", type = "boolean", paramType = "query", example = "Suppress instant update of the user interface")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
+    ]
+    )
     def addExon() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -240,16 +251,16 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-//    // @ApiOperation(value = "Add comments", nickname = "/annotationEditor/addComments", httpMethod = "POST"
-//    )
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects ('uniquename' required) that include an added 'comments' JSONArray described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
-//    ]
-//    )
+    @ApiOperation(value = "Add comments", nickname = "/annotationEditor/addComments", httpMethod = "POST"
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects ('uniquename' required) that include an added 'comments' JSONArray described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
+    ]
+    )
     def addComments() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -259,16 +270,16 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Delete comments", nickname = "/annotationEditor/deleteComments", httpMethod = "POST"
-//    )
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects ('uniquename' required) that include an added 'comments' JSONArray described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
-//    ]
-//    )
+    @ApiOperation(value = "Delete comments", nickname = "/annotationEditor/deleteComments", httpMethod = "POST"
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects ('uniquename' required) that include an added 'comments' JSONArray described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
+    ]
+    )
     def deleteComments() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -279,16 +290,16 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-//    // @ApiOperation(value = "Update comments", nickname = "/annotationEditor/updateComments", httpMethod = "POST"
-//    )
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects ('uniquename' required) that include an added 'old_comments','new_comments' JSONArray described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
-//    ]
-//    )
+    @ApiOperation(value = "Update comments", nickname = "/annotationEditor/updateComments", httpMethod = "POST"
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects ('uniquename' required) that include an added 'old_comments','new_comments' JSONArray described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
+    ]
+    )
     def updateComments() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -299,16 +310,16 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-//    // @ApiOperation(value = "Get comments", nickname = "/annotationEditor/getComments", httpMethod = "POST"
-//    )
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects ('uniquename' required) JSONArray described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
-//    ]
-//    )
+    @ApiOperation(value = "Get comments", nickname = "/annotationEditor/getComments", httpMethod = "POST"
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects ('uniquename' required) JSONArray described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
+    ]
+    )
     def getComments() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.READ)) {
@@ -318,19 +329,18 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Add transcript", nickname = "/annotationEditor/addTranscript", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "suppressHistory", type = "boolean", paramType = "query", example = "Suppress the history of this operation")
-//            // , @ApiImplicitParam(name = "suppressEvents", type = "boolean", paramType = "query", example = "Suppress instant update of the user interface")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
-//    ])
+    @ApiOperation(value = "Add transcript", nickname = "/annotationEditor/addTranscript", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "suppressHistory", type = "boolean", paramType = "query", example = "Suppress the history of this operation")
+            , @ApiImplicitParam(name = "suppressEvents", type = "boolean", paramType = "query", example = "Suppress instant update of the user interface")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of JSON feature objects described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/Feature.groovy")
+    ])
     def addTranscript() {
         try {
-            log.debug "addTranscript ${params}"
             JSONObject inputObject = permissionService.handleInput(request, params)
             if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
                 render requestHandlingService.addTranscript(inputObject)
@@ -344,16 +354,16 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Duplicate transcript", nickname = "/annotationEditor/duplicateTranscript", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "suppressHistory", type = "boolean", paramType = "query", example = "Suppress the history of this operation")
-//            // , @ApiImplicitParam(name = "suppressEvents", type = "boolean", paramType = "query", example = "Suppress instant update of the user interface")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing a single JSONObject feature that contains 'uniquename'")
-//    ])
+    @ApiOperation(value = "Duplicate transcript", nickname = "/annotationEditor/duplicateTranscript", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "suppressHistory", type = "boolean", paramType = "query", example = "Suppress the history of this operation")
+            , @ApiImplicitParam(name = "suppressEvents", type = "boolean", paramType = "query", example = "Suppress instant update of the user interface")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing a single JSONObject feature that contains 'uniquename'")
+    ])
     def duplicateTranscript() {
         log.debug "duplicateTranscript ${params}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -364,14 +374,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Set translation start", nickname = "/annotationEditor/setTranslationStart", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing a single JSONObject feature that contains {'uniquename':'ABCD-1234','location':{'fmin':12}}")
-//    ])
+    @ApiOperation(value = "Set translation start", nickname = "/annotationEditor/setTranslationStart", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing a single JSONObject feature that contains {'uniquename':'ABCD-1234','location':{'fmin':12}}")
+    ])
     def setTranslationStart() {
         log.debug "setTranslationStart ${params}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -382,14 +392,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Set translation end", nickname = "/annotationEditor/setTranslationEnd", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing a single JSONObject feature that contains {'uniquename':'ABCD-1234','location':{'fmax':12}}")
-//    ])
+    @ApiOperation(value = "Set translation end", nickname = "/annotationEditor/setTranslationEnd", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing a single JSONObject feature that contains {'uniquename':'ABCD-1234','location':{'fmax':12}}")
+    ])
     def setTranslationEnd() {
         log.debug "setTranslationEnd ${params}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -400,14 +410,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Set longest ORF", nickname = "/annotationEditor/setLongestOrf", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing a single JSONObject feature that contains {'uniquename':'ABCD-1234'}")
-//    ])
+    @ApiOperation(value = "Set longest ORF", nickname = "/annotationEditor/setLongestOrf", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing a single JSONObject feature that contains {'uniquename':'ABCD-1234'}")
+    ])
     def setLongestOrf() {
         log.debug "setLongestORF ${params}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -418,14 +428,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Set boundaries of genomic feature", nickname = "/annotationEditor/setBoundaries", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing feature objects with the location object defined {'uniquename':'ABCD-1234','location':{'fmin':2,'fmax':12}}")
-//    ])
+    @ApiOperation(value = "Set boundaries of genomic feature", nickname = "/annotationEditor/setBoundaries", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing feature objects with the location object defined {'uniquename':'ABCD-1234','location':{'fmin':2,'fmax':12}}")
+    ])
     def setBoundaries() {
         log.debug "setBoundaries ${params}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -436,13 +446,13 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Get all annotated features for a sequence", nickname = "/annotationEditor/getFeatures", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//    ])
+    @ApiOperation(value = "Get all annotated features for a sequence", nickname = "/annotationEditor/getFeatures", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+    ])
     def getFeatures() {
         JSONObject returnObject = permissionService.handleInput(request, params)
         try {
@@ -456,13 +466,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-//    // @ApiOperation(value = "Get sequence alterations for a given sequence", nickname = "/annotationEditor/getSequenceAlterations", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//    ])
+    @ApiOperation(value = "Get sequence alterations for a given sequence", nickname = "/annotationEditor/getSequenceAlterations", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+    ])
+
     def getSequenceAlterations() {
         JSONObject returnObject = permissionService.handleInput(request, params)
         Sequence sequence = permissionService.checkPermissions(returnObject, PermissionEnum.READ)
@@ -498,14 +509,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render annotationInfoEditorConfigContainer
     }
 
-//    // @ApiOperation(value = "Set name of a feature", nickname = "/annotationEditor/setName", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','name':'gene01'}")
-//    ])
+    @ApiOperation(value = "Set name of a feature", nickname = "/annotationEditor/setName", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','name':'gene01'}")
+    ])
     def setName() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -515,14 +526,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Set description for a feature", nickname = "/annotationEditor/setDescription", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','description':'some descriptive test'}")
-//    ])
+    @ApiOperation(value = "Set description for a feature", nickname = "/annotationEditor/setDescription", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','description':'some descriptive test'}")
+    ])
     def setDescription() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -532,14 +543,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Set symbol of a feature", nickname = "/annotationEditor/setSymbol", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','symbol':'Pax6a'}")
-//    ])
+    @ApiOperation(value = "Set symbol of a feature", nickname = "/annotationEditor/setSymbol", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','symbol':'Pax6a'}")
+    ])
     def setSymbol() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -549,14 +560,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Set status of a feature", nickname = "/annotationEditor/setStatus", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','status':'existing-status-string'}.  Available status found here: /availableStatus/ ")
-//    ])
+    @ApiOperation(value = "Set status of a feature", nickname = "/annotationEditor/setStatus", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','status':'existing-status-string'}.  Available status found here: /availableStatus/ ")
+    ])
     def setStatus() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -566,14 +577,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Add attribute (key,value pair) to feature", nickname = "/annotationEditor/addAttribute", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','non_reserved_properties':[{'tag':'clockwork','value':'orange'},{'tag':'color','value':'purple'}]}.  Available status found here: /availableStatus/ ")
-//    ])
+    @ApiOperation(value = "Add attribute (key,value pair) to feature", nickname = "/annotationEditor/addAttribute", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','non_reserved_properties':[{'tag':'clockwork','value':'orange'},{'tag':'color','value':'purple'}]}.  Available status found here: /availableStatus/ ")
+    ])
     def addAttribute() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -583,14 +594,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Delete attribute (key,value pair) for feature", nickname = "/annotationEditor/deleteAttribute", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','non_reserved_properties':[{'tag':'clockwork','value':'orange'},{'tag':'color','value':'purple'}]}.  Available status found here: /availableStatus/ ")
-//    ])
+    @ApiOperation(value = "Delete attribute (key,value pair) for feature", nickname = "/annotationEditor/deleteAttribute", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','non_reserved_properties':[{'tag':'clockwork','value':'orange'},{'tag':'color','value':'purple'}]}.  Available status found here: /availableStatus/ ")
+    ])
     def deleteAttribute() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -600,14 +611,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Update attribute (key,value pair) for feature", nickname = "/annotationEditor/updateAttribute", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','old_non_reserved_properties':[{'color': 'red'}], 'new_non_reserved_properties': [{'color': 'green'}]}.")
-//    ])
+    @ApiOperation(value = "Update attribute (key,value pair) for feature", nickname = "/annotationEditor/updateAttribute", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','old_non_reserved_properties':[{'color': 'red'}], 'new_non_reserved_properties': [{'color': 'green'}]}.")
+    ])
     def updateAttribute() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -617,14 +628,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Add dbxref (db,id pair) to feature", nickname = "/annotationEditor/addDbxref", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','dbxrefs': [{'db': 'PMID', 'accession': '19448641'}]}.")
-//    ])
+    @ApiOperation(value = "Add dbxref (db,id pair) to feature", nickname = "/annotationEditor/addDbxref", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','dbxrefs': [{'db': 'PMID', 'accession': '19448641'}]}.")
+    ])
     def addDbxref() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -634,14 +645,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Update dbxrefs (db,id pairs) for a feature", nickname = "/annotationEditor/updateDbxref", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','old_dbxrefs': [{'db': 'PMID', 'accession': '19448641'}], 'new_dbxrefs': [{'db': 'PMID', 'accession': '19448642'}]}.")
-//    ])
+    @ApiOperation(value = "Update dbxrefs (db,id pairs) for a feature", nickname = "/annotationEditor/updateDbxref", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','old_dbxrefs': [{'db': 'PMID', 'accession': '19448641'}], 'new_dbxrefs': [{'db': 'PMID', 'accession': '19448642'}]}.")
+    ])
     def updateDbxref() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -651,14 +662,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Delete dbxrefs (db,id pairs) for a feature", nickname = "/annotationEditor/deleteDbxref", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','dbxrefs': [{'db': 'PMID', 'accession': '19448641'}]}.")
-//    ])
+    @ApiOperation(value = "Delete dbxrefs (db,id pairs) for a feature", nickname = "/annotationEditor/deleteDbxref", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','dbxrefs': [{'db': 'PMID', 'accession': '19448641'}]}.")
+    ])
     def deleteDbxref() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -668,12 +679,12 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Get information about a sequence alteration object e.g,. features[{'uniquename':'someunqiuenamestring'}],", nickname = "/annotationEditor/getInformation", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//      // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//      // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//      // , @ApiImplicitParam(name = "array of uniquename features", type = "string", paramType = "query", example = "Uniquename of sequence alteration retrieve stringsgs embedded in a features array.")
-//    ])
+    @ApiOperation(value = "Get information about a sequence alteration object e.g,. features[{'uniquename':'someunqiuenamestring'}],", nickname = "/annotationEditor/getInformation", httpMethod = "POST")
+    @ApiImplicitParams([
+      @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+      , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+      , @ApiImplicitParam(name = "array of uniquename features", type = "string", paramType = "query", example = "Uniquename of sequence alteration retrieve stringsgs embedded in a features array.")
+    ])
     def getInformation() {
         JSONObject featureContainer = jsonWebUtilityService.createJSONFeatureContainer();
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -718,14 +729,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render featureContainer
     }
 
-//    // @ApiOperation(value = "Get attribute (key/value) pairs for a feature", nickname = "/annotationEditor/getAttributes", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "feature", type = "JSONObject", paramType = "query", example = "object containing JSON objects with {'uniquename':'ABCD-1234','dbxrefs': [{'db': 'PMID', 'accession': '19448641'}]}.")
-//    ])
+    @ApiOperation(value = "Get attribute (key/value) pairs for a feature", nickname = "/annotationEditor/getAttributes", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "feature", type = "JSONObject", paramType = "query", example = "object containing JSON objects with {'uniquename':'ABCD-1234','dbxrefs': [{'db': 'PMID', 'accession': '19448641'}]}.")
+    ])
     def getAttributes() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.READ)) {
@@ -748,14 +759,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Get dbxrefs (db,id pairs) for a feature", nickname = "/annotationEditor/getDbxrefs", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','dbxrefs': [{'db': 'PMID', 'accession': '19448641'}]}.")
-//    ])
+    @ApiOperation(value = "Get dbxrefs (db,id pairs) for a feature", nickname = "/annotationEditor/getDbxrefs", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing JSON objects with {'uniquename':'ABCD-1234','dbxrefs': [{'db': 'PMID', 'accession': '19448641'}]}.")
+    ])
     def getDbxrefs() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.READ)) {
@@ -777,14 +788,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Set readthrough stop codon", nickname = "/annotationEditor/setReadthroughStopCodon", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with one feature object {'uniquename':'ABCD-1234'}")
-//    ])
+    @ApiOperation(value = "Set readthrough stop codon", nickname = "/annotationEditor/setReadthroughStopCodon", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with one feature object {'uniquename':'ABCD-1234'}")
+    ])
     def setReadthroughStopCodon() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -794,14 +805,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Add sequence alteration", nickname = "/annotationEditor/addSequenceAlteration", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with Sequence Alteration (Insertion, Deletion, Substituion) objects described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/")
-//    ])
+    @ApiOperation(value = "Add sequence alteration", nickname = "/annotationEditor/addSequenceAlteration", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with Sequence Alteration (Insertion, Deletion, Substituion) objects described by https://github.com/GMOD/Apollo/blob/master/grails-app/domain/org/bbop/apollo/")
+    ])
     def addSequenceAlteration() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -811,14 +822,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Delete sequence alteration", nickname = "/annotationEditor/deleteSequenceAlteration", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with Sequence Alteration identified by unique names {'uniquename':'ABC123'}")
-//    ])
+    @ApiOperation(value = "Delete sequence alteration", nickname = "/annotationEditor/deleteSequenceAlteration", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with Sequence Alteration identified by unique names {'uniquename':'ABC123'}")
+    ])
     def deleteSequenceAlteration() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -828,14 +839,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Flip strand", nickname = "/annotationEditor/flipStrand", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with with objects of features defined as {'uniquename':'ABC123'}")
-//    ])
+    @ApiOperation(value = "Flip strand", nickname = "/annotationEditor/flipStrand", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with with objects of features defined as {'uniquename':'ABC123'}")
+    ])
     def flipStrand() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -845,14 +856,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Merge exons", nickname = "/annotationEditor/mergeExons", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with with two objects of referred to as defined as {'uniquename':'ABC123'}")
-//    ])
+    @ApiOperation(value = "Merge exons", nickname = "/annotationEditor/mergeExons", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with with two objects of referred to as defined as {'uniquename':'ABC123'}")
+    ])
     def mergeExons() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -862,14 +873,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Split exons", nickname = "/annotationEditor/splitExon", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing feature objects with the location object defined {'uniquename':'ABCD-1234','location':{'fmin':2,'fmax':12}}")
-//    ])
+    @ApiOperation(value = "Split exons", nickname = "/annotationEditor/splitExon", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing feature objects with the location object defined {'uniquename':'ABCD-1234','location':{'fmin':2,'fmax':12}}")
+    ])
     def splitExon() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -880,14 +891,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-//    // @ApiOperation(value = "Delete feature", nickname = "/annotationEditor/deleteFeature", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of features objects to delete defined by unique name {'uniquename':'ABC123'}")
-//    ])
+    @ApiOperation(value = "Delete feature", nickname = "/annotationEditor/deleteFeature", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of features objects to delete defined by unique name {'uniquename':'ABC123'}")
+    ])
     def deleteFeature() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -898,14 +909,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-//    // @ApiOperation(value = "Delete variant effects for sequences", nickname = "/annotationEditor/deleteVariantEffectsForSequences", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "sequence", type = "JSONArray", paramType = "query", example = "JSONArray of sequence id object to delete defined by {id:<sequence.id>} ")
-//    ])
+    @ApiOperation(value = "Delete variant effects for sequences", nickname = "/annotationEditor/deleteVariantEffectsForSequences", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "sequence", type = "JSONArray", paramType = "query", example = "JSONArray of sequence id object to delete defined by {id:<sequence.id>} ")
+    ])
     def deleteVariantEffectsForSequences() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -915,14 +926,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Delete features for sequences", nickname = "/annotationEditor/deleteFeaturesForSequences", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "sequence", type = "JSONArray", paramType = "query", example = "JSONArray of sequence id object to delete defined by {id:<sequence.id>} ")
-//    ])
+    @ApiOperation(value = "Delete features for sequences", nickname = "/annotationEditor/deleteFeaturesForSequences", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "sequence", type = "JSONArray", paramType = "query", example = "JSONArray of sequence id object to delete defined by {id:<sequence.id>} ")
+    ])
     def deleteFeaturesForSequences() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -945,14 +956,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Delete exons", nickname = "/annotationEditor/deleteExon", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of features objects, where the first is the parent transcript and the remaining are exons all defined by a unique name {'uniquename':'ABC123'}")
-//    ])
+    @ApiOperation(value = "Delete exons", nickname = "/annotationEditor/deleteExon", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of features objects, where the first is the parent transcript and the remaining are exons all defined by a unique name {'uniquename':'ABC123'}")
+    ])
     def deleteExon() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -962,14 +973,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Make intron", nickname = "/annotationEditor/makeIntron", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing a single JSONObject feature that contains {'uniquename':'ABCD-1234','location':{'fmin':12}}")
-//    ])
+    @ApiOperation(value = "Make intron", nickname = "/annotationEditor/makeIntron", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray containing a single JSONObject feature that contains {'uniquename':'ABCD-1234','location':{'fmin':12}}")
+    ])
     def makeIntron() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -979,14 +990,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Split transcript", nickname = "/annotationEditor/splitTranscript", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with with two exon objects referred to their unique names {'uniquename':'ABC123'}")
-//    ])
+    @ApiOperation(value = "Split transcript", nickname = "/annotationEditor/splitTranscript", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with with two exon objects referred to their unique names {'uniquename':'ABC123'}")
+    ])
     def splitTranscript() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -996,14 +1007,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Merge transcripts", nickname = "/annotationEditor/mergeTranscripts", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with with two transcript objects referred to their unique names {'uniquename':'ABC123'}")
-//    ])
+    @ApiOperation(value = "Merge transcripts", nickname = "/annotationEditor/mergeTranscripts", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray with with two transcript objects referred to their unique names {'uniquename':'ABC123'}")
+    ])
     def mergeTranscripts() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (permissionService.hasPermissions(inputObject, PermissionEnum.WRITE)) {
@@ -1013,14 +1024,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Get sequence for feature", nickname = "/annotationEditor/getSequence", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
-//            // , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of features objects to export defined by a unique name {'uniquename':'ABC123'}")
-//    ])
+    @ApiOperation(value = "Get sequence for feature", nickname = "/annotationEditor/getSequence", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "(optional) Sequence name")
+            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) Organism ID or common name")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of features objects to export defined by a unique name {'uniquename':'ABC123'}")
+    ])
     def getSequence() {
         log.debug "getSequence ${params.data}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -1037,7 +1048,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Get sequences search tools", nickname = "/annotationEditor/getSequenceSearchTools")
+    @ApiOperation(value = "Get sequences search tools", nickname = "/annotationEditor/getSequenceSearchTools")
     def getSequenceSearchTools() {
         log.debug "getSequenceSearchTools ${params.data}"
         def set = configWrapperService.getSequenceSearchTools()
@@ -1067,11 +1078,11 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         return FeatureType.findAllByOntologyId(ontologyId)
     }
 
-//    // @ApiOperation(value = "Get canned comments", nickname = "/annotationEditor/getCannedComments", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//    ])
+    @ApiOperation(value = "Get canned comments", nickname = "/annotationEditor/getCannedComments", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+    ])
     def getCannedComments() {
         log.debug "canned comment data ${params.data}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -1086,11 +1097,11 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render cannedCommentService.getCannedComments(organism, featureTypeList) as JSON
     }
 
-//    // @ApiOperation(value = "Get canned keys", nickname = "/annotationEditor/getCannedKeys", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//    ])
+    @ApiOperation(value = "Get canned keys", nickname = "/annotationEditor/getCannedKeys", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+    ])
     def getCannedKeys() {
         log.debug "canned key data ${params.data}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -1105,11 +1116,11 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render cannedAttributeService.getCannedKeys(organism, featureTypeList) as JSON
     }
 
-//    // @ApiOperation(value = "Get canned values", nickname = "/annotationEditor/getCannedValues", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//    ])
+    @ApiOperation(value = "Get canned values", nickname = "/annotationEditor/getCannedValues", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+    ])
     def getCannedValues() {
         log.debug "canned value data ${params.data}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -1124,13 +1135,13 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render cannedAttributeService.getCannedValues(organism, featureTypeList) as JSON
     }
 
-//    // @ApiOperation(value = "Get available statuses", nickname = "/annotationEditor/getAvailableStatuses", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "organismId", type = "string", paramType = "query")
-//            // , @ApiImplicitParam(name = "type", type = "string", paramType = "query")
-//    ])
+    @ApiOperation(value = "Get available statuses", nickname = "/annotationEditor/getAvailableStatuses", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "organismId", type = "string", paramType = "query")
+            , @ApiImplicitParam(name = "type", type = "string", paramType = "query")
+    ])
     def getAvailableStatuses() {
         log.debug "get available statuses${params.data}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -1149,10 +1160,10 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render availableStatusService.getAvailableStatuses(organism, featureTypeList) as JSON
     }
 
-//    // @ApiOperation(value = "Search sequences", nickname = "/annotationEditor/searchSequences", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "search", type = "JSONObject", paramType = "query", example = "{'key':'blat_prot','residues':'ATACTAGAGATAC':'database_id':'abc123'}")
-//    ])
+    @ApiOperation(value = "Search sequences", nickname = "/annotationEditor/searchSequences", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "search", type = "JSONObject", paramType = "query", example = "{'key':'blat_prot','residues':'ATACTAGAGATAC':'database_id':'abc123'}")
+    ])
     def searchSequence() {
         log.debug "sequenceSearch data ${params.data}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -1170,12 +1181,12 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-//    // @ApiOperation(value = "Get gff3", nickname = "/annotationEditor/getGff3", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of features objects to export defined by a unique name {'uniquename':'ABC123'}")
-//    ])
+    @ApiOperation(value = "Get gff3", nickname = "/annotationEditor/getGff3", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "features", type = "JSONArray", paramType = "query", example = "JSONArray of features objects to export defined by a unique name {'uniquename':'ABC123'}")
+    ])
     def getGff3() {
         log.debug "getGff3 ${params.data}"
         JSONObject inputObject = permissionService.handleInput(request, params)
@@ -1200,13 +1211,14 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-//    // @ApiOperation(value = "Get genes created or updated in the past, Returns JSON hash gene_name:organism", nickname = "/annotationEditor/getRecentAnnotations", httpMethod = "POST")
-//    // @ApiImplicitParams([
-//            // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-//            // , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            // , @ApiImplicitParam(name = "days", type = "Integer", paramType = "query", example = "Number of past days to retrieve annotations from.")
-//
-//    ])
+    @ApiOperation(value = "Get genes created or updated in the past, Returns JSON hash gene_name:organism", nickname = "/annotationEditor/getRecentAnnotations", httpMethod = "POST")
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
+            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+            , @ApiImplicitParam(name = "days", type = "Integer", paramType = "query", example = "Number of past days to retrieve annotations from.")
+
+    ])
+
     def getRecentAnnotations() {
         JSONObject inputObject = permissionService.handleInput(request, params)
         if (!permissionService.hasPermissions(inputObject, PermissionEnum.EXPORT)) {
@@ -1226,6 +1238,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
 
     @MessageMapping("/AnnotationNotification")
     @SendTo("/topic/AnnotationNotification")
+
     protected String annotationEditor(String inputString, Principal principal) {
         inputString = annotationEditorService.cleanJSONString(inputString)
         JSONObject rootElement = (JSONObject) JSON.parse(inputString)

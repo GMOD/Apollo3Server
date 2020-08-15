@@ -1,9 +1,24 @@
 package org.bbop.apollo
 
 import grails.converters.JSON
+import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.gorm.transactions.Rollback
+import org.apache.shiro.util.ThreadContext
+import org.apache.shiro.web.session.mgt.DefaultWebSessionManager
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.feature.StopCodonReadThrough
+import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.relationship.FeatureRelationship
+import org.bbop.apollo.user.Role
+import org.bbop.apollo.user.User
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
@@ -15,11 +30,53 @@ class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
     def requestHandlingService
     def transcriptService
 
+    def setup() {
+        if (User.findByUsername('test@test.com')) {
+            println "return the user ? ${User.findByUsername('test@test.com')}"
+            return
+        }
+
+        User testUser = new User(
+            username: 'test@test.com'
+            , firstName: 'Bob'
+            , lastName: 'Test'
+            , passwordHash: passwordHash
+        ).save(insert: true, flush: true)
+        def adminRole = Role.findByName(GlobalPermissionEnum.ADMIN.name())
+        testUser.addToRoles(adminRole)
+        testUser.save()
+
+        shiroSecurityManager.sessionManager = new DefaultWebSessionManager()
+        ThreadContext.bind(shiroSecurityManager)
+//        def authToken = new UsernamePasswordToken(testUser.username,password as String)
+//        Subject subject = SecurityUtils.getSubject();
+//        subject.login(authToken)
+
+        Organism organism = new Organism(
+            directory: "src/integration-test/groovy/resources/sequences/honeybee-Group1.10/"
+            , commonName: "sampleAnimal"
+            , id: 12313
+            , genus: "Sample"
+            , species: "animal"
+        ).save(failOnError: true, flush: true)
+
+        Sequence sequence = new Sequence(
+            length: 1405242
+            , seqChunkSize: 20000
+            , start: 0
+            , end: 1405242
+            , organism: organism
+            , organismId: organism.id
+            , name: "Group1.10"
+        ).save(failOnError: true, flush: true)
+        organism.save(flush: true, failOnError: true)
+        return  organism
+    }
 
     void "adding a gene model, a stop codon readthrough and getting its modified sequence"() {
 
         given: "a gene model with 1 mRNA, 3 exons, and UTRs"
-        setupDefaultUserOrg()
+        setup()
         String jsonString = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":735570},\"name\":\"GB40828-RA\",\"children\":[{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734733},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":735446,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734766},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734930,\"strand\":1,\"fmax\":735014},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":735245,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734733,\"strand\":1,\"fmax\":735446},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
         "{ \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40722-RA\",\"children\":[{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
         JSONObject jsonObject = JSON.parse(jsonString) as JSONObject

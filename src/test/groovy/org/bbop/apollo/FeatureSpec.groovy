@@ -3,13 +3,15 @@ package org.bbop.apollo
 
 import grails.testing.gorm.DataTest
 import grails.testing.gorm.DomainUnitTest
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.location.FeatureLocation
 import spock.lang.Specification
+import spock.lang.Ignore
 
 /**
  * See the API for {@link grails.test.mixin.domain.DomainClassUnitTestMixin} for usage instructions
  */
-//@TestFor(Feature)
-//@Mock([Feature, FeatureLocation, Sequence])
 class FeatureSpec extends Specification implements DomainUnitTest<Feature>, DataTest {
 
     def setup() {
@@ -33,17 +35,18 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
         FeatureLocation featureLocation = new FeatureLocation(
             fmin: 13
             , fmax: 77
-            , feature: feature1
-            , sequence: sequence
+            , from: feature1
+            , to: sequence
         ).save()
 
-        feature1.addToFeatureLocations(featureLocation)
+        feature1.setFeatureLocation(featureLocation)
         feature1.save()
     }
 
     def cleanup() {
     }
 
+    @Ignore
     void "test feature manual copy"() {
 
         when: "If I clone a feature"
@@ -59,17 +62,18 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
 
         assert feature1.name == feature2.name
         assert feature1.uniqueName == feature2.uniqueName
-        assert feature1.featureLocations.size() == feature2.featureLocations.size()
-        assert feature1.featureLocations.size() == 1
+        assert feature1.featureLocation != null
+        assert feature2.featureLocation != null
 
         FeatureLocation featureLocation1 = feature1.featureLocation
         FeatureLocation featureLocation2 = feature2.featureLocation
 
         assert featureLocation1.fmin == featureLocation2.fmin
-        assert featureLocation1.sequence == featureLocation2.sequence
+        assert featureLocation1.to == featureLocation2.to
         assert featureLocation1.fmax == featureLocation2.fmax
     }
 
+    @Ignore
     void "test feature clone copy"() {
 
         when: "If I clone a feature"
@@ -85,17 +89,18 @@ class FeatureSpec extends Specification implements DomainUnitTest<Feature>, Data
 
         assert feature1.name == feature2.name
         assert feature1.uniqueName == feature2.uniqueName
-        assert feature1.featureLocations.size() == feature2.featureLocations.size()
-        assert feature1.featureLocations.size() == 1
+        assert feature1.featureLocation != null
+        assert feature2.featureLocation != hull
 
         FeatureLocation featureLocation1 = feature1.featureLocation
         FeatureLocation featureLocation2 = feature2.featureLocation
 
         assert featureLocation1.fmin == featureLocation2.fmin
-        assert featureLocation1.sequence == featureLocation2.sequence
+        assert featureLocation1.to == featureLocation2.to
         assert featureLocation1.fmax == featureLocation2.fmax
     }
 
+    @Ignore
     void "can I insert a feature with the same id?"() {
         when: "I create a feature"
         Feature feature = Feature.first()

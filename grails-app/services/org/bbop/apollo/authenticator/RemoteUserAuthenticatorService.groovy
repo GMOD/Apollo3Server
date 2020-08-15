@@ -6,10 +6,9 @@ import org.apache.shiro.authc.AuthenticationException
 import org.apache.shiro.authc.UsernamePasswordToken
 import org.apache.shiro.crypto.hash.Sha256Hash
 import org.apache.shiro.subject.Subject
-import org.bbop.apollo.Role
-import org.bbop.apollo.User
-import org.bbop.apollo.UserGroup
-import org.bbop.apollo.UserService
+import org.bbop.apollo.user.Role
+import org.bbop.apollo.user.User
+import org.bbop.apollo.user.UserGroup
 import org.bbop.apollo.gwt.shared.ClientTokenGenerator
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum

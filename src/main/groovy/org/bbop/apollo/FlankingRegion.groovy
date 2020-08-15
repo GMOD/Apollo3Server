@@ -1,5 +1,6 @@
 package org.bbop.apollo
 
+import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.Strand
 
 class FlankingRegion {

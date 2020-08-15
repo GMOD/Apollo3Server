@@ -1,6 +1,32 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.attributes.FeatureType
+import org.bbop.apollo.feature.EnzymaticRNA
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.GuideRNA
+import org.bbop.apollo.feature.LncRNA
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.feature.MiRNA
+import org.bbop.apollo.feature.NcRNA
+import org.bbop.apollo.feature.PiRNA
+import org.bbop.apollo.feature.ProcessedPseudogene
+import org.bbop.apollo.feature.Pseudogene
+import org.bbop.apollo.feature.PseudogenicRegion
+import org.bbop.apollo.feature.RNaseMRPRNA
+import org.bbop.apollo.feature.RNasePRNA
+import org.bbop.apollo.feature.RRNA
+import org.bbop.apollo.feature.RepeatRegion
+import org.bbop.apollo.feature.ScRNA
+import org.bbop.apollo.feature.SnRNA
+import org.bbop.apollo.feature.SnoRNA
+import org.bbop.apollo.feature.SrpRNA
+import org.bbop.apollo.feature.TRNA
+import org.bbop.apollo.feature.TelomeraseRNA
+import org.bbop.apollo.feature.Terminator
+import org.bbop.apollo.feature.TmRNA
+import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.feature.TransposableElement
 
 @Transactional
 class FeatureTypeService {

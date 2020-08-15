@@ -9,6 +9,8 @@ import htsjdk.variant.vcf.VCFConstants
 import htsjdk.variant.vcf.VCFFileReader
 import htsjdk.variant.vcf.VCFHeader
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 

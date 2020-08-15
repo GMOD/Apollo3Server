@@ -2,6 +2,10 @@ package org.bbop.apollo
 
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest
+import org.bbop.apollo.feature.*
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.relationship.FeatureRelationship
 import spock.lang.Specification
 
 /**

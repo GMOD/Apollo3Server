@@ -2,6 +2,9 @@ package org.bbop.apollo
 
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest
+import org.bbop.apollo.attributes.FeatureType
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Gene
 import spock.lang.Specification
 
 /**

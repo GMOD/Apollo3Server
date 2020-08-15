@@ -6,6 +6,13 @@ grails.gsp.enable.reload = true
 // config files can be ConfigSlurper scripts, Java properties files, or classes
 // in the classpath in ConfigSlurper format
 
+grails.gorm.default.mapping = {
+//    cache true
+    id generator:'NATIVE'
+//    id generator:'snowflake'
+    failOnError: true
+}
+
 // if (System.properties["${appName}.config.location"]) {
 //    grails.config.locations << "file:" + System.properties["${appName}.config.location"]
 // }

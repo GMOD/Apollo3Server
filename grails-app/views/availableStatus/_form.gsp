@@ -1,4 +1,4 @@
-<%@ page import="org.bbop.apollo.AvailableStatus" %>
+<%@ page import="org.bbop.apollo.attributes.AvailableStatus" %>
 
 
 
@@ -16,7 +16,7 @@
 		<g:message code="availableStatus.featureTypes.label" default="Feature Types" />
 
 	</label>
-	<g:select name="featureTypes" from="${org.bbop.apollo.FeatureType.list()}"
+	<g:select name="featureTypes" from="${org.bbop.apollo.attributes.FeatureType.list()}"
 			  multiple="multiple"
 			  optionKey="id" size="10"
 			  optionValue="display"
@@ -29,7 +29,7 @@
 		<g:message code="availableStatus.organisms.label" default="Organisms" />
 
 	</label>
-	<g:select name="organisms" from="${org.bbop.apollo.Organism.list()}"
+	<g:select name="organisms" from="${org.bbop.apollo.organism.Organism.list()}"
 			  multiple="multiple"
 			  optionKey="id" size="10"
 			  optionValue="commonName"

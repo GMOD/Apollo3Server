@@ -4,6 +4,10 @@ import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
+import org.bbop.apollo.permission.GroupOrganismPermission
+import org.bbop.apollo.permission.GroupPermission
+import org.bbop.apollo.user.User
+import org.bbop.apollo.user.UserGroup
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
@@ -12,7 +16,7 @@ class GroupService {
 
     def permissionService
 
-    List<UserGroup> createGroups(String metadata,User currentUser,String[] names) {
+    List<UserGroup> createGroups(String metadata, User currentUser, String[] names) {
         List<UserGroup> groups = []
         for(name in names){
             UserGroup group = new UserGroup(
@@ -29,12 +33,20 @@ class GroupService {
             // assign group creator as group admin
             def creatorId = group.getMetaData(FeatureStringEnum.CREATOR.value)
             User creator = User.findById(creatorId)
-            group.addToAdmin(creator)
-            log.debug "Add metadata creator: ${group.getMetaData(FeatureStringEnum.CREATOR.value)}"
+            println "find the creator ID ${creatorId}, ${creator}"
+            String query = "MATCH (g:UserGroup ), (u:User) where g.name= '${name}' and (u.id = ${creator.id} OR u.username = '${creator.username}') create (g)-[admin:ADMIN]->(u)"
+            println "query ${query }"
+            def updates = GroupPermission.executeUpdate(query)
+            println "updestae ${updates}"
+//            group.addToAdmin(creator)
+            println "Add metadata creator: ${group.getMetaData(FeatureStringEnum.CREATOR.value)}"
 
             log.info "Added group ${group.name}"
+//            groupIds.add(group.id)
+//            group.addToAdmin(creator)
             groups.add(group)
         }
+
         return groups
     }
 

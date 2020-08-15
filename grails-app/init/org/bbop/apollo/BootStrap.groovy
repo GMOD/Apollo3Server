@@ -1,5 +1,5 @@
 import grails.converters.JSON
-import org.bbop.apollo.FeatureType
+import org.bbop.apollo.attributes.FeatureType
 import org.bbop.apollo.sequence.SequenceTranslationHandler
 
 

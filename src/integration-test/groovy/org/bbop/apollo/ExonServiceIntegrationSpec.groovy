@@ -2,6 +2,12 @@ package org.bbop.apollo
 
 import grails.testing.mixin.integration.Integration
 import grails.gorm.transactions.Rollback
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.relationship.FeatureRelationship
 import org.bbop.apollo.sequence.Strand
 
 @Integration
@@ -27,37 +33,37 @@ class ExonServiceIntegrationSpec extends AbstractIntegrationSpec{
         FeatureLocation leftFeatureLocation = new FeatureLocation(
                 fmin: 5
                 ,fmax: 10
-                ,feature: leftExon
-                ,sequence: Sequence.first()
+                ,from: leftExon
+                ,to: Sequence.first()
                 ,strand: Strand.POSITIVE.value
-        ).save()
-        leftExon.addToFeatureLocations(leftFeatureLocation)
+        ).save(flush: true)
+        leftExon.setFeatureLocation(leftFeatureLocation)
         Exon rightExon = new Exon(name: "right",uniqueName: "right").save()
         FeatureLocation rightFeatureLocation = new FeatureLocation(
                 fmin: 15
                 ,fmax: 20
-                ,feature: rightExon
-                ,sequence: Sequence.first()
+                ,from: rightExon
+                ,to: Sequence.first()
                 ,strand: Strand.POSITIVE.value
-        ).save()
-        rightExon.addToFeatureLocations(rightFeatureLocation)
+        ).save(flush: true)
+        rightExon.setFeatureLocation(rightFeatureLocation)
         MRNA mrna = new MRNA(name: "mrna",uniqueName: "mrna").save()
         FeatureLocation transcriptFeatureLocation = new FeatureLocation(
                 fmin: 2
                 ,fmax: 25
-                ,feature: mrna
-                ,sequence: Sequence.first()
+                ,from: mrna
+                ,to: Sequence.first()
                 ,strand: Strand.POSITIVE.value
-        ).save()
-        mrna.addToFeatureLocations(transcriptFeatureLocation)
+        ).save(flush: true)
+        mrna.setFeatureLocation(transcriptFeatureLocation)
         FeatureRelationship leftExonFeatureRelationship = new FeatureRelationship(
-                parentFeature: mrna
-                ,childFeature: leftExon
-        ).save()
+                from: mrna
+                ,to: leftExon
+        ).save(flush: true)
         FeatureRelationship rightExonFeatureRelationship = new FeatureRelationship(
-                parentFeature: mrna
-                ,childFeature: rightExon
-        ).save()
+                from: mrna
+                ,to: rightExon
+        ).save(flush: true)
 
         when: "we add the proper relationships"
         mrna.addToParentFeatureRelationships(leftExonFeatureRelationship)
