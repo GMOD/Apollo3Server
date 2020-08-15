@@ -64,7 +64,7 @@ class FeatureService {
 
 
     @Transactional
-    FeatureLocation convertJSONToFeatureLocation(JSONObject jsonLocation, Sequence sequence, Feature feature, int defaultStrand = Strand.POSITIVE.value) throws JSONException {
+    FeatureLocation convertJSONToFeatureLocation(JSONObject jsonLocation, Sequence sequence, Feature feature = null , int defaultStrand = Strand.POSITIVE.value) throws JSONException {
         FeatureLocation gsolLocation = new FeatureLocation()
         if (jsonLocation.has(FeatureStringEnum.ID.value)) {
             gsolLocation.setId(jsonLocation.getLong(FeatureStringEnum.ID.value))
