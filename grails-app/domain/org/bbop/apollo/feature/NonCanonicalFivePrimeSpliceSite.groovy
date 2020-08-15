@@ -2,9 +2,9 @@ package org.bbop.apollo.feature
 
 class NonCanonicalFivePrimeSpliceSite extends SpliceSite{
 
-    static mapping = {
-        labels "NonCanonicalFivePrimeSpliceSite", "SpliceSite", "TranscriptRegion", "Feature"
-    }
+//    static mapping = {
+//        labels "NonCanonicalFivePrimeSpliceSite", "SpliceSite", "TranscriptRegion", "Feature"
+//    }
 
     static constraints = {
     }

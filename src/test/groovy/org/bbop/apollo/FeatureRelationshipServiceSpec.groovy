@@ -1,57 +1,60 @@
 package org.bbop.apollo
 
+import grails.test.neo4j.Neo4jSpec
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.feature.MRNA
 import org.bbop.apollo.relationship.FeatureRelationship
-import spock.lang.Ignore
-import spock.lang.Specification
 
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
-class FeatureRelationshipServiceSpec extends Specification implements ServiceUnitTest<FeatureRelationshipService>, DataTest{
+class FeatureRelationshipServiceSpec extends Neo4jSpec implements ServiceUnitTest<FeatureRelationshipService>, DataTest{
 
     def setup() {
-        mockDomain Gene
-        mockDomain MRNA
-        mockDomain Feature
-        mockDomain FeatureRelationship
+//        mockDomain Gene
+//        mockDomain MRNA
+//        mockDomain Feature
     }
 
     def cleanup() {
     }
 
-    @Ignore
     void "parents for feature"() {
+
+//        then:"everything is clean "
+//
+
         when: "A feature has parents"
         Gene gene = new Gene(
             name: "Gene1"
-            ,uniqueName: "Gene1"
+            ,uniqueName: UUID.randomUUID().toString()
         ).save(failOnError: true)
         MRNA mrna = new MRNA(
             name: "MRNA"
-            ,uniqueName: "MRNA"
+            ,uniqueName: UUID.randomUUID().toString()
         ).save(failOnError: true)
         FeatureRelationship fr=new FeatureRelationship(
             from: gene
             , to: mrna
-        ).save(failOnError: true)
-        mrna.addToChildFeatureRelationships(fr)
-        gene.addToParentFeatureRelationships(fr)
+        ).save(failOnError: true,flush: true )
+        List<Feature> parents = service.getParentsForFeature(mrna,Gene.ontologyId)
+        List<Feature> children = service.getChildrenForFeatureAndTypes(gene,MRNA.ontologyId)
+//        Feature gene2 = parents.get(0)
+//        Feature mrna2= children.get(0)
+
+
         then: "it should have parents"
         assert FeatureRelationship.count==1
-        List<Feature> parents = service.getParentsForFeature(mrna,Gene.ontologyId)
         assert parents.size() ==1
-        Feature gene2 = parents.get(0)
-        assert gene == gene2
+        assert Gene.count == 1
+//        assert gene == gene2
 
-        List<Feature> children = service.getChildrenForFeatureAndTypes(gene,MRNA.ontologyId)
         assert children.size() ==1
-        Feature mrna2= children.get(0)
-        assert mrna == mrna2
+        assert MRNA.count == 1
+//        assert mrna == mrna2
 
         when: "we get a single parent for an ontology id"
         Feature parent = service.getParentForFeature(mrna,Gene.ontologyId)
@@ -66,14 +69,14 @@ class FeatureRelationshipServiceSpec extends Specification implements ServiceUni
         assert parent2 !=null
 
         // NOTE: can not test hql queries
-//        when: "we delete a relationshp"
-//        service.removeFeatureRelationship(gene,mrna)
-//        parents = service.getParentsForFeature(mrna,Gene.ontologyId)
-//        children = service.getChildrenForFeatureAndTypes(gene,MRNA.ontologyId)
-//
-//        then: "they should both exist, but not be related"
-//        assert parents.size() ==0
-//        assert children.size() == 0
-//        assert FeatureRelationship.count==0
+        when: "we delete a relationship"
+        service.removeFeatureRelationship(gene,mrna)
+        parents = service.getParentsForFeature(mrna,Gene.ontologyId)
+        children = service.getChildrenForFeatureAndTypes(gene,MRNA.ontologyId)
+
+        then: "they should both exist, but not be related"
+        assert parents.size() ==0
+        assert children.size() == 0
+        assert FeatureRelationship.count==0
     }
 }

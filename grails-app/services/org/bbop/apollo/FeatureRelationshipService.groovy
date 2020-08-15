@@ -1,10 +1,7 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
-import org.bbop.apollo.attributes.FeatureProperty
-import org.bbop.apollo.attributes.Frameshift
 import org.bbop.apollo.feature.Feature
-import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.relationship.FeatureRelationship
 
 @Transactional(readOnly = true)
@@ -12,11 +9,9 @@ class FeatureRelationshipService {
 
     List<Feature> getChildrenForFeatureAndTypes(Feature feature, String... ontologyIds) {
         def list = new ArrayList<Feature>()
-        if (feature?.parentFeatureRelationships != null) {
-            feature.parentFeatureRelationships.each { it ->
-                if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.to.ontologyId))) {
-                    list.push(it.to)
-                }
+        FeatureRelationship.findAllByFrom(feature).to.each {
+            if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.ontologyId))) {
+                list.push(it)
             }
         }
 
@@ -57,14 +52,14 @@ class FeatureRelationshipService {
 
     List<Feature> getParentsForFeature(Feature feature, String... ontologyIds) {
         def list = new ArrayList<Feature>()
-        if (feature?.childFeatureRelationships != null) {
-            feature.childFeatureRelationships.each { it ->
-                if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.from.ontologyId))) {
-                    list.push(it.from)
-                }
+
+        def parentFeatures2 = FeatureRelationship.findAllByTo(feature).from
+
+        parentFeatures2.each {
+            if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.ontologyId))) {
+                list.push(it)
             }
         }
-
         return list
     }
 
@@ -139,15 +134,15 @@ class FeatureRelationshipService {
             criteria {
                 eq("from", parent)
             }
-            .findAll() {
-                it.to.ontologyId == child.ontologyId
-            }
-            .each {
-                found = true
-                it.to= child
-                it.save()
-                return
-            }
+                .findAll() {
+                    it.to.ontologyId == child.ontologyId
+                }
+                .each {
+                    found = true
+                    it.to = child
+                    it.save()
+                    return
+                }
 
             if (found) {
                 return
@@ -156,10 +151,9 @@ class FeatureRelationshipService {
         }
 
 
-
         FeatureRelationship fr = new FeatureRelationship(
-                from: parent
-                , to: child
+            from: parent
+            , to: child
         ).save(flush: true);
         parent.addToParentFeatureRelationships(fr)
         child.addToChildFeatureRelationships(fr)
@@ -170,12 +164,14 @@ class FeatureRelationshipService {
     @Transactional
     void removeFeatureRelationship(Feature parentFeature, Feature childFeature) {
 
-        FeatureRelationship featureRelationship = FeatureRelationship.findByParentFeatureAndChildFeature(parentFeature, childFeature)
+        FeatureRelationship featureRelationship = FeatureRelationship.findByFromAndTo(parentFeature, childFeature)
+        println "found ${featureRelationship}"
         if (featureRelationship) {
-            parentFeature.parentFeatureRelationships?.remove(featureRelationship)
-            childFeature.childFeatureRelationships?.remove(featureRelationship)
-            parentFeature.save(flush: true)
-            childFeature.save(flush: true)
+            featureRelationship.delete(flush: true )
+//            parentFeature.parentFeatureRelationships?.remove(featureRelationship)
+//            childFeature.childFeatureRelationships?.remove(featureRelationship)
+//            parentFeature.save(flush: true)
+//            childFeature.save(flush: true)
         }
     }
 

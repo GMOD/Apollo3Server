@@ -2,16 +2,12 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Rollback
+import grails.test.neo4j.Neo4jSpec
 import grails.testing.mixin.integration.Integration
-import grails.gorm.transactions.Rollback
+import org.apache.shiro.crypto.hash.Sha256Hash
 import org.apache.shiro.util.ThreadContext
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager
-import org.bbop.apollo.feature.CDS
-import org.bbop.apollo.feature.Exon
-import org.bbop.apollo.feature.Gene
-import org.bbop.apollo.feature.MRNA
-import org.bbop.apollo.feature.StopCodonReadThrough
-import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.feature.*
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
 import org.bbop.apollo.organism.Organism
@@ -24,11 +20,16 @@ import org.grails.web.json.JSONObject
 
 @Integration
 @Rollback
-class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
-    
+//class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
+class CdsServiceIntegrationSpec extends Neo4jSpec {
+
     def sequenceService
     def requestHandlingService
     def transcriptService
+
+    def shiroSecurityManager
+    String password = "testPass"
+    String passwordHash = new Sha256Hash(password).toHex()
 
     def setup() {
         if (User.findByUsername('test@test.com')) {
@@ -43,7 +44,7 @@ class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
             , passwordHash: passwordHash
         ).save(insert: true, flush: true)
         def adminRole = Role.findByName(GlobalPermissionEnum.ADMIN.name())
-        testUser.addToRoles(adminRole)
+//        testUser.addToRoles(adminRole)
         testUser.save()
 
         shiroSecurityManager.sessionManager = new DefaultWebSessionManager()
@@ -52,6 +53,25 @@ class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
 //        Subject subject = SecurityUtils.getSubject();
 //        subject.login(authToken)
 
+    }
+
+    String getTestCredentials(String organismCommonName = "sampleAnimal") {
+//        String returnString = "\"${FeatureStringEnum.CLIENT_TOKEN.value}\":\"${clientToken}\",\"${FeatureStringEnum.USERNAME.value}\":\"test@test.com\","
+        String returnString = "\"${FeatureStringEnum.USERNAME.value}\":\"test@test.com\","
+//        if (Organism.count == 1) {
+//            returnString += "\"${FeatureStringEnum.ORGANISM.value}\":\"${Organism.all.first().id}\","
+        returnString += "\"${FeatureStringEnum.ORGANISM.value}\":\"${organismCommonName}\","
+//        }
+        return returnString
+    }
+
+    void "adding a gene model, a stop codon readthrough and getting its modified sequence"() {
+
+        given: "a gene model with 1 mRNA, 3 exons, and UTRs"
+        setup()
+        String jsonString = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":735570},\"name\":\"GB40828-RA\",\"children\":[{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734733},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":735446,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734766},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734930,\"strand\":1,\"fmax\":735014},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":735245,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734733,\"strand\":1,\"fmax\":735446},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
+        "{ \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40722-RA\",\"children\":[{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
+        JSONObject jsonObject = JSON.parse(jsonString) as JSONObject
         Organism organism = new Organism(
             directory: "src/integration-test/groovy/resources/sequences/honeybee-Group1.10/"
             , commonName: "sampleAnimal"
@@ -70,18 +90,9 @@ class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
             , name: "Group1.10"
         ).save(failOnError: true, flush: true)
         organism.save(flush: true, failOnError: true)
-        return  organism
-    }
-
-    void "adding a gene model, a stop codon readthrough and getting its modified sequence"() {
-
-        given: "a gene model with 1 mRNA, 3 exons, and UTRs"
-        setup()
-        String jsonString = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":735570},\"name\":\"GB40828-RA\",\"children\":[{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734733},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":735446,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734766},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734930,\"strand\":1,\"fmax\":735014},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":735245,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734733,\"strand\":1,\"fmax\":735446},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
-        "{ \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40722-RA\",\"children\":[{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
-        JSONObject jsonObject = JSON.parse(jsonString) as JSONObject
 
         when: "gene model is added"
+
         JSONObject returnObject = requestHandlingService.addTranscript(jsonObject)
 
         then: "we should see the appropriate model"
@@ -101,10 +112,10 @@ class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
         JSONObject setReadThroughRequestObject = JSON.parse(setReadThroughStopCodonString) as JSONObject
         JSONObject setReadThroughReturnObject = requestHandlingService.setReadthroughStopCodon(setReadThroughRequestObject)
         println "${setReadThroughReturnObject.toString()}"
-        
+
         then: "we have a StopCodonReadThrough feature"
         assert StopCodonReadThrough.count == 1
-        
+
         JSONArray childrenArray = setReadThroughReturnObject.features.children
         for (def child : childrenArray) {
             if (child['name'].contains("-CDS")) {
@@ -114,14 +125,14 @@ class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
                 assert size == 3
             }
         }
-        
+
         when: "a request is sent for the CDS sequence with the read through stop codon"
         String getSequenceString = "{ ${testCredentials} \"operation\":\"get_sequence\",\"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"track\":\"Group1.10\",\"type\":\"@SEQUENCE_TYPE@\"}"
         String getCdsSequenceString = getSequenceString.replaceAll("@UNIQUENAME@", transcript.uniqueName)
         getCdsSequenceString = getCdsSequenceString.replaceAll("@SEQUENCE_TYPE@", FeatureStringEnum.TYPE_CDS.value)
         JSONObject commandObject = JSON.parse(getCdsSequenceString) as JSONObject
         JSONObject getCDSSequenceReturnObject = sequenceService.getSequenceForFeatures(commandObject)
-        
+
         then: "we should get the anticipated CDS sequence"
         assert getCDSSequenceReturnObject.residues != null
         String expectedCdsSequence = "ATGGAATCTGCTATTGTTCATCTTGAACAAAGCGTGCAAAAGGCTGATGGAAAACTAGACATGATTGCATGGCAAATTGATGCTTTTGAAAAAGAATTTGAAGATCCTGGTAGTGAGATTTCTGTGCTTCGTCTATTACGGTCTGTTCATCAAGTCACAAAAGATTATCAGAACCTTCGGCAAGAAATATTGGAGGTTCAACAATTGCAAAAGCAACTTTCAGATTCCCTTAAAGCACAATTATCTCAAGTGCATGGACATTTTAACTTATTACGCAATAAAATAGTAGGACAAAATAAAAATCTACAATTAAAATAAGATTAA"

@@ -20,7 +20,6 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
 
     def setup() {
         mockDomain Sequence
-        mockDomain FeatureLocation
         mockDomain Feature
         mockDomain MRNA
     }
@@ -28,8 +27,7 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
     def cleanup() {
     }
 
-    @Ignore
-    void "convert JSON to Feature Location"() {
+    void "convert JSON to Feature Location without Feature "() {
 
         when: "We have a valid json object"
         JSONObject jsonObject = new JSONObject()
@@ -55,9 +53,40 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
 
     }
 
+    void "convert JSON to Feature Location with Feature "() {
+
+        when: "We have a valid json object"
+        JSONObject jsonObject = new JSONObject()
+        Sequence sequence = new Sequence(
+            name: "Chr3",
+            seqChunkSize: 20,
+            start: 1,
+            end: 100,
+            length: 99,
+        ).save(failOnError: true)
+        MRNA feature = new MRNA(
+            name: "featureName",
+            uniqueName: UUID.randomUUID().toString(),
+        ).save(failOnError: true)
+        jsonObject.put(FeatureStringEnum.FMIN.value, 73)
+        jsonObject.put(FeatureStringEnum.FMAX.value, 113)
+        jsonObject.put(FeatureStringEnum.STRAND.value, Strand.POSITIVE.value)
+
+
+        then: "We should return a valid FeatureLocation"
+        FeatureLocation featureLocation = service.convertJSONToFeatureLocation(jsonObject, sequence,feature)
+        assert featureLocation.to.name == "Chr3"
+        assert featureLocation.fmin == 73
+        assert featureLocation.fmax == 113
+        assert featureLocation.strand == Strand.POSITIVE.value
+        assert featureLocation.from.name == "featureName"
+
+
+    }
+
     void "convert JSON to Ontology ID"() {
         when: "We hav a json object of type"
-        JSONObject json = JSON.parse("{name:exon, cv:{name:sequence}}")
+        JSONObject json = JSON.parse("{name:exon, cv:{name:sequence}}") as JSONObject
 
         then: "We should be able to infer the ontology ID"
         String ontologyId = service.convertJSONToOntologyId(json)
