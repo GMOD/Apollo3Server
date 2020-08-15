@@ -19,7 +19,6 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
 
     def setup() {
         mockDomain Sequence
-        mockDomain FeatureLocation
         mockDomain Feature
         mockDomain MRNA
     }
