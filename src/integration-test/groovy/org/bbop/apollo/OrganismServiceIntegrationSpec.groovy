@@ -24,7 +24,6 @@ class OrganismServiceIntegrationSpec extends AbstractIntegrationSpec{
     def requestHandlingService
 
 
-//    @Ignore
     void "deleteAllFeaturesFromOrganism"() {
 
         given: "a transcript with a UTR"

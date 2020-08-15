@@ -1,5 +1,6 @@
 package org.bbop.apollo
 
+import grails.test.neo4j.Neo4jSpec
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest
 import org.bbop.apollo.feature.Feature
@@ -12,19 +13,17 @@ import spock.lang.Specification
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
-class FeatureRelationshipServiceSpec extends Specification implements ServiceUnitTest<FeatureRelationshipService>, DataTest{
+class FeatureRelationshipServiceSpec extends Neo4jSpec implements ServiceUnitTest<FeatureRelationshipService>, DataTest{
 
     def setup() {
         mockDomain Gene
         mockDomain MRNA
         mockDomain Feature
-        mockDomain FeatureRelationship
     }
 
     def cleanup() {
     }
 
-    @Ignore
     void "parents for feature"() {
         when: "A feature has parents"
         Gene gene = new Gene(

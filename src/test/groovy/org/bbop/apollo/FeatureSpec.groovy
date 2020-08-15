@@ -21,7 +21,6 @@ class FeatureSpec extends Neo4jSpec implements DomainUnitTest<Feature>, DataTest
     def cleanup() {
     }
 
-//    @Ignore
     void "test feature manual copy"() {
 
         when: "If I clone a feature"
