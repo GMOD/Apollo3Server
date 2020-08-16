@@ -415,7 +415,7 @@ class PermissionService {
 
         User user = getCurrentUser(inputObject)
         organism = getOrganismFromInput(inputObject)
-//        println "organism ${organism} from input ${inputObject as JSON}"
+        println "organism ${organism} from input ${inputObject as JSON}"
 
 //        if (!organism) {
 //            String clientToken = inputObject.getString(FeatureStringEnum.CLIENT_TOKEN.value)
@@ -443,20 +443,31 @@ class PermissionService {
 //        Sequence sequence = Sequence.findByNameAndOrganismId(sequenceName, organism.id)
 //        println "sequence name ${sequenceName} $sequence"
 //        println "sequence json ${sequence as JSON}"
-//        println "input ${sequenceName} ${organism.id}"
-//        Sequence sequence = Sequence.executeQuery("MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence) where o.commonName = ${organism.commonName} RETURN o,r,s LIMIT 1")?.first()
+        println "input ${sequenceName} ${organism.id}"
+//        Sequence sequence = Sequence.executeQuery("MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence) where o = ${organism} RETURN o,r,s LIMIT 1")?.first()
         Sequence sequence = null
         if(organism && sequenceName){
-            String query = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence) where o.commonName = '${organism.commonName}' and s.name = '${sequenceName}' RETURN { sequence: s} LIMIT 1"
-            def sequences = Sequence.executeQuery(query)
-            sequence = sequences ? sequences.first().sequence as Sequence : null
+//            def neo4jResults = Sequence.executeQuery("MATCH (o:Organism)--(s:Sequence) where o.commonName = ${organism.commonName} RETURN o,s")
+//            println "neo4j results  ${neo4jResults}"
+            sequence = Sequence.findByOrganismAndName(organism,sequenceName)
+//            println "seuqne ce 1  ${sequence}"
+//            Organism.all.each {
+//                println "organism ${it as JSON}"
+//            }
+//            Sequence.all.each {
+//                println "sequence ${it as JSON}"
+//            }
+//            String query = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence) where o.commonName = '${organism.commonName}' and s.name = '${sequenceName}' RETURN { sequence: s} LIMIT 1"
+//            def sequences = Sequence.executeQuery(query)
+//            sequence = sequences ? sequences.first().sequence as Sequence : null
         }
-//        def retrievedSequences = Sequence.createCriteria().listDistinct {
-//            eq("name", sequenceName)
-//            eq("organismId", organism.id as Long)
-////            join("organism")
-//        }
-//        println "A retrieved sequences ${retrievedSequences as JSON}"
+        println "output sequence ${sequence}"
+        def retrievedSequences = Sequence.createCriteria().listDistinct {
+            eq("name", sequenceName)
+            eq("organismId", organism.id as Long)
+//            join("organism")
+        }
+        println "A retrieved sequences ${retrievedSequences as JSON}"
 //        retrievedSequences = retrievedSequences?: Sequence.createCriteria().listDistinct {
 //            eq("name", sequenceName)
 //                organism{

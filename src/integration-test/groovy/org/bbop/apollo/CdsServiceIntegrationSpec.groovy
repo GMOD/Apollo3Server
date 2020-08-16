@@ -24,6 +24,7 @@ import org.grails.web.json.JSONObject
 class CdsServiceIntegrationSpec extends Neo4jSpec {
 
     def sequenceService
+    def userService
     def requestHandlingService
     def transcriptService
 
@@ -31,7 +32,7 @@ class CdsServiceIntegrationSpec extends Neo4jSpec {
     String password = "testPass"
     String passwordHash = new Sha256Hash(password).toHex()
 
-    def setup() {
+    def setupData() {
         if (User.findByUsername('test@test.com')) {
             println "return the user ? ${User.findByUsername('test@test.com')}"
             return
@@ -44,8 +45,10 @@ class CdsServiceIntegrationSpec extends Neo4jSpec {
             , passwordHash: passwordHash
         ).save(insert: true, flush: true)
         def adminRole = Role.findByName(GlobalPermissionEnum.ADMIN.name())
+        testUser.addToRoles(adminRole)
+        adminRole.addToUsers(testUser)
 //        testUser.addToRoles(adminRole)
-        testUser.save()
+        testUser.save(flush: true)
 
         shiroSecurityManager.sessionManager = new DefaultWebSessionManager()
         ThreadContext.bind(shiroSecurityManager)
@@ -68,7 +71,7 @@ class CdsServiceIntegrationSpec extends Neo4jSpec {
     void "adding a gene model, a stop codon readthrough and getting its modified sequence"() {
 
         given: "a gene model with 1 mRNA, 3 exons, and UTRs"
-        setup()
+        setupData()
         String jsonString = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":735570},\"name\":\"GB40828-RA\",\"children\":[{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734733},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":735446,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734766},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734930,\"strand\":1,\"fmax\":735014},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":735245,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734733,\"strand\":1,\"fmax\":735446},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
         "{ \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40722-RA\",\"children\":[{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1248797,\"fmax\":1249052,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
         JSONObject jsonObject = JSON.parse(jsonString) as JSONObject
@@ -89,7 +92,21 @@ class CdsServiceIntegrationSpec extends Neo4jSpec {
             , organismId: organism.id
             , name: "Group1.10"
         ).save(failOnError: true, flush: true)
-        organism.save(flush: true, failOnError: true)
+//        organism.addToSequences(sequence)
+//        organism.save(flush: true, failOnError: true)
+        String updateQuery = "MATCH (o:Organism),(s:Sequence) where o.commonName = '${organism.commonName}' and s.name = '${sequence.name}' create (o)-[r:SEQUENCES]->(s)"
+        println "update query ${updateQuery}"
+        def updateResult = Organism.executeUpdate(updateQuery)
+        println "update result ${updateResult}"
+
+        expect: "everything to be there "
+        assert Organism.count == 1
+        assert Sequence.count == 1
+        assert User.count == 1
+//        MATCH (a:Person),(b:Person)
+//        WHERE a.name = 'A' AND b.name = 'B'
+//        CREATE (a)-[r:RELTYPE]->(b)
+//        RETURN type(r)
 
         when: "gene model is added"
 
