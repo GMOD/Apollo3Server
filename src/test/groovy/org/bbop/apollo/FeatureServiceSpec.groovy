@@ -12,7 +12,6 @@ import org.bbop.apollo.location.FeatureLocation
 import org.bbop.apollo.sequence.Strand
 import org.grails.web.json.JSONObject
 import spock.lang.Specification
-import spock.lang.Ignore
 
 /**
  */
