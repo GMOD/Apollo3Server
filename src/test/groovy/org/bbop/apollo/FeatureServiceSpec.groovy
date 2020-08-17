@@ -20,7 +20,6 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
 
     def setup() {
         mockDomain Sequence
-        mockDomain FeatureLocation
         mockDomain Feature
         mockDomain MRNA
     }
@@ -28,7 +27,6 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
     def cleanup() {
     }
 
-    @Ignore
     void "convert JSON to Feature Location"() {
 
         when: "We have a valid json object"
@@ -46,7 +44,7 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
 
 
         then: "We should return a valid FeatureLocation"
-        FeatureLocation featureLocation = service.convertJSONToFeatureLocation(jsonObject, sequence)
+        FeatureLocation featureLocation = service.convertJSONToFeatureLocation(jsonObject, sequence,null)
         assert featureLocation.to.name == "Chr3"
         assert featureLocation.fmin == 73
         assert featureLocation.fmax == 113

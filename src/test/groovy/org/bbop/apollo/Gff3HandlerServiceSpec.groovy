@@ -21,8 +21,6 @@ class Gff3HandlerServiceSpec extends Specification implements ServiceUnitTest<Gf
         mockDomain Exon
         mockDomain CDS
         mockDomain Feature
-        mockDomain FeatureLocation
-        mockDomain FeatureRelationship
         new Sequence(
             length: 3
             , seqChunkSize: 3
