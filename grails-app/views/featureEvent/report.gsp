@@ -1,4 +1,4 @@
-<%@ page import="org.bbop.apollo.user.User; org.bbop.apollo.RequestHandlingService; org.bbop.apollo.Organism; org.bbop.apollo.User; org.bbop.apollo.feature.Feature" %>
+<%@ page import="org.bbop.apollo.user.User; org.bbop.apollo.RequestHandlingService; org.bbop.apollo.organism.Organism; org.bbop.apollo.feature.Feature" %>
 <!DOCTYPE html>
 <html>
 <head>
