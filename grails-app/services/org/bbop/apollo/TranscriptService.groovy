@@ -43,6 +43,14 @@ class TranscriptService {
      * @return Collection of exons associated with this transcript
      */
     Collection<Exon> getExons(Transcript transcript) {
+        String inputQuery = "MATCH (t:Transcript)--(e:Exon) where t.uniqueName = '${transcript.uniqueName}' RETURN e"
+        def exonNeo4jList  = Exon.executeQuery(inputQuery)
+        println "exon neo4j list  ${exonNeo4jList}"
+        List<Exon> exonList = exonNeo4jList as List<Exon>
+        println "exon list ${exonList}"
+
+
+
         return (Collection<Exon>) featureRelationshipService.getChildrenForFeatureAndTypes(transcript, Exon.ontologyId)
     }
 
@@ -156,7 +164,31 @@ class TranscriptService {
      * @return Collection of transcripts associated with this gene
      */
     Collection<Transcript> getTranscripts(Gene gene) {
-        return (Collection<Transcript>) featureRelationshipService.getChildrenForFeatureAndTypes(gene, ontologyIds as String[])
+        String inputQuery = ("MATCH (g:Feature)-[fr:FEATURERELATIONSHIP]-(t:Feature) where g.uniqueName = '${gene.uniqueName}' return t")
+        println "input query ${inputQuery}"
+        def transcriptsNeo4j = Transcript.executeQuery(inputQuery)
+        println "getting transcripst neo4j ${transcriptsNeo4j}"
+        List transcripts = new ArrayList<>()
+        for(def neo4jTranscript in transcriptsNeo4j){
+            println "transcript ${neo4jTranscript}"
+            println "transcript keys ${neo4jTranscript.keys().join(",")}"
+            println "unique name ${neo4jTranscript.get("uniqueName").asString()}"
+
+
+            def aTran = Feature.findByUniqueName(neo4jTranscript.get("uniqueName").asString())
+            println "aTran ${aTran}"
+            transcripts.add(aTran)
+
+            def thisFeature = featureService.convertNeo4jFeatureToFeature(neo4jTranscript)
+            println "thisFeature ${thisFeature}"
+//            neo4jTranscript.
+//            transcripts.add(featureService.convertNeo4jFeatureToFeature(neo4jTranscript) as Transcript)
+        }
+
+        println "getting transcripst ${transcripts}"
+//
+//        return (Collection<Transcript>) featureRelationshipService.getChildrenForFeatureAndTypes(gene, ontologyIds as String[])
+        return transcripts
     }
 
     List<Transcript> getTranscriptsSortedByFeatureLocation(Gene gene, boolean sortByStrand) {

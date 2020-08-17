@@ -1,5 +1,6 @@
 package org.bbop.apollo
 
+import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.relationship.FeatureRelationship
@@ -9,11 +10,31 @@ class FeatureRelationshipService {
 
     List<Feature> getChildrenForFeatureAndTypes(Feature feature, String... ontologyIds) {
         def list = new ArrayList<Feature>()
+
+        println "getting children for feature and types ${feature} ${ontologyIds}"
+        println "all children of feature ${FeatureRelationship.findAllByFrom(feature).size()}"
+
+        String inputQuery = "MATCH (g:Feature)-[fr:FEATURERELATIONSHIP]-(t:Feature) where g.uniqueName = '${feature.uniqueName}' return  t  "
+        def relationships = FeatureRelationship.executeQuery(inputQuery)
+        println "relationships ${relationships}"
+
+        relationships.each {
+            println "it ${it}"
+            println "it keys ${it.keys()}"
+//            println "it types ${it}"
+        }
+
+
         FeatureRelationship.findAllByFrom(feature).to.each {
+//            println "to -> ${it as JSON} ${it.ontologyId}"
+
             if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.ontologyId))) {
+                println "adding . . . ${it}"
                 list.push(it)
             }
         }
+
+        println "output ${list}"
 
         return list
     }

@@ -24,7 +24,6 @@ import org.grails.web.json.JSONObject
 class CdsServiceIntegrationSpec extends Neo4jSpec {
 
     def sequenceService
-    def userService
     def requestHandlingService
     def transcriptService
 
