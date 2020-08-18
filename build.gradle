@@ -55,6 +55,7 @@ repositories {
 //    c.exclude(group:'org.grails',module:'grails-datastore-simple')
 //}
 
+
 // In this section you declare the dependencies for your production and test code
 dependencies {
     // START added dependencies
@@ -110,7 +111,9 @@ dependencies {
     compile "org.grails:grails-plugin-services"
     compile "org.grails:grails-plugin-url-mappings"
     compile "org.grails:grails-plugin-interceptors"
-    compile "org.grails.plugins:cache"
+    compile ("org.grails.plugins:cache"){
+        exclude group: 'org.codehaus.groovy'//, name: 'groovy-all'
+    }
     compile "org.grails.plugins:async"
     compile "org.grails.plugins:scaffolding"
     compile "org.grails.plugins:events"
