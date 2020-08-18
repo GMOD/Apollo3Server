@@ -5,8 +5,9 @@ EXIT_STATUS=0
 echo "Running test $TEST_SUITE"
 
 if [[ $TEST_SUITE == "apollo" ]]; then
-  echo "Running tests with geb.env chromeHeadless $TEST_SUITE"
-  ./gradlew -Dgeb.env=chromeHeadless check || EXIT_STATUS=$? #
+  echo "Running unit tests $TEST_SUITE"
+#  ./gradlew -Dgeb.env=chromeHeadless check || EXIT_STATUS=$? #
+  ./grailsw test-app -unit  || EXIT_STATUS=$? #
 fi
 if [[ $TEST_SUITE == "python-apollo" ]]; then
   set -ex
