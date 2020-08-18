@@ -16,9 +16,6 @@ RUN apt-get -qq update --fix-missing && \
 	lsb-release gnupg2 wget xmlstarlet netcat libpng-dev postgresql-common \
 	zlib1g-dev libexpat1-dev curl ssl-cert zip unzip openjdk-8-jdk-headless
 
-RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list' && \
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-
 RUN apt-get -qq update --fix-missing && \
 	apt-get --no-install-recommends -y install \
 	tomcat9 && \
@@ -46,7 +43,8 @@ RUN ls /apollo
 
 #COPY docker-files/build.sh /bin/build.sh
 #RUN ["chmod", "+x", "/bin/build.sh"]
-ADD docker-files/docker-apollo-config.groovy /apollo/apollo-config.groovy
+#ADD docker-files/docker-apollo-config.groovy /apollo/apollo-config.groovy
+ADD docker-files/docker.apollo.yml /apollo/apollo.yml
 RUN chown -R apollo:apollo /apollo
 
 # install grails and python libraries
