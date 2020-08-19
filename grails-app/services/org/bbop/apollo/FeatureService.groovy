@@ -181,9 +181,14 @@ class FeatureService {
 
     @Transactional
     void setSequenceForChildFeatures(Feature feature, Sequence sequence = null) {
-        // TODO: this may be a mistake, is different than the original code
-        if(true){
-            return
+        if(sequence){
+            FeatureLocation featureLocation = feature.featureLocation
+            featureLocation.to = sequence
+            featureLocation.save(flush: true)
+        }
+        else{
+            FeatureLocation featureLocation = feature.featureLocation
+            sequence = featureLocation.to
         }
 
         for (FeatureRelationship fr : feature.getParentFeatureRelationships()) {
