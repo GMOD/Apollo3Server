@@ -25,7 +25,6 @@ class FeatureLocation implements Relationship<Feature,Sequence>{
     boolean isFmaxPartial
     Integer strand
     Integer phase
-    int rank
 
 
     /**

@@ -180,12 +180,14 @@ class FeatureService {
     }
 
     @Transactional
-    void updateNewGsolFeatureAttributes(Feature feature, Sequence sequence = null) {
+    void setSequenceForChildFeatures(Feature feature, Sequence sequence = null) {
         // TODO: this may be a mistake, is different than the original code
-        // you are iterating through all of the children in order to set the SourceFeature and analysis
-        // for (FeatureRelationship fr : gsolFeature.getChildFeatureRelationships()) {
+        if(true){
+            return
+        }
+
         for (FeatureRelationship fr : feature.getParentFeatureRelationships()) {
-            updateNewGsolFeatureAttributes(fr.to, sequence);
+            setSequenceForChildFeatures(fr.to, sequence);
         }
     }
 
@@ -311,10 +313,10 @@ class FeatureService {
                             jsonTranscript.remove(FeatureStringEnum.NAME.value)
                             tmpTranscript = (Transcript) convertJSONToFeature(jsonTranscript, sequence);
                             jsonTranscript.put(FeatureStringEnum.NAME.value, originalName)
-                            updateNewGsolFeatureAttributes(tmpTranscript)
+                            setSequenceForChildFeatures(tmpTranscript)
                         } else {
                             tmpTranscript = (Transcript) convertJSONToFeature(jsonTranscript, sequence);
-                            updateNewGsolFeatureAttributes(tmpTranscript)
+                            setSequenceForChildFeatures(tmpTranscript)
                         }
 
                         if (tmpTranscript.getFmin() < 0 || tmpTranscript.getFmax() < 0) {
@@ -460,7 +462,7 @@ class FeatureService {
             println "44"
 
             gene = (Gene) convertJSONToFeature(jsonGene, sequence);
-            updateNewGsolFeatureAttributes(gene, sequence);
+            setSequenceForChildFeatures(gene, sequence);
             println "55 ${gene}"
             println "fmin"
             println "fmin -> ${gene.fmin}"
@@ -1416,7 +1418,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
     @Transactional
     Feature convertJSONToFeature(JSONObject jsonFeature, Sequence sequence) {
-        Feature gsolFeature
+        Feature returnFeature
         try {
             JSONObject type = jsonFeature.getJSONObject(FeatureStringEnum.TYPE.value);
             String ontologyId = convertJSONToOntologyId(type)
@@ -1425,40 +1427,40 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 return null
             }
 
-            gsolFeature = generateFeatureForType(ontologyId)
+            returnFeature = generateFeatureForType(ontologyId)
             if (jsonFeature.has(FeatureStringEnum.ID.value)) {
-                gsolFeature.setId(jsonFeature.getLong(FeatureStringEnum.ID.value));
+                returnFeature.setId(jsonFeature.getLong(FeatureStringEnum.ID.value));
             }
 
             if (jsonFeature.has(FeatureStringEnum.UNIQUENAME.value)) {
-                gsolFeature.setUniqueName(jsonFeature.getString(FeatureStringEnum.UNIQUENAME.value));
+                returnFeature.setUniqueName(jsonFeature.getString(FeatureStringEnum.UNIQUENAME.value));
             } else {
-                gsolFeature.setUniqueName(nameService.generateUniqueName());
+                returnFeature.setUniqueName(nameService.generateUniqueName());
             }
             if (jsonFeature.has(FeatureStringEnum.NAME.value)) {
-                gsolFeature.setName(jsonFeature.getString(FeatureStringEnum.NAME.value));
+                returnFeature.setName(jsonFeature.getString(FeatureStringEnum.NAME.value));
             } else {
                 // since name attribute cannot be null, using the feature's own uniqueName
-                gsolFeature.name = gsolFeature.uniqueName
+                returnFeature.name = returnFeature.uniqueName
             }
             if (jsonFeature.has(FeatureStringEnum.SYMBOL.value)) {
-                gsolFeature.setSymbol(jsonFeature.getString(FeatureStringEnum.SYMBOL.value));
+                returnFeature.setSymbol(jsonFeature.getString(FeatureStringEnum.SYMBOL.value));
             }
             if (jsonFeature.has(FeatureStringEnum.DESCRIPTION.value)) {
-                gsolFeature.setDescription(jsonFeature.getString(FeatureStringEnum.DESCRIPTION.value));
+                returnFeature.setDescription(jsonFeature.getString(FeatureStringEnum.DESCRIPTION.value));
             }
-            if (gsolFeature instanceof DeletionArtifact) {
+            if (returnFeature instanceof DeletionArtifact) {
                 int deletionLength = jsonFeature.location.fmax - jsonFeature.location.fmin
-                gsolFeature.deletionLength = deletionLength
+                returnFeature.deletionLength = deletionLength
             }
 
-            if (gsolFeature instanceof SequenceAlteration) {
+            if (returnFeature instanceof SequenceAlteration) {
                 if (jsonFeature.has(FeatureStringEnum.REFERENCE_ALLELE.value)) {
                     Allele allele = new Allele(bases: jsonFeature.getString(FeatureStringEnum.REFERENCE_ALLELE.value), reference: true)
                     allele.save()
-                    gsolFeature.addToAlleles(allele)
-                    gsolFeature.save(failOnError: true)
-                    allele.variant = gsolFeature
+                    returnFeature.addToAlleles(allele)
+                    returnFeature.save(failOnError: true)
+                    allele.variant = returnFeature
                     allele.save()
                 }
                 if (jsonFeature.has(FeatureStringEnum.ALTERNATE_ALLELES.value)) {
@@ -1466,7 +1468,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                     for (int i = 0; i < alternateAllelesArray.length(); i++) {
                         JSONObject alternateAlleleJsonObject = alternateAllelesArray.getJSONObject(i)
                         String bases = alternateAlleleJsonObject.getString(FeatureStringEnum.BASES.value)
-                        Allele allele = new Allele(bases: bases, variant: gsolFeature)
+                        Allele allele = new Allele(bases: bases, variant: returnFeature)
                         allele.save()
 
                         // Processing properties of an Allele
@@ -1481,10 +1483,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                             }
                         }
 
-                        gsolFeature.addToAlleles(allele)
+                        returnFeature.addToAlleles(allele)
                     }
                 }
-                gsolFeature.save(flush: true)
+                returnFeature.save(flush: true)
 
                 // Processing proerties of a variant
                 if (jsonFeature.has(FeatureStringEnum.VARIANT_INFO.value)) {
@@ -1492,33 +1494,33 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                     for (int i = 0; i < variantInfoArray.size(); i++) {
                         JSONObject variantInfoObject = variantInfoArray.get(i)
                         VariantInfo variantInfo = new VariantInfo(tag: variantInfoObject.get(FeatureStringEnum.TAG.value), value: variantInfoObject.get(FeatureStringEnum.VALUE.value))
-                        variantInfo.variant = gsolFeature
+                        variantInfo.variant = returnFeature
                         variantInfo.save()
-                        gsolFeature.addToVariantInfo(variantInfo)
+                        returnFeature.addToVariantInfo(variantInfo)
                     }
                 }
             }
 
-            gsolFeature.save(flush: true)
+            returnFeature.save(flush: true)
 
             if (jsonFeature.has(FeatureStringEnum.LOCATION.value)) {
                 JSONObject jsonLocation = jsonFeature.getJSONObject(FeatureStringEnum.LOCATION.value);
                 FeatureLocation featureLocation
                 if (SINGLETON_FEATURE_TYPES.contains(type.getString(FeatureStringEnum.NAME.value))) {
-                    featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, gsolFeature, Strand.NONE.value)
+                    featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, returnFeature, Strand.NONE.value)
                 } else {
-                    featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, gsolFeature)
+                    featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, returnFeature)
                 }
                 featureLocation.to = sequence
-                featureLocation.from = gsolFeature
+                featureLocation.from = returnFeature
                 featureLocation.save(flush: true)
-                gsolFeature.featureLocation = featureLocation;
+                returnFeature.featureLocation = featureLocation;
             }
 
-            if (gsolFeature instanceof DeletionArtifact) {
-                sequenceService.setResiduesForFeatureFromLocation((DeletionArtifact) gsolFeature)
-            } else if (jsonFeature.has(FeatureStringEnum.RESIDUES.value) && gsolFeature instanceof SequenceAlterationArtifact) {
-                sequenceService.setResiduesForFeature(gsolFeature, jsonFeature.getString(FeatureStringEnum.RESIDUES.value))
+            if (returnFeature instanceof DeletionArtifact) {
+                sequenceService.setResiduesForFeatureFromLocation((DeletionArtifact) returnFeature)
+            } else if (jsonFeature.has(FeatureStringEnum.RESIDUES.value) && returnFeature instanceof SequenceAlterationArtifact) {
+                sequenceService.setResiduesForFeature(returnFeature, jsonFeature.getString(FeatureStringEnum.RESIDUES.value))
             }
 
             if (jsonFeature.has(FeatureStringEnum.CHILDREN.value)) {
@@ -1531,25 +1533,25 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                     if (child) {
                         child.save(failOnError: true)
                         FeatureRelationship fr = new FeatureRelationship()
-                        fr.from = gsolFeature
+                        fr.from = returnFeature
                         fr.to = child
                         fr.save(failOnError: true)
-                        gsolFeature.addToParentFeatureRelationships(fr)
+                        returnFeature.addToParentFeatureRelationships(fr)
                         child.addToChildFeatureRelationships(fr)
                         child.save()
                     }
-                    gsolFeature.save()
+                    returnFeature.save()
                 }
             }
             if (jsonFeature.has(FeatureStringEnum.TIMEACCESSION.value)) {
-                gsolFeature.setDateCreated(new Date(jsonFeature.getInt(FeatureStringEnum.TIMEACCESSION.value)));
+                returnFeature.setDateCreated(new Date(jsonFeature.getInt(FeatureStringEnum.TIMEACCESSION.value)));
             } else {
-                gsolFeature.setDateCreated(new Date());
+                returnFeature.setDateCreated(new Date());
             }
             if (jsonFeature.has(FeatureStringEnum.TIMELASTMODIFIED.value)) {
-                gsolFeature.setLastUpdated(new Date(jsonFeature.getInt(FeatureStringEnum.TIMELASTMODIFIED.value)));
+                returnFeature.setLastUpdated(new Date(jsonFeature.getInt(FeatureStringEnum.TIMELASTMODIFIED.value)));
             } else {
-                gsolFeature.setLastUpdated(new Date());
+                returnFeature.setLastUpdated(new Date());
             }
             if (jsonFeature.has(FeatureStringEnum.EXPORT_ALIAS.value.toLowerCase())) {
                 for (String synonymString in jsonFeature.getJSONArray(FeatureStringEnum.EXPORT_ALIAS.value.toLowerCase())) {
@@ -1557,20 +1559,20 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                         name: synonymString
                     ).save()
                     FeatureSynonym featureSynonym = new FeatureSynonym(
-                        feature: gsolFeature,
+                        feature: returnFeature,
                         synonym: synonym
                     ).save()
-                    gsolFeature.addToFeatureSynonyms(featureSynonym)
+                    returnFeature.addToFeatureSynonyms(featureSynonym)
                 }
             }
             if (configWrapperService.storeOrigId()) {
                 if (jsonFeature.has(FeatureStringEnum.ORIG_ID.value)) {
-                    FeatureProperty gsolProperty = new FeatureProperty()
-                    gsolProperty.setTag(FeatureStringEnum.ORIG_ID.value)
-                    gsolProperty.setValue(jsonFeature.getString(FeatureStringEnum.ORIG_ID.value))
-                    gsolProperty.setFeature(gsolFeature)
-                    gsolProperty.save()
-                    gsolFeature.addToFeatureProperties(gsolProperty)
+                    FeatureProperty featureProperty = new FeatureProperty()
+                    featureProperty.setTag(FeatureStringEnum.ORIG_ID.value)
+                    featureProperty.setValue(jsonFeature.getString(FeatureStringEnum.ORIG_ID.value))
+                    featureProperty.setFeature(returnFeature)
+                    featureProperty.save()
+                    returnFeature.addToFeatureProperties(featureProperty)
                 }
             }
 
@@ -1581,11 +1583,11 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 int rank = 0
                 for (String noteString in exportNoteArray) {
                     Comment comment = new Comment(
-                        feature: gsolFeature,
+                        feature: returnFeature,
                         rank: rank++,
                         value: noteString
                     ).save()
-                    gsolFeature.addToFeatureProperties(comment)
+                    returnFeature.addToFeatureProperties(comment)
                 }
             }
 
@@ -1598,10 +1600,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 if (availableStatus) {
                     Status status = new Status(
                         value: availableStatus.value,
-                        feature: gsolFeature
+                        feature: returnFeature
                     ).save(failOnError: true)
-                    gsolFeature.status = status
-                    gsolFeature.save()
+                    returnFeature.status = status
+                    returnFeature.save()
                 } else {
                     log.warn "Ignoring status ${propertyValue} as its not defined."
                 }
@@ -1620,50 +1622,50 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                     }
                     String propertyValue = property.get(FeatureStringEnum.VALUE.value)
 
-                    FeatureProperty gsolProperty = null
+                    FeatureProperty featureProperty = null
                     if (propertyName == FeatureStringEnum.STATUS.value) {
                         // property of type 'Status'
                         AvailableStatus availableStatus = AvailableStatus.findByValue(propertyValue)
                         if (availableStatus) {
                             Status status = new Status(
                                 value: availableStatus.value,
-                                feature: gsolFeature
+                                feature: returnFeature
                             ).save(failOnError: true)
-                            gsolFeature.status = status
-                            gsolFeature.save()
+                            returnFeature.status = status
+                            returnFeature.save()
                         } else {
                             log.warn "Ignoring status ${propertyValue} as its not defined."
                         }
                     } else if (propertyName) {
                         if (propertyName == FeatureStringEnum.COMMENT.value) {
                             // property of type 'Comment'
-                            gsolProperty = new Comment();
+                            featureProperty = new Comment()
                         } else {
-                            gsolProperty = new FeatureProperty();
+                            featureProperty = new FeatureProperty()
                         }
 
                         if (propertyType.has(FeatureStringEnum.NAME.value)) {
                             CV cv = CV.findByName(propertyType.getJSONObject(FeatureStringEnum.CV.value).getString(FeatureStringEnum.NAME.value))
                             CVTerm cvTerm = CVTerm.findByNameAndCv(propertyType.getString(FeatureStringEnum.NAME.value), cv)
-                            gsolProperty.setType(cvTerm);
+                            featureProperty.setType(cvTerm);
                         } else {
                             log.warn "No proper type for the CV is set ${propertyType as JSON}"
                         }
-                        gsolProperty.setTag(propertyName)
-                        gsolProperty.setValue(propertyValue)
-                        gsolProperty.setFeature(gsolFeature);
+                        featureProperty.setTag(propertyName)
+                        featureProperty.setValue(propertyValue)
+                        featureProperty.setFeature(returnFeature);
 
                         int rank = 0;
-                        for (FeatureProperty fp : gsolFeature.getFeatureProperties()) {
-                            if (fp.getType().equals(gsolProperty.getType())) {
+                        for (FeatureProperty fp : returnFeature.getFeatureProperties()) {
+                            if (fp.getType().equals(featureProperty.getType())) {
                                 if (fp.getRank() > rank) {
-                                    rank = fp.getRank();
+                                    rank = fp.getRank()
                                 }
                             }
                         }
-                        gsolProperty.setRank(rank + 1);
-                        gsolProperty.save()
-                        gsolFeature.addToFeatureProperties(gsolProperty);
+                        featureProperty.setRank(rank + 1)
+                        featureProperty.save()
+                        returnFeature.addToFeatureProperties(featureProperty)
                     }
                 }
             }
@@ -1672,11 +1674,11 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 JSONArray dbxrefs = jsonFeature.getJSONArray(FeatureStringEnum.EXPORT_DBXREF.value.toLowerCase());
                 for (String dbxrefString in dbxrefs) {
                     def (dbString, accessionString) = dbxrefString.split(":")
-//                    JSONObject db = dbxref.getJSONObject(FeatureStringEnum.DB.value);
+//                    JSONObject db = dbxref.getJSONObject(FeatureStringEnum.DB.value)
                     DB newDB = DB.findOrSaveByName(dbString)
                     DBXref newDBXref = DBXref.findOrSaveByDbAndAccession(newDB, accessionString).save()
-                    gsolFeature.addToFeatureDBXrefs(newDBXref)
-                    gsolFeature.save()
+                    returnFeature.addToFeatureDBXrefs(newDBXref)
+                    returnFeature.save()
                 }
             }
 
@@ -1692,8 +1694,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                         newDB,
                         dbxref.getString(FeatureStringEnum.ACCESSION.value)
                     ).save()
-                    gsolFeature.addToFeatureDBXrefs(newDBXref)
-                    gsolFeature.save()
+                    returnFeature.addToFeatureDBXrefs(newDBXref)
+                    returnFeature.save()
                 }
             }
             // TODO: gene_product
@@ -1704,11 +1706,11 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 List<GeneProduct> geneProducts = geneProductService.convertGff3StringToGeneProducts(geneProductString)
                 println "gene products outputs ${geneProducts}: ${geneProducts.size()}"
                 geneProducts.each {
-                    it.feature = gsolFeature
+                    it.feature = returnFeature
                     it.save()
-                    gsolFeature.addToGeneProducts(it)
+                    returnFeature.addToGeneProducts(it)
                 }
-                gsolFeature.save()
+                returnFeature.save()
             }
             // TODO: provenance
             if (jsonFeature.has(FeatureStringEnum.PROVENANCE.value)) {
@@ -1717,11 +1719,11 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 List<Provenance> listOfProvenances = provenanceService.convertGff3StringToProvenances(provenanceString)
                 println "gene products outputs ${listOfProvenances}: ${listOfProvenances.size()}"
                 listOfProvenances.each {
-                    it.feature = gsolFeature
+                    it.feature = returnFeature
                     it.save()
-                    gsolFeature.addToProvenances(it)
+                    returnFeature.addToProvenances(it)
                 }
-                gsolFeature.save()
+                returnFeature.save()
             }
             // TODO: go_annotation
             if (jsonFeature.has(FeatureStringEnum.GO_ANNOTATIONS.value)) {
@@ -1730,18 +1732,18 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 List<GoAnnotation> goAnnotations = goAnnotationService.convertGff3StringToGoAnnotations(goAnnotationString)
                 println "gene products outputs ${goAnnotations}: ${goAnnotations.size()}"
                 goAnnotations.each {
-                    it.feature = gsolFeature
+                    it.feature = returnFeature
                     it.save()
-                    gsolFeature.addToGoAnnotations(it)
+                    returnFeature.addToGoAnnotations(it)
                 }
-                gsolFeature.save()
+                returnFeature.save()
             }
         }
         catch (JSONException e) {
             log.error("Exception creating Feature from JSON ${jsonFeature}", e)
             return null;
         }
-        return gsolFeature;
+        return returnFeature;
     }
 
     String findMostSpecificLabel(ArrayList labels) {
@@ -2626,52 +2628,52 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
     /**
-     * @param gsolFeature
+     * @param inputFeature
      * @param includeSequence
      * @return
      */
 
-    JSONObject convertFeatureToJSONLite(Feature gsolFeature, boolean includeSequence = false, int depth) {
+    JSONObject convertFeatureToJSONLite(Feature inputFeature, boolean includeSequence = false, int depth) {
         JSONObject jsonFeature = new JSONObject();
-        if (gsolFeature.id) {
-            jsonFeature.put(FeatureStringEnum.ID.value, gsolFeature.id);
+        if (inputFeature.id) {
+            jsonFeature.put(FeatureStringEnum.ID.value, inputFeature.id);
         }
-        jsonFeature.put(FeatureStringEnum.TYPE.value, generateJSONFeatureStringForType(gsolFeature.ontologyId));
-        jsonFeature.put(FeatureStringEnum.UNIQUENAME.value, gsolFeature.getUniqueName());
-        if (gsolFeature.getName() != null) {
-            jsonFeature.put(FeatureStringEnum.NAME.value, gsolFeature.getName());
+        jsonFeature.put(FeatureStringEnum.TYPE.value, generateJSONFeatureStringForType(inputFeature.ontologyId));
+        jsonFeature.put(FeatureStringEnum.UNIQUENAME.value, inputFeature.getUniqueName());
+        if (inputFeature.getName() != null) {
+            jsonFeature.put(FeatureStringEnum.NAME.value, inputFeature.getName());
         }
-        if (gsolFeature.symbol) {
-            jsonFeature.put(FeatureStringEnum.SYMBOL.value, gsolFeature.symbol);
+        if (inputFeature.symbol) {
+            jsonFeature.put(FeatureStringEnum.SYMBOL.value, inputFeature.symbol);
         }
-        if (gsolFeature.description) {
-            jsonFeature.put(FeatureStringEnum.DESCRIPTION.value, gsolFeature.description);
+        if (inputFeature.description) {
+            jsonFeature.put(FeatureStringEnum.DESCRIPTION.value, inputFeature.description);
         }
-        if (gsolFeature.featureSynonyms) {
+        if (inputFeature.featureSynonyms) {
             String synonymString = ""
-            for (def fs in gsolFeature.featureSynonyms) {
+            for (def fs in inputFeature.featureSynonyms) {
                 synonymString += "|" + fs.synonym.name
             }
             jsonFeature.put(FeatureStringEnum.SYNONYMS.value, synonymString.substring(1));
         }
-        if (gsolFeature.status) {
-            jsonFeature.put(FeatureStringEnum.STATUS.value, gsolFeature.status.value)
+        if (inputFeature.status) {
+            jsonFeature.put(FeatureStringEnum.STATUS.value, inputFeature.status.value)
         }
-        if (gsolFeature.featureDBXrefs) {
-            jsonFeature.put(FeatureStringEnum.DBXREFS.value, generateFeatureForDBXrefs(gsolFeature.featureDBXrefs))
+        if (inputFeature.featureDBXrefs) {
+            jsonFeature.put(FeatureStringEnum.DBXREFS.value, generateFeatureForDBXrefs(inputFeature.featureDBXrefs))
         }
-        if (gsolFeature.featureProperties) {
-            jsonFeature.put(FeatureStringEnum.COMMENTS.value, generateFeatureForComments(gsolFeature.featureProperties))
-            jsonFeature.put(FeatureStringEnum.ATTRIBUTES.value, generateFeatureForFeatureProperties(gsolFeature.featureProperties))
+        if (inputFeature.featureProperties) {
+            jsonFeature.put(FeatureStringEnum.COMMENTS.value, generateFeatureForComments(inputFeature.featureProperties))
+            jsonFeature.put(FeatureStringEnum.ATTRIBUTES.value, generateFeatureForFeatureProperties(inputFeature.featureProperties))
         }
 
-        if (gsolFeature instanceof SequenceAlteration) {
+        if (inputFeature instanceof SequenceAlteration) {
 
             // TODO: optimize
             // variant info (properties)
-            if (gsolFeature.getVariantInfo()) {
+            if (inputFeature.getVariantInfo()) {
                 JSONArray variantInfoArray = new JSONArray()
-                gsolFeature.variantInfo.each { variantInfo ->
+                inputFeature.variantInfo.each { variantInfo ->
                     JSONObject variantInfoObject = new JSONObject()
                     variantInfoObject.put(FeatureStringEnum.TAG.value, variantInfo.tag)
                     variantInfoObject.put(FeatureStringEnum.VALUE.value, variantInfo.value)
@@ -2682,7 +2684,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
             // TODO: optimize
             JSONArray alternateAllelesArray = new JSONArray()
-            gsolFeature.alleles.each { allele ->
+            inputFeature.alleles.each { allele ->
                 JSONObject alleleObject = new JSONObject()
                 alleleObject.put(FeatureStringEnum.BASES.value, allele.bases)
                 if (allele.alleleInfo) {
@@ -2707,28 +2709,28 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         long start = System.currentTimeMillis();
         if (depth <= 1) {
             String finalOwnerString
-            if (gsolFeature.owners) {
+            if (inputFeature.owners) {
                 String ownerString = ""
-                for (owner in gsolFeature.owners) {
-                    ownerString += gsolFeature.owner.username + " "
+                for (owner in inputFeature.owners) {
+                    ownerString += inputFeature.owner.username + " "
                 }
                 finalOwnerString = ownerString?.trim()
-            } else if (gsolFeature.owner) {
-                finalOwnerString = gsolFeature?.owner?.username
+            } else if (inputFeature.owner) {
+                finalOwnerString = inputFeature?.owner?.username
             } else {
                 finalOwnerString = "None"
             }
             jsonFeature.put(FeatureStringEnum.OWNER.value.toLowerCase(), finalOwnerString);
         }
 
-        if (gsolFeature.featureLocation) {
-            jsonFeature.put(FeatureStringEnum.SEQUENCE.value, gsolFeature.featureLocation.to.name);
-            jsonFeature.put(FeatureStringEnum.LOCATION.value, convertFeatureLocationToJSON(gsolFeature.featureLocation));
+        if (inputFeature.featureLocation) {
+            jsonFeature.put(FeatureStringEnum.SEQUENCE.value, inputFeature.featureLocation.to.name);
+            jsonFeature.put(FeatureStringEnum.LOCATION.value, convertFeatureLocationToJSON(inputFeature.featureLocation));
         }
 
 
         if (depth <= 1) {
-            List<Feature> childFeatures = featureRelationshipService.getChildrenForFeatureAndTypes(gsolFeature)
+            List<Feature> childFeatures = featureRelationshipService.getChildrenForFeatureAndTypes(inputFeature)
             if (childFeatures) {
                 JSONArray children = new JSONArray();
                 jsonFeature.put(FeatureStringEnum.CHILDREN.value, children);
@@ -2740,8 +2742,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         }
 
 
-        jsonFeature.put(FeatureStringEnum.DATE_LAST_MODIFIED.value, gsolFeature.lastUpdated.time);
-        jsonFeature.put(FeatureStringEnum.DATE_CREATION.value, gsolFeature.dateCreated.time);
+        jsonFeature.put(FeatureStringEnum.DATE_LAST_MODIFIED.value, inputFeature.lastUpdated.time);
+        jsonFeature.put(FeatureStringEnum.DATE_CREATION.value, inputFeature.dateCreated.time);
         return jsonFeature;
     }
 
@@ -2760,49 +2762,49 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
     /**
-     * @param gsolFeature
+     * @param inputFeature
      * @param includeSequence
      * @return
      */
 
-    JSONObject convertFeatureToJSON(Feature gsolFeature, boolean includeSequence = false) {
-        println "converting features to json ${gsolFeature}"
+    JSONObject convertFeatureToJSON(Feature inputFeature, boolean includeSequence = false) {
+        println "converting features to json ${inputFeature}"
         JSONObject jsonFeature = new JSONObject()
-        if (gsolFeature.id) {
-            jsonFeature.put(FeatureStringEnum.ID.value, gsolFeature.id)
+        if (inputFeature.id) {
+            jsonFeature.put(FeatureStringEnum.ID.value, inputFeature.id)
         }
-        jsonFeature.put(FeatureStringEnum.TYPE.value, generateJSONFeatureStringForType(gsolFeature.ontologyId))
-        jsonFeature.put(FeatureStringEnum.UNIQUENAME.value, gsolFeature.getUniqueName())
-        if (gsolFeature.getName() != null) {
-            jsonFeature.put(FeatureStringEnum.NAME.value, gsolFeature.getName())
+        jsonFeature.put(FeatureStringEnum.TYPE.value, generateJSONFeatureStringForType(inputFeature.ontologyId))
+        jsonFeature.put(FeatureStringEnum.UNIQUENAME.value, inputFeature.getUniqueName())
+        if (inputFeature.getName() != null) {
+            jsonFeature.put(FeatureStringEnum.NAME.value, inputFeature.getName())
         }
-        if (gsolFeature.symbol) {
-            jsonFeature.put(FeatureStringEnum.SYMBOL.value, gsolFeature.symbol)
+        if (inputFeature.symbol) {
+            jsonFeature.put(FeatureStringEnum.SYMBOL.value, inputFeature.symbol)
         }
-        if (gsolFeature.status) {
-            jsonFeature.put(FeatureStringEnum.STATUS.value, gsolFeature.status.value)
+        if (inputFeature.status) {
+            jsonFeature.put(FeatureStringEnum.STATUS.value, inputFeature.status.value)
         }
-        if (gsolFeature.description) {
-            jsonFeature.put(FeatureStringEnum.DESCRIPTION.value, gsolFeature.description)
+        if (inputFeature.description) {
+            jsonFeature.put(FeatureStringEnum.DESCRIPTION.value, inputFeature.description)
         }
-        if (gsolFeature.featureSynonyms) {
-            jsonFeature.put(FeatureStringEnum.SYNONYMS.value, gsolFeature.featureSynonyms.synonym.name)
+        if (inputFeature.featureSynonyms) {
+            jsonFeature.put(FeatureStringEnum.SYNONYMS.value, inputFeature.featureSynonyms.synonym.name)
         }
 
         long start = System.currentTimeMillis()
-        String finalOwnerString = generateOwnerString(gsolFeature)
+        String finalOwnerString = generateOwnerString(inputFeature)
         jsonFeature.put(FeatureStringEnum.OWNER.value.toLowerCase(), finalOwnerString)
 
         long durationInMilliseconds = System.currentTimeMillis() - start
 
         start = System.currentTimeMillis()
-        if (gsolFeature.featureLocation) {
-            Sequence sequence = gsolFeature.featureLocation.to
+        if (inputFeature.featureLocation) {
+            Sequence sequence = inputFeature.featureLocation.to
             jsonFeature.put(FeatureStringEnum.SEQUENCE.value, sequence.name)
         }
 
-        if (gsolFeature.goAnnotations) {
-            JSONArray goAnnotationsArray = goAnnotationService.convertAnnotationsToJson(gsolFeature.goAnnotations)
+        if (inputFeature.goAnnotations) {
+            JSONArray goAnnotationsArray = goAnnotationService.convertAnnotationsToJson(inputFeature.goAnnotations)
             jsonFeature.put(FeatureStringEnum.GO_ANNOTATIONS.value, goAnnotationsArray)
         }
 
@@ -2812,7 +2814,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         start = System.currentTimeMillis();
 
         // get children
-        List<Feature> childFeatures = featureRelationshipService.getChildrenForFeatureAndTypes(gsolFeature)
+        List<Feature> childFeatures = featureRelationshipService.getChildrenForFeatureAndTypes(inputFeature)
 
 
         durationInMilliseconds = System.currentTimeMillis() - start;
@@ -2828,7 +2830,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         start = System.currentTimeMillis()
         // get parents
-        List<Feature> parentFeatures = featureRelationshipService.getParentsForFeature(gsolFeature)
+        List<Feature> parentFeatures = featureRelationshipService.getParentsForFeature(inputFeature)
 
         durationInMilliseconds = System.currentTimeMillis() - start;
         //println "parents ${durationInMilliseconds}"
@@ -2842,19 +2844,19 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         start = System.currentTimeMillis()
 
-        if (gsolFeature.featureLocation) {
-            FeatureLocation gsolFeatureLocation = gsolFeature.featureLocation
-            if (gsolFeatureLocation != null) {
-                jsonFeature.put(FeatureStringEnum.LOCATION.value, convertFeatureLocationToJSON(gsolFeatureLocation));
+        if (inputFeature.featureLocation) {
+            FeatureLocation featureLocation = inputFeature.featureLocation
+            if (featureLocation != null) {
+                jsonFeature.put(FeatureStringEnum.LOCATION.value, convertFeatureLocationToJSON(featureLocation));
             }
         }
 
         durationInMilliseconds = System.currentTimeMillis() - start;
         //println "featloc ${durationInMilliseconds}"
 
-        if (gsolFeature instanceof SequenceAlteration) {
+        if (inputFeature instanceof SequenceAlteration) {
             JSONArray alternateAllelesArray = new JSONArray()
-            gsolFeature.alleles.each { allele ->
+            inputFeature.alleles.each { allele ->
                 JSONObject alleleObject = new JSONObject()
                 alleleObject.put(FeatureStringEnum.BASES.value, allele.bases)
 //                if (allele.alleleFrequency) {
@@ -2882,9 +2884,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
             jsonFeature.put(FeatureStringEnum.ALTERNATE_ALLELES.value, alternateAllelesArray)
 
-            if (gsolFeature.variantInfo) {
+            if (inputFeature.variantInfo) {
                 JSONArray variantInfoArray = new JSONArray()
-                gsolFeature.variantInfo.each { variantInfo ->
+                inputFeature.variantInfo.each { variantInfo ->
                     JSONObject variantInfoObject = new JSONObject()
                     variantInfoObject.put(FeatureStringEnum.TAG.value, variantInfo.tag)
                     variantInfoObject.put(FeatureStringEnum.VALUE.value, variantInfo.value)
@@ -2894,25 +2896,25 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             }
         }
 
-        if (gsolFeature instanceof SequenceAlterationArtifact) {
-            SequenceAlterationArtifact sequenceAlteration = (SequenceAlterationArtifact) gsolFeature
+        if (inputFeature instanceof SequenceAlterationArtifact) {
+            SequenceAlterationArtifact sequenceAlteration = (SequenceAlterationArtifact) inputFeature
             if (sequenceAlteration.alterationResidue) {
                 jsonFeature.put(FeatureStringEnum.RESIDUES.value, sequenceAlteration.alterationResidue);
             }
         } else if (includeSequence) {
-            String residues = sequenceService.getResiduesFromFeature(gsolFeature)
+            String residues = sequenceService.getResiduesFromFeature(inputFeature)
             if (residues) {
                 jsonFeature.put(FeatureStringEnum.RESIDUES.value, residues);
             }
         }
 
         //e.g. properties: [{value: "demo", type: {name: "owner", cv: {name: "feature_property"}}}]
-        Collection<FeatureProperty> gsolFeatureProperties = gsolFeature.getFeatureProperties();
+        Collection<FeatureProperty> featureProperties = inputFeature.getFeatureProperties();
 
         JSONArray properties = new JSONArray();
         jsonFeature.put(FeatureStringEnum.PROPERTIES.value, properties);
-        if (gsolFeatureProperties) {
-            for (FeatureProperty property : gsolFeatureProperties) {
+        if (featureProperties) {
+            for (FeatureProperty property : featureProperties) {
                 JSONObject jsonProperty = new JSONObject();
                 JSONObject jsonPropertyType = new JSONObject()
                 if (property instanceof Comment) {
@@ -2952,19 +2954,19 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 //        properties.put(ownerProperty)
 
 
-        Collection<DBXref> gsolFeatureDbxrefs = gsolFeature.getFeatureDBXrefs()
-        if (gsolFeatureDbxrefs) {
+        Collection<DBXref> featureDbxrefs = inputFeature.getFeatureDBXrefs()
+        if (featureDbxrefs) {
             JSONArray dbxrefs = new JSONArray();
             jsonFeature.put(FeatureStringEnum.DBXREFS.value, dbxrefs)
-            for (DBXref gsolDbxref : gsolFeatureDbxrefs) {
-                JSONObject dbxref = new JSONObject()
-                dbxref.put(FeatureStringEnum.ACCESSION.value, gsolDbxref.getAccession())
-                dbxref.put(FeatureStringEnum.DB.value, new JSONObject().put(FeatureStringEnum.NAME.value, gsolDbxref.getDb().getName()))
-                dbxrefs.put(dbxref)
+            for (DBXref dBXref : featureDbxrefs) {
+                JSONObject dbxrefJson = new JSONObject()
+                dbxrefJson.put(FeatureStringEnum.ACCESSION.value, dBXref.getAccession())
+                dbxrefJson.put(FeatureStringEnum.DB.value, new JSONObject().put(FeatureStringEnum.NAME.value, dBXref.getDb().getName()))
+                dbxrefs.put(dbxrefJson)
             }
         }
-        jsonFeature.put(FeatureStringEnum.DATE_LAST_MODIFIED.value, gsolFeature.lastUpdated.time)
-        jsonFeature.put(FeatureStringEnum.DATE_CREATION.value, gsolFeature.dateCreated.time)
+        jsonFeature.put(FeatureStringEnum.DATE_LAST_MODIFIED.value, inputFeature.lastUpdated.time)
+        jsonFeature.put(FeatureStringEnum.DATE_CREATION.value, inputFeature.dateCreated.time)
         return jsonFeature
     }
 
@@ -3074,25 +3076,25 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
 
-    JSONObject convertFeatureLocationToJSON(FeatureLocation gsolFeatureLocation) throws JSONException {
+    JSONObject convertFeatureLocationToJSON(FeatureLocation inputFeatureLocation) throws JSONException {
         JSONObject jsonFeatureLocation = new JSONObject();
-        if (gsolFeatureLocation.id) {
-            jsonFeatureLocation.put(FeatureStringEnum.ID.value, gsolFeatureLocation.id);
+        if (inputFeatureLocation.id) {
+            jsonFeatureLocation.put(FeatureStringEnum.ID.value, inputFeatureLocation.id);
         }
-        jsonFeatureLocation.put(FeatureStringEnum.FMIN.value, gsolFeatureLocation.getFmin());
-        jsonFeatureLocation.put(FeatureStringEnum.FMAX.value, gsolFeatureLocation.getFmax());
-        if (gsolFeatureLocation.isIsFminPartial()) {
+        jsonFeatureLocation.put(FeatureStringEnum.FMIN.value, inputFeatureLocation.getFmin());
+        jsonFeatureLocation.put(FeatureStringEnum.FMAX.value, inputFeatureLocation.getFmax());
+        if (inputFeatureLocation.isIsFminPartial()) {
             jsonFeatureLocation.put(FeatureStringEnum.IS_FMIN_PARTIAL.value, true);
         }
-        if (gsolFeatureLocation.isIsFmaxPartial()) {
+        if (inputFeatureLocation.isIsFmaxPartial()) {
             jsonFeatureLocation.put(FeatureStringEnum.IS_FMAX_PARTIAL.value, true);
         }
-        jsonFeatureLocation.put(FeatureStringEnum.STRAND.value, gsolFeatureLocation.getStrand());
+        jsonFeatureLocation.put(FeatureStringEnum.STRAND.value, inputFeatureLocation.getStrand());
         return jsonFeatureLocation;
     }
 
     @Transactional
-    Boolean deleteFeature(Feature feature, HashMap<String, List<Feature>> modifiedFeaturesUniqueNames = new ArrayList<>()) {
+    Boolean deleteFeature(Feature feature, Map<String, List<Feature>> modifiedFeaturesUniqueNames = new HashMap<>()) {
 
         if (feature instanceof Exon) {
             Exon exon = (Exon) feature;
@@ -4224,7 +4226,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
                 gene = (Gene) convertJSONToFeature(jsonGene, sequence)
                 gene.save(flush: true)
-                updateNewGsolFeatureAttributes(gene, sequence)
+                setSequenceForChildFeatures(gene, sequence)
                 gene.save(flush: true)
 
                 if (gene.fmin < 0 || gene.fmax < 0) {
@@ -4276,7 +4278,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 String name = nameService.generateUniqueName(feature, feature.name)
                 feature.name = name
             }
-            updateNewGsolFeatureAttributes(feature, sequence)
+            setSequenceForChildFeatures(feature, sequence)
 
             // setting back the original name for feature
             if (useName && jsonFeature.has(FeatureStringEnum.NAME.value)) {
