@@ -24,11 +24,8 @@ import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONException
 import org.grails.web.json.JSONObject
 
-//import org.hibernate.FlushMode
-
 @Transactional(readOnly = true)
 class FeatureService {
-
 
     def nameService
     def configWrapperService
@@ -65,26 +62,23 @@ class FeatureService {
 
     @Transactional
     FeatureLocation convertJSONToFeatureLocation(JSONObject jsonLocation, Sequence sequence, Feature feature, int defaultStrand = Strand.POSITIVE.value) throws JSONException {
-        FeatureLocation gsolLocation = new FeatureLocation()
+        FeatureLocation featureLocation = new FeatureLocation()
         if (jsonLocation.has(FeatureStringEnum.ID.value)) {
-            gsolLocation.setId(jsonLocation.getLong(FeatureStringEnum.ID.value))
+            featureLocation.setId(jsonLocation.getLong(FeatureStringEnum.ID.value))
         }
-        gsolLocation.setFmin(jsonLocation.getInt(FeatureStringEnum.FMIN.value))
-        gsolLocation.setFmax(jsonLocation.getInt(FeatureStringEnum.FMAX.value))
+        featureLocation.setFmin(jsonLocation.getInt(FeatureStringEnum.FMIN.value))
+        featureLocation.setFmax(jsonLocation.getInt(FeatureStringEnum.FMAX.value))
         if (jsonLocation.getInt(FeatureStringEnum.STRAND.value) == Strand.POSITIVE.value || jsonLocation.getInt(FeatureStringEnum.STRAND.value) == Strand.NEGATIVE.value) {
-            gsolLocation.setStrand(jsonLocation.getInt(FeatureStringEnum.STRAND.value))
+            featureLocation.setStrand(jsonLocation.getInt(FeatureStringEnum.STRAND.value))
         } else {
-            gsolLocation.setStrand(defaultStrand)
+            featureLocation.setStrand(defaultStrand)
         }
-        gsolLocation.to = sequence
-        gsolLocation.from = feature
-//        gsolLocation.save(flush: true)
+        featureLocation.to = sequence
+        featureLocation.from = feature
         if(feature){
-            feature.featureLocation = gsolLocation
-//            feature.save(flush: true)
+            feature.featureLocation = featureLocation
         }
-//        gsolLocation.setSequence(sequence)
-        return gsolLocation;
+        return featureLocation;
     }
 
     /** Get features that overlap a given location.
@@ -186,19 +180,11 @@ class FeatureService {
     }
 
     @Transactional
-    void updateNewGsolFeatureAttributes(Feature gsolFeature, Sequence sequence = null) {
-
-        gsolFeature.setIsAnalysis(false);
-        gsolFeature.setIsObsolete(false);
-
-//        if (sequence) {
-//            gsolFeature.getFeatureLocations().iterator().next().sequence = sequence;
-//        }
-
+    void updateNewGsolFeatureAttributes(Feature feature, Sequence sequence = null) {
         // TODO: this may be a mistake, is different than the original code
         // you are iterating through all of the children in order to set the SourceFeature and analysis
         // for (FeatureRelationship fr : gsolFeature.getChildFeatureRelationships()) {
-        for (FeatureRelationship fr : gsolFeature.getParentFeatureRelationships()) {
+        for (FeatureRelationship fr : feature.getParentFeatureRelationships()) {
             updateNewGsolFeatureAttributes(fr.to, sequence);
         }
     }
@@ -1238,8 +1224,6 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
                 DeletionArtifact deletion = new DeletionArtifact(
                     uniqueName: FeatureStringEnum.DELETION_PREFIX.value + frameshift.coordinate
-                    , isObsolete: false
-                    , isAnalysis: false
                 )
 
                 featureLocation.from = deletion
@@ -1260,8 +1244,6 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 // the repeated bases
                 InsertionArtifact insertion = new InsertionArtifact(
                     uniqueName: FeatureStringEnum.INSERTION_PREFIX.value + frameshift.coordinate
-                    , isAnalysis: false
-                    , isObsolete: false
                 ).save()
 
 //                Insertion insertion = new Insertion(cds.getOrganism(), "Insertion-" + frameshift.getCoordinate(), false,
@@ -3376,9 +3358,6 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                             fmax: firstTranscript.fmax,
                             strand: firstTranscript.strand,
                             to: firstTranscript.featureLocation.to,
-                            residueInfo: firstTranscript.featureLocation.residueInfo,
-                            locgroup: firstTranscript.featureLocation.locgroup,
-                            rank: firstTranscript.featureLocation.rank
                         ).save(flush: true)
                         newGene.setFeatureLocation(newGeneFeatureLocation)
                         featureRelationshipService.removeFeatureRelationship(transcriptService.getGene(firstTranscript), firstTranscript)
@@ -3504,9 +3483,6 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             fmax: transcript.fmax,
             strand: transcript.strand,
             to: transcript.featureLocation.to,
-            residueInfo: transcript.featureLocation.residueInfo,
-            locgroup: transcript.featureLocation.locgroup,
-            rank: transcript.featureLocation.rank
         ).save(flush: true)
         newGene.setFeatureLocation(newGeneFeatureLocation)
 

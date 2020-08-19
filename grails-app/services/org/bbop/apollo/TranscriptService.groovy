@@ -102,8 +102,6 @@ class TranscriptService {
 
         CDS cds = new CDS(
             uniqueName: uniqueName
-            , isAnalysis: transcript.isAnalysis
-            , isObsolete: transcript.isObsolete
             , name: uniqueName
         ).save(failOnError: true)
 
@@ -360,7 +358,6 @@ class TranscriptService {
         FeatureLocation newFeatureLocation = new FeatureLocation(
             fmin: transcript.featureLocation.fmin
             , fmax: transcript.featureLocation.fmax
-            , rank: transcript.featureLocation.rank
             , to: transcript.featureLocation.to
             , strand: transcript.featureLocation.strand
             , from: splitTranscript
@@ -387,9 +384,6 @@ class TranscriptService {
             fmax: splitTranscript.fmax,
             strand: splitTranscript.strand,
             to: splitTranscript.featureLocation.to,
-            residueInfo: splitTranscript.featureLocation.residueInfo,
-            locgroup: splitTranscript.featureLocation.locgroup,
-            rank: splitTranscript.featureLocation.rank
         ).save(flush: true)
 
         splitTranscriptGene.setFeatureLocation(splitTranscriptGeneFeatureLocation)
