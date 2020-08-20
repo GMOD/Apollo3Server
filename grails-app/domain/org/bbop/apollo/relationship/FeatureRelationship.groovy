@@ -12,17 +12,10 @@ class FeatureRelationship implements  Ontological,  Relationship<Feature, Featur
         value nullable: true
     }
 
-//    Feature from;
-//    Feature to;
     String value; // unused, but could be used like metadata (strength / quality of connection)
     int rank;
     static String ontologyId = "part_of"
     
-//    static hasMany = [
-//            featureRelationshipProperties : FeatureProperty
-//            ,featureRelationshipPublications: Publication
-//    ]
-
 
     boolean equals(Object other) {
         if (this.is(other)) return true
@@ -42,7 +35,7 @@ class FeatureRelationship implements  Ontological,  Relationship<Feature, Featur
         return result;
     }
 
-    public FeatureRelationship generateClone() {
+    FeatureRelationship generateClone() {
         FeatureRelationship cloned = new FeatureRelationship();
         cloned.from = this.from;
         cloned.to = this.to;

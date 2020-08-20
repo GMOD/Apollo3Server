@@ -45,7 +45,7 @@ class VariantService {
             log.error "Unable to find valid user to set on variant: " + jsonFeature.toString()
         }
 
-        featureService.updateNewGsolFeatureAttributes(variant, sequence)
+        featureService.setSequenceForChildFeatures(variant, sequence)
         variant.save(flush: true)
 
         // TODO: parse metadata

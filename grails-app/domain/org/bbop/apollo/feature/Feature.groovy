@@ -20,11 +20,6 @@ class Feature implements Ontological{
     static constraints = {
         name nullable: false
         uniqueName nullable: false
-        dbxref nullable: true
-        sequenceLength nullable: true
-        md5checksum nullable: true
-        isAnalysis nullable: true
-        isObsolete nullable: true
         dateCreated nullable: true
         lastUpdated nullable: true
         symbol nullable: true // TODO: should be false and unique per organism
@@ -35,28 +30,19 @@ class Feature implements Ontological{
 
     String symbol
     String description
-    DBXref dbxref;
     String name;
     String uniqueName;
-    Integer sequenceLength;
-    String md5checksum;
     Status status
-    boolean isAnalysis;
     boolean isObsolete;
     Date dateCreated;
     Date lastUpdated ;
     FeatureLocation featureLocation
 
     static hasMany = [
-//            featureLocations: FeatureLocation
-//            ,featureGenotypes: FeatureGenotype
             parentFeatureRelationships: FeatureRelationship  // relationships where I am the parent feature relationship
             ,childFeatureRelationships: FeatureRelationship // relationships where I am the child feature relationship
-//            ,featureCVTerms: FeatureCVTerm
             ,featureSynonyms: FeatureSynonym // remove?
             ,featureDBXrefs: DBXref
-//            ,featurePublications: Publication
-//            ,featurePhenotypes: Phenotype
             ,featureProperties: FeatureProperty
             ,owners: User
             ,goAnnotations: GoAnnotation
@@ -64,18 +50,10 @@ class Feature implements Ontological{
             ,provenances: Provenance
     ]
 
-//    static mappedBy = [
-//            parentFeatureRelationships: "parentFeature",
-//            childFeatureRelationships: "childFeature",
-////            featureGenotypes: "feature",
-////            featureLocations: "feature"
-//    ]
-
     static mapping = {
             featureSynonyms cascade: 'all-delete-orphan'
             childFeatureRelationships cascade: 'all-delete-orphan'
             parentFeatureRelationships cascade: 'all-delete-orphan'
-//            featureLocations cascade: 'all-delete-orphan' // lazy: false  since most / all feature locations have a single element join is more efficient
             goAnnotations cascade: 'all-delete-orphan'
             geneProducts cascade: 'all-delete-orphan'
             provenances cascade: 'all-delete-orphan'
@@ -114,13 +92,8 @@ class Feature implements Ontological{
 
     Feature generateClone() {
         Feature cloned = this.getClass().newInstance()
-        cloned.dbxref = this.dbxref
         cloned.name = this.name
         cloned.uniqueName = this.uniqueName
-        cloned.sequenceLength = this.sequenceLength
-        cloned.md5checksum = this.md5checksum
-        cloned.isAnalysis = this.isAnalysis
-        cloned.isObsolete = this.isObsolete
         cloned.dateCreated = this.dateCreated
         cloned.lastUpdated = this.lastUpdated
         cloned.featureLocation = this.featureLocation
@@ -175,7 +148,6 @@ class Feature implements Ontological{
                 ", description='" + description + '\'' +
                 ", name='" + name + '\'' +
                 ", uniqueName='" + uniqueName + '\'' +
-                ", sequenceLength=" + sequenceLength +
 //                ", status=" + status +
                 ", dateCreated=" + dateCreated +
                 ", lastUpdated=" + lastUpdated +

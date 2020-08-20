@@ -215,8 +215,6 @@ class NonCanonicalSplitSiteService {
         String uniqueName = transcript.getUniqueName() + "-non_canonical_five_prime_splice_site-" + position;
         NonCanonicalFivePrimeSpliceSite spliceSite = new NonCanonicalFivePrimeSpliceSite(
             uniqueName: uniqueName
-            , isAnalysis: transcript.isAnalysis
-            , isObsolete: transcript.isObsolete
             , name: uniqueName
         ).save(flush: true)
 
@@ -236,9 +234,6 @@ class NonCanonicalSplitSiteService {
         NonCanonicalThreePrimeSpliceSite spliceSite = new NonCanonicalThreePrimeSpliceSite(
             uniqueName: uniqueName
             , name: uniqueName
-            , isAnalysis: transcript.isAnalysis
-            , isObsolete: transcript.isObsolete
-//                ,timeAccessioned: new Date()
         ).save(flush: true )
         spliceSite.setFeatureLocation(new FeatureLocation(
             strand: transcript.strand

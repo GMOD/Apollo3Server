@@ -389,8 +389,6 @@ class ExonService {
         Exon rightExon = new Exon(
                 uniqueName: uniqueName
                 ,name: uniqueName
-                ,isAnalysis: leftExon.isAnalysis
-                ,isObsolete: leftExon.isObsolete
         ).save(insert:true,flush: true)
 
 
@@ -402,9 +400,6 @@ class ExonService {
                 ,isFmaxPartial: leftFeatureLocation.isFmaxPartial
                 ,strand: leftFeatureLocation.strand
                 ,phase: leftFeatureLocation.phase
-                ,residueInfo: leftFeatureLocation.residueInfo
-                ,locgroup: leftFeatureLocation.locgroup
-                ,rank: leftFeatureLocation.rank
                 ,to: leftFeatureLocation.to
         ).save(insert:true,flush: true )
         rightExon.setFeatureLocation(rightFeatureLocation)

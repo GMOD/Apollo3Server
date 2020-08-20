@@ -843,18 +843,18 @@ class RequestHandlingService {
         for (int i = 1; i < features.length(); ++i) {
             JSONObject jsonExon = features.getJSONObject(i);
             // could be that this is null
-            Exon gsolExon = (Exon) featureService.convertJSONToFeature(jsonExon, sequence)
+            Exon exon = (Exon) featureService.convertJSONToFeature(jsonExon, sequence)
 
-            featureService.updateNewGsolFeatureAttributes(gsolExon, sequence);
+            featureService.setSequenceForChildFeatures(exon, sequence);
 
-            if (gsolExon.getFmin() < 0 || gsolExon.getFmax() < 0) {
+            if (exon.getFmin() < 0 || exon.getFmax() < 0) {
                 throw new AnnotationException("Feature cannot have negative coordinates")
             }
 
-            featureService.addOwnersByString(inputObject.username, transcript, gsolExon)
-            transcriptService.addExon(transcript, gsolExon, false)
+            featureService.addOwnersByString(inputObject.username, transcript, exon)
+            transcriptService.addExon(transcript, exon, false)
 
-            gsolExon.save()
+            exon.save()
         }
         featureService.removeExonOverlapsAndAdjacencies(transcript)
         transcriptService.updateGeneBoundaries(transcript)
@@ -1517,7 +1517,7 @@ class RequestHandlingService {
             }
             sequenceAlteration.save()
 
-            featureService.updateNewGsolFeatureAttributes(sequenceAlteration, sequence)
+            featureService.setSequenceForChildFeatures(sequenceAlteration, sequence)
 
             if (sequenceAlteration.getFmin() < 0 || sequenceAlteration.getFmax() < 0) {
                 throw new AnnotationException("Feature cannot have negative coordinates");
@@ -1928,7 +1928,7 @@ class RequestHandlingService {
 
 
         Exon splitExon = exonService.splitExon(exon, exonLocation.getInt(FeatureStringEnum.FMAX.value), exonLocation.getInt(FeatureStringEnum.FMIN.value))
-        featureService.updateNewGsolFeatureAttributes(splitExon, sequence)
+        featureService.setSequenceForChildFeatures(splitExon, sequence)
         featureService.calculateCDS(transcript)
         nonCanonicalSplitSiteService.findNonCanonicalAcceptorDonorSpliceSites(transcript)
 
@@ -2366,7 +2366,7 @@ class RequestHandlingService {
             fireAnnotationEvent(annotationEvent)
             return returnContainer
         }
-        featureService.updateNewGsolFeatureAttributes(splitExon, sequence)
+        featureService.setSequenceForChildFeatures(splitExon, sequence)
         featureService.calculateCDS(transcript)
         nonCanonicalSplitSiteService.findNonCanonicalAcceptorDonorSpliceSites(transcript)
 
@@ -2427,7 +2427,7 @@ class RequestHandlingService {
         // transcript2 should contain the second part of transcript1 starting from exon2
         Transcript transcript2 = transcriptService.splitTranscript(transcript1, exon1, exon2)
 
-        featureService.updateNewGsolFeatureAttributes(transcript2, sequence);
+        featureService.setSequenceForChildFeatures(transcript2, sequence);
         featureService.calculateCDS(transcript1)
         featureService.calculateCDS(transcript2)
         nonCanonicalSplitSiteService.findNonCanonicalAcceptorDonorSpliceSites(transcript1);

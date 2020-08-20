@@ -23,7 +23,6 @@ class CdsService {
     def featurePropertyService
     def transcriptService
     def featureService
-    def exonService
     def sequenceService
     def overlapperService
     
@@ -108,8 +107,6 @@ class CdsService {
         StopCodonReadThrough stopCodonReadThrough = new StopCodonReadThrough(
                 uniqueName: uniqueName
                 ,name: uniqueName
-                , isAnalysis: cds.isIsAnalysis()
-                , isObsolete: cds.isIsObsolete()
         ).save(failOnError: true,flush: true)
         FeatureLocation featureLocation = new FeatureLocation(
                 to: cds.featureLocation.to
