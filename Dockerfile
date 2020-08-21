@@ -50,6 +50,8 @@ RUN ls /apollo
 #ADD docker-files/docker-apollo-config.groovy /apollo/apollo-config.groovy
 ADD docker-files/docker.apollo.yml /apollo/apollo.yml
 RUN chown -R apollo:apollo /apollo
+RUN mkdir -p /data/apollo_data
+RUN chown -R apollo:apollo /data/apollo_data
 
 # install grails and python libraries
 #USER apollo
@@ -69,7 +71,7 @@ USER root
 #RUN rm -rf ${CATALINA_BASE}/webapps/* && \
 #	cp /apollo/apollo*.war ${CATALINA_BASE}/apollo.war
 #
-ADD docker-files/createenv.sh /createenv.sh
+#ADD docker-files/createenv.sh /createenv.sh
 ADD docker-files/launch.sh /launch.sh
 
 USER apollo

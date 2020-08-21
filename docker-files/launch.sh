@@ -102,7 +102,7 @@ echo "WAR FILE '${WAR_FILE}'"
 cp ${CATALINA_BASE}/apollo.war ${WAR_FILE}
 
 # Set environment variables for tomcat
-bash /createenv.sh
+#bash /createenv.sh
 
 # Launch tomcat, stopping of already running.
 #${CATALINA_HOME}/bin/catalina.sh stop 5 -force
