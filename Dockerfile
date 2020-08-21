@@ -16,9 +16,16 @@ RUN apt-get -qq update --fix-missing && \
 	lsb-release gnupg2 wget xmlstarlet netcat libpng-dev  \
 	zlib1g-dev libexpat1-dev curl ssl-cert zip unzip openjdk-8-jdk-headless
 
+RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add -
+RUN echo 'deb https://debian.neo4j.com stable 3.5' | tee -a /etc/apt/sources.list.d/neo4j.list
+RUN apt-get update
+RUN apt list -a neo4j
+
+
+
 RUN apt-get -qq update --fix-missing && \
 	apt-get --no-install-recommends -y install \
-	tomcat9 && \
+	tomcat9 neo4j=1:3.5.21 && \
 	apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /apollo/
 
 RUN curl -s "http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/blat/blat" -o /usr/local/bin/blat && \
@@ -26,17 +33,14 @@ RUN curl -s "http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/blat/blat" -o
  		curl -s "http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/faToTwoBit" -o /usr/local/bin/faToTwoBit && \
  		chmod +x /usr/local/bin/faToTwoBit
 
-#NOTE, we had problems with the build the archive-file coming in from github so using a clone instead
 RUN useradd -ms /bin/bash -d /apollo apollo
 COPY gradlew /apollo
 COPY gradle.properties /apollo
 COPY gradle /apollo/gradle
 COPY grails-app /apollo/grails-app
-#COPY lib /apollo/lib
 COPY src /apollo/src
 COPY src/main/scripts /apollo/scripts
 ADD grails* /apollo/
-#COPY apollo /apollo/apollo
 COPY build.gradle /apollo/build.gradle
 ADD settings.gradle /apollo
 RUN ls /apollo
