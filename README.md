@@ -41,6 +41,9 @@ The [User's Guide](docs/UsersGuide.md) provides guidance on how to use it.  Plea
  
      docker run -it --publish=8888:8080 --publish=7777:7474 gmod/apollo3server:latest
 
+Connect at http://localhost:8888/ . . . eg. http://localhost:8888/user/loadUsers
+
+You'll need to kill the docker instance here, for the moment. 
 
 ### Thanks to
 
