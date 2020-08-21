@@ -31,6 +31,16 @@ The [User's Guide](docs/UsersGuide.md) provides guidance on how to use it.  Plea
 ### Run tests 
 
     ./grailsw test-app
+    
+### Run with Docker
+
+     docker build . 
+     docker run -it --publish=8888:8080 --publish=7777:7474 <built image>
+     
+ For pre-built:
+ 
+     docker run -it --publish=8888:8080 --publish=7777:7474 gmod/apollo3server:latest
+
 
 ### Thanks to
 
