@@ -55,6 +55,7 @@ repositories {
 //    c.exclude(group:'org.grails',module:'grails-datastore-simple')
 //}
 
+
 // In this section you declare the dependencies for your production and test code
 dependencies {
     // START added dependencies
@@ -110,7 +111,9 @@ dependencies {
     compile "org.grails:grails-plugin-services"
     compile "org.grails:grails-plugin-url-mappings"
     compile "org.grails:grails-plugin-interceptors"
-    compile "org.grails.plugins:cache"
+    compile ("org.grails.plugins:cache"){
+        exclude group: 'org.codehaus.groovy'//, name: 'groovy-all'
+    }
     compile "org.grails.plugins:async"
     compile "org.grails.plugins:scaffolding"
     compile "org.grails.plugins:events"
@@ -180,6 +183,31 @@ tasks.withType(Test) {
     systemProperty "geb.build.reportsDir", reporting.file("geb/integrationTest")
     systemProperty "webdriver.chrome.driver", System.getProperty('webdriver.chrome.driver')
     systemProperty "webdriver.gecko.driver", System.getProperty('webdriver.gecko.driver')
+}
+
+//tasks.copyApolloYml(type: Copy){
+//    from(userDir) {
+//        include 'apollo.yml'
+//        into ("$buildDir/classes/groovy")
+//    }
+//}
+
+war {
+    def userDir = System.getProperty("user.dir")
+    String apolloFilePath = userDir + '/apollo.yml'
+    File apolloFile = new File(apolloFilePath)
+//    File targetFile = new File("${buildDir}/classes/groovy/apollo.yml")
+    File targetFile = new File("src/main/webapp/WEB-INF/apollo.yml")
+    if(apolloFile.exists()){
+        println "file exists ${apolloFile.absolutePath}"
+        println "coyp to ${targetFile.absolutePath}"
+        targetFile.write(apolloFile.text)
+    }
+    else{
+        if(targetFile.exists()){
+            targetFile.delete()
+        }
+    }
 }
 
 assets {

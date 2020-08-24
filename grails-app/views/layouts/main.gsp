@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" href="${assetPath(src: 'apple-touch-icon.png')}">
     <link rel="apple-touch-icon" sizes="114x114" href="${assetPath(src: 'apple-touch-icon-retina.png')}">
     <asset:stylesheet src="application.css"/>
-    <asset:javascript src="application.js"/>
+%{--    <asset:javascript src="application.js"/>--}%
     <asset:link rel="shortcut icon" href="webapollo_favicon.ico" type="image/x-icon"/>
 
 %{--    <g:include view="google_analytics.gsp"/>--}%
