@@ -185,6 +185,31 @@ tasks.withType(Test) {
     systemProperty "webdriver.gecko.driver", System.getProperty('webdriver.gecko.driver')
 }
 
+//tasks.copyApolloYml(type: Copy){
+//    from(userDir) {
+//        include 'apollo.yml'
+//        into ("$buildDir/classes/groovy")
+//    }
+//}
+
+war {
+    def userDir = System.getProperty("user.dir")
+    String apolloFilePath = userDir + '/apollo.yml'
+    File apolloFile = new File(apolloFilePath)
+//    File targetFile = new File("${buildDir}/classes/groovy/apollo.yml")
+    File targetFile = new File("src/main/webapp/WEB-INF/apollo.yml")
+    if(apolloFile.exists()){
+        println "file exists ${apolloFile.absolutePath}"
+        println "coyp to ${targetFile.absolutePath}"
+        targetFile.write(apolloFile.text)
+    }
+    else{
+        if(targetFile.exists()){
+            File.delete(targetFile)
+        }
+    }
+}
+
 assets {
     minifyJs = true
     minifyCss = true
