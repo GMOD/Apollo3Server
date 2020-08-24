@@ -205,7 +205,7 @@ war {
     }
     else{
         if(targetFile.exists()){
-            File.delete(targetFile)
+            targetFile.delete()
         }
     }
 }
