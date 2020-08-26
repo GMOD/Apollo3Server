@@ -45,13 +45,8 @@ COPY build.gradle /apollo/build.gradle
 ADD settings.gradle /apollo
 RUN ls /apollo
 
-#COPY docker-files/build.sh /bin/build.sh
-#RUN ["chmod", "+x", "/bin/build.sh"]
-#ADD docker-files/docker-apollo-config.groovy /apollo/apollo-config.groovy
-ADD docker-files/docker.apollo.yml /apollo/apollo.yml
-RUN chown -R apollo:apollo /apollo
-RUN mkdir -p /data/apollo_data
-RUN chown -R apollo:apollo /data/apollo_data
+
+
 
 # install grails and python libraries
 USER apollo
@@ -65,12 +60,29 @@ RUN pip3 install setuptools
 RUN pip3 install wheel
 RUN pip3 install nose apollo==4.2.7
 
+
+
+
+USER root
+#COPY docker-files/build.sh /bin/build.sh
+#RUN ["chmod", "+x", "/bin/build.sh"]
+#ADD docker-files/docker-apollo-config.groovy /apollo/apollo-config.groovy
+ADD docker-files/docker.apollo.yml /apollo/apollo.yml
+RUN chown -R apollo:apollo /apollo
+RUN mkdir -p /data/apollo_data
+RUN chown -R apollo:apollo /data/apollo_data
+
+
+
+
+USER apollo
 WORKDIR /apollo
-#RUN ./grailsw run-app
 RUN ./grailsw clean && rm -rf build/* && ./grailsw war
-#RUN cp /apollo/build/libs/*.war /tmp/apollo.war && rm -rf /apollo/ || true
-RUN cp /apollo/build/libs/*.war /tmp/apollo.war
+RUN cp /apollo/build/libs/*.war /tmp/apollo.war && rm -rf /apollo/ || true
+#RUN cp /apollo/build/libs/*.war /tmp/apollo.war
 RUN mv /tmp/apollo.war /apollo/apollo.war
+
+
 
 USER root
 ##RUN /bin/build.sh
