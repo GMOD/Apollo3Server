@@ -8,9 +8,9 @@ jdk:
   - openjdk11
 
 before_install:
-  - "apt-get install python3-venv"
+  - "pyenv global 3.7"
   - "pip install pip --upgrade"
-#  - "pyenv global 3.7"
+  - "apt-get install python3-venv"
 
 env:
   #  - DB=postgres TEST_SUITE=apollo
