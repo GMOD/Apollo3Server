@@ -7,14 +7,16 @@ jdk:
   - openjdk8
   - openjdk11
 
-#python:
-#  - 3.8
+python:
+  - "3.7.1"
+
+
 before_install:
   - sudo apt-get -y install python3-venv
-  - pyenv global 3.8.1
+  - "pyenv global 3.7.1"
+  - "pip install pip --upgrade"
   - python --version
   - python3 --version
-  - pip install -U pip
   - pip install nose
 
 env:
