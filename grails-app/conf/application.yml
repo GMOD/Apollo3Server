@@ -99,40 +99,47 @@ endpoints:
 
 ---
 
-#environments:
-#    development:
-#        grails:
-#            neo4j:
-#                url: bolt://localhost
-#                username: "neo4j"
-#                #        password: "testpass"
+environments:
+    development:
+        grails:
+            neo4j:
+                url: bolt://localhost
+                username: "neo4j"
+                #        password: "testpass"
+                password: "neo4j"
+                flush.mode: 'manual'
+    test:
+        grails:
+            neo4j:
+                type: embedded
+                flush.mode: AUTO
+                embedded:
+                    ephemeral: true
+                options:
+                    encryptionLevel: NONE
+    production:
+        grails:
+            neo4j:
+                url: bolt://localhost
+                username: "neo4j"
+                password: "testpass"
 #                password: "neo4j"
-#                flush.mode: 'manual'
-#    test:
-#        grails:
-#            neo4j:
-#                type: embedded
-#                flush.mode: AUTO
-#                embedded:
-#                    ephemeral: true
-#                options:
-#                    encryptionLevel: NONE
-#    production:
-#        grails:
-#            neo4j:
-#                url: bolt://localhost
-#                username: "neo4j"
-#                #        password: "testpass"
-#                password: "neo4j"
-#                flush.mode: 'manual'
-grails:
-    neo4j:
-        type: embedded
-        flush.mode: AUTO
-        embedded:
-            ephemeral: true
-        options:
-            encryptionLevel: NONE
+                flush.mode: 'manual'
+#grails:
+#    neo4j:
+#        url: bolt://localhost
+#        username: "neo4j"
+##        password: "neo4j"
+#        flush.mode: 'manual'
+#        password: "testpass"
+#grails:
+#    neo4j:
+#        type: embedded
+#        flush.mode: AUTO
+#        embedded:
+#            ephemeral: true
+#        options:
+#            encryptionLevel: NONE
         #        neo4j:
         #            url: bolt://localhost
         #            username: "neo4j"

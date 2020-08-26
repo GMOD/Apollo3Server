@@ -199,12 +199,14 @@ war {
 //    File targetFile = new File("${buildDir}/classes/groovy/apollo.yml")
     File targetFile = new File("src/main/webapp/WEB-INF/apollo.yml")
     if(apolloFile.exists()){
-        println "file exists ${apolloFile.absolutePath}"
-        println "coyp to ${targetFile.absolutePath}"
+        println "custom property file exists ${apolloFile.absolutePath}"
+        println "copying to target war to ${targetFile.absolutePath}"
         targetFile.write(apolloFile.text)
     }
     else{
         if(targetFile.exists()){
+            println "no custom file exists ${apolloFile.absolutePath}"
+            println "removing from target war ${targetFile.absolutePath}"
             targetFile.delete()
         }
     }

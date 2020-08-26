@@ -91,6 +91,9 @@ export CATALINA_BASE="${CATALINA_BASE}"
 echo "CATALINA_HOME '${CATALINA_HOME}'"
 echo "CATALINA_BASE '${CATALINA_BASE}'"
 
+#CATALINA_HOME '/usr/share/tomcat9'
+#CATALINA_BASE '/var/lib/tomcat9'
+
 APOLLO_PATH="${APOLLO_PATH:${CONTEXT_PATH}}"
 FIXED_CTX=$(echo "${APOLLO_PATH}" | sed 's|/|#|g')
 WAR_FILE=${CATALINA_BASE}/webapps/${FIXED_CTX}.war
@@ -99,14 +102,24 @@ echo "APOLLO PATH '${APOLLO_PATH}'"
 echo "FIXED_CTX PATH '${FIXED_CTX}'"
 echo "WAR FILE '${WAR_FILE}'"
 
+
+${CATALINA_HOME}/bin/catalina.sh stop 5 -force
+
+echo "Waiting for neo4j to come up"
+# TODO: handle this for a more efficient wakeup time
+sleep 20
+echo "Changing password if not already changed"
+curl -H "Content-Type: application/json" -X POST -d '{"password":"testpass"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
+
+
+mkdir ${CATALINA_BASE}/temp
 cp ${CATALINA_BASE}/apollo.war ${WAR_FILE}
 
 # Set environment variables for tomcat
 #bash /createenv.sh
 
 # Launch tomcat, stopping of already running.
-#${CATALINA_HOME}/bin/catalina.sh stop 5 -force
-#${CATALINA_HOME}/bin/catalina.sh run
+${CATALINA_HOME}/bin/catalina.sh run
 
-cd /apollo
-./grailsw run-app
+#cd /apollo
+#./grailsw run-app

@@ -1,14 +1,13 @@
 ## copy to apollo.yml / apollo.groovy / apollo.properties
-#environments:
-#  development:
-#    grails:
-#      neo4j:
-#        url: bolt://localhost
-#        username: "neo4j"
-#        #        password: "movies"
-#        password: "testpass"
-##        flush.mode: 'manual'
-#  test:
+environments:
+  development:
+    grails:
+      neo4j:
+        url: bolt://localhost
+        username: "neo4j"
+        password: "testpass"
+#        flush.mode: 'manual'
+  test:
 grails:
   neo4j:
     type: embedded
@@ -16,11 +15,16 @@ grails:
       ephemeral: true
     options:
       encryptionLevel: NONE
-#  production:
-#    grails:
-#      neo4j:
-#        url: bolt://localhost
-#        username: "neo4j"
-#        #        password: "movies"
-#        password: "testpass"
-##        flush.mode: 'manual'
+  production:
+    grails:
+      neo4j:
+        url: bolt://localhost
+        username: "neo4j"
+        password: "testpass"
+#        flush.mode: 'manual'
+#grails:
+#  neo4j:
+#    url: bolt://localhost
+#    username: "neo4j"
+#    password: "testpass"
+#    flush.mode: 'manual'
