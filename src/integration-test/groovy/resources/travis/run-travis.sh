@@ -18,14 +18,14 @@ if [[ $TEST_SUITE == "python-apollo" ]]; then
 #  sed -i 's|8888|8080/apollo|' `pwd`/test-data/local-apollo3-arrow.yml
   ARROW_GLOBAL_CONFIG_PATH=`pwd`/test-data/local-apollo3-arrow.yml
   export ARROW_GLOBAL_CONFIG_PATH
-  python3 --version
-  python3 -m venv .venv
+  python --version
+  python -m venv .venv
   . .venv/bin/activate
-  python3 --version
-  pip3 install .
-  pip3 install nose
+  python --version
+  pip install .
+  pip install nose
   ./bootstrap_apollo.sh --nodocker3
-  python3 setup.py nosetests
+  python setup.py nosetests
   killall java || true
 fi
 
