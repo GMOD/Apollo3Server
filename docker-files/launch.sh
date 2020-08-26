@@ -105,7 +105,10 @@ echo "WAR FILE '${WAR_FILE}'"
 
 ${CATALINA_HOME}/bin/catalina.sh stop 5 -force
 
-sleep 10
+echo "Waiting for neo4j to come up"
+# TODO: handle this for a more efficient wakeup time
+sleep 20
+echo "Changing password if not already changed"
 curl -H "Content-Type: application/json" -X POST -d '{"password":"testpass"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
 
 
