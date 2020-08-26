@@ -56,8 +56,14 @@ RUN chown -R apollo:apollo /data/apollo_data
 # install grails and python libraries
 USER apollo
 
+ENV LC_CTYPE en_US.UTF-8
+#ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
+
 RUN pip3 install setuptools
-RUN pip3 install nose "apollo==4.2"
+RUN pip3 install wheel
+RUN pip3 install nose apollo==4.2.7
 
 WORKDIR /apollo
 #RUN ./grailsw run-app
@@ -75,6 +81,11 @@ RUN rm -rf ${CATALINA_BASE}/webapps/* && \
 #ADD docker-files/createenv.sh /createenv.sh
 ADD docker-files/launch.sh /launch.sh
 
-USER apollo
-WORKDIR /apollo
+#USER apollo
+#WORKDIR /apollo
+
+#USER root
+#RUN ${CATALINA_HOME}/bin/catalina.sh stop 5 -force
+#RUN ${CATALINA_HOME}/bin/catalina.sh run
+
 CMD "/launch.sh"

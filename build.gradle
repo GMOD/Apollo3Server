@@ -200,7 +200,7 @@ war {
     File targetFile = new File("src/main/webapp/WEB-INF/apollo.yml")
     if(apolloFile.exists()){
         println "custom property file exists ${apolloFile.absolutePath}"
-        println "copyint to target war to ${targetFile.absolutePath}"
+        println "copying to target war to ${targetFile.absolutePath}"
         targetFile.write(apolloFile.text)
     }
     else{
