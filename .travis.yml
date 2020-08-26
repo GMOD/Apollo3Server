@@ -8,7 +8,7 @@ jdk:
   - openjdk11
 
 before_install:
-  - "pyenv global 3.7"
+  - "pyenv global 3.5"
   - "pip install pip --upgrade"
   - "apt-get install python3-venv"
 
