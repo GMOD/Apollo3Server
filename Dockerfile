@@ -54,22 +54,23 @@ RUN mkdir -p /data/apollo_data
 RUN chown -R apollo:apollo /data/apollo_data
 
 # install grails and python libraries
-#USER apollo
+USER apollo
 
-#RUN pip3 install setuptools
-#RUN pip3 install nose "apollo==4.2"
+RUN pip3 install setuptools
+RUN pip3 install nose "apollo==4.2"
 
-#WORKDIR /apollo
+WORKDIR /apollo
 #RUN ./grailsw run-app
-#RUN ./grailsw clean && rm -rf build/* && ./grailsw war
+RUN ./grailsw clean && rm -rf build/* && ./grailsw war
 #RUN cp /apollo/build/libs/*.war /tmp/apollo.war && rm -rf /apollo/ || true
-#RUN mv /tmp/apollo.war /apollo/apollo.war
+RUN cp /apollo/build/libs/*.war /tmp/apollo.war
+RUN mv /tmp/apollo.war /apollo/apollo.war
 
 USER root
 ##RUN /bin/build.sh
 ## remove from webapps and copy it into a staging directory
-#RUN rm -rf ${CATALINA_BASE}/webapps/* && \
-#	cp /apollo/apollo*.war ${CATALINA_BASE}/apollo.war
+RUN rm -rf ${CATALINA_BASE}/webapps/* && \
+	cp /apollo/apollo*.war ${CATALINA_BASE}/apollo.war
 #
 #ADD docker-files/createenv.sh /createenv.sh
 ADD docker-files/launch.sh /launch.sh

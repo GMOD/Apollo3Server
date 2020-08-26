@@ -105,8 +105,8 @@ cp ${CATALINA_BASE}/apollo.war ${WAR_FILE}
 #bash /createenv.sh
 
 # Launch tomcat, stopping of already running.
-#${CATALINA_HOME}/bin/catalina.sh stop 5 -force
-#${CATALINA_HOME}/bin/catalina.sh run
+${CATALINA_HOME}/bin/catalina.sh stop 5 -force
+${CATALINA_HOME}/bin/catalina.sh run
 
-cd /apollo
-./grailsw run-app
+#cd /apollo
+#./grailsw run-app
