@@ -1,7 +1,7 @@
 package org.bbop.apollo.geneProduct
 
-import org.bbop.apollo.Feature
-import org.bbop.apollo.User
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.user.User
 
 
 class GeneProduct {

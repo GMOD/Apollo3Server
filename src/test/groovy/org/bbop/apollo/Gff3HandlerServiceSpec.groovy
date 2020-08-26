@@ -2,6 +2,10 @@ package org.bbop.apollo
 
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest
+import org.bbop.apollo.feature.*
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.relationship.FeatureRelationship
 import spock.lang.Specification
 
 /**
@@ -17,8 +21,6 @@ class Gff3HandlerServiceSpec extends Specification implements ServiceUnitTest<Gf
         mockDomain Exon
         mockDomain CDS
         mockDomain Feature
-        mockDomain FeatureLocation
-        mockDomain FeatureRelationship
         new Sequence(
             length: 3
             , seqChunkSize: 3

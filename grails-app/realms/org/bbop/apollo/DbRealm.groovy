@@ -4,7 +4,7 @@ import org.apache.shiro.authc.AccountException
 import org.apache.shiro.authc.IncorrectCredentialsException
 import org.apache.shiro.authc.UnknownAccountException
 import org.apache.shiro.authc.SimpleAccount
-import org.apache.shiro.authz.permission.WildcardPermission
+import org.bbop.apollo.user.User
 
 class DbRealm {
     static authTokenClass = org.apache.shiro.authc.UsernamePasswordToken

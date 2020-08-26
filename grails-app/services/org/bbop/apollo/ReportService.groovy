@@ -2,11 +2,22 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.RepeatRegion
+import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.feature.TransposableElement
 import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.permission.GroupOrganismPermission
+import org.bbop.apollo.permission.UserOrganismPermission
 import org.bbop.apollo.report.AnnotatorSummary
 import org.bbop.apollo.report.OrganismPermissionSummary
 import org.bbop.apollo.report.OrganismSummary
 import org.bbop.apollo.report.SequenceSummary
+import org.bbop.apollo.user.User
 import org.grails.web.json.JSONArray
 
 @Transactional

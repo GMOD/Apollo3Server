@@ -1,8 +1,16 @@
 package org.bbop.apollo
 
+import org.bbop.apollo.attributes.Comment
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.StopCodonReadThrough
+import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.relationship.FeatureRelationship
 import org.bbop.apollo.sequence.Strand
 
 @Transactional
@@ -15,7 +23,6 @@ class CdsService {
     def featurePropertyService
     def transcriptService
     def featureService
-    def exonService
     def sequenceService
     def overlapperService
     
@@ -100,17 +107,15 @@ class CdsService {
         StopCodonReadThrough stopCodonReadThrough = new StopCodonReadThrough(
                 uniqueName: uniqueName
                 ,name: uniqueName
-                , isAnalysis: cds.isIsAnalysis()
-                , isObsolete: cds.isIsObsolete()
-        ).save(failOnError: true)
+        ).save(failOnError: true,flush: true)
         FeatureLocation featureLocation = new FeatureLocation(
-                sequence: cds.featureLocation.sequence
-                , feature: stopCodonReadThrough
+                to: cds.featureLocation.to
+                , from: stopCodonReadThrough
                 ,fmin: cds.featureLocation.fmin
                 ,fmax: cds.featureLocation.fmax
-        ).save(failOnError: true)
+        ).save(failOnError: true,flush: true)
 
-        stopCodonReadThrough.addToFeatureLocations(featureLocation)
+        stopCodonReadThrough.setFeatureLocation(featureLocation)
         stopCodonReadThrough.featureLocation.setStrand(cds.getStrand());
 
         stopCodonReadThrough.save(flush: true)
@@ -124,8 +129,8 @@ class CdsService {
         }
 
         FeatureRelationship fr = new FeatureRelationship(
-                parentFeature: cds
-                , childFeature: stopCodonReadThrough
+                from: cds
+                , to: stopCodonReadThrough
                 , rank: 0 // TODO: Do we need to rank the order of any other transcripts?
         ).save(insert: true,failOnError: true)
         cds.addToParentFeatureRelationships(fr);

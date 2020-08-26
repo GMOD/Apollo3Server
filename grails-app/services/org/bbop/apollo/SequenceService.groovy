@@ -6,14 +6,25 @@ import groovy.json.JsonSlurper
 import htsjdk.samtools.reference.FastaSequenceIndex
 import htsjdk.samtools.reference.IndexedFastaSequenceFile
 import org.bbop.apollo.alteration.SequenceAlterationInContext
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.organism.SequenceCache
 import org.bbop.apollo.sequence.SequenceTranslationHandler
 import org.bbop.apollo.sequence.StandardTranslationTable
 import org.bbop.apollo.sequence.Strand
 import org.bbop.apollo.sequence.TranslationTable
+import org.bbop.apollo.variant.DeletionArtifact
+import org.bbop.apollo.variant.InsertionArtifact
+import org.bbop.apollo.variant.SequenceAlterationArtifact
+import org.bbop.apollo.variant.SubstitutionArtifact
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
-import org.hibernate.sql.JoinType
 
 import java.util.zip.CRC32
 import java.util.zip.GZIPInputStream
@@ -21,7 +32,6 @@ import java.util.zip.GZIPInputStream
 @Transactional
 class SequenceService {
 
-    def configWrapperService
     def grailsApplication
     def featureService
     def transcriptService
@@ -34,10 +44,6 @@ class SequenceService {
     def trackService
 
 
-    List<FeatureLocation> getFeatureLocations(Sequence sequence) {
-        FeatureLocation.findAllBySequence(sequence)
-    }
-
     /**
      * Get residues from sequence . . . could be multiple locations
      * @param feature
@@ -45,20 +51,21 @@ class SequenceService {
      */
     String getResiduesFromFeature(Feature feature) {
         String returnResidues = ""
-        def orderedFeatureLocations = feature.featureLocations.sort { it.fmin }
-        for (FeatureLocation featureLocation in orderedFeatureLocations) {
-            String residues = getResidueFromFeatureLocation(featureLocation)
-            if (featureLocation.strand == Strand.NEGATIVE.value) {
-                returnResidues += SequenceTranslationHandler.reverseComplementSequence(residues)
-            } else returnResidues += residues
+//        def orderedFeatureLocations = feature.featureLocations.sort { it.fmin }
+//        for (FeatureLocation featureLocation in feature.featureLocation) {
+        String residues = getResidueFromFeatureLocation(feature.featureLocation)
+        if (feature.featureLocation.strand == Strand.NEGATIVE.value) {
+            returnResidues += SequenceTranslationHandler.reverseComplementSequence(residues)
+        } else {
+            returnResidues += residues
         }
-
+//        }
 
         return returnResidues
     }
 
     String getResidueFromFeatureLocation(FeatureLocation featureLocation) {
-        return getRawResiduesFromSequence(featureLocation.sequence, featureLocation.fmin, featureLocation.fmax)
+        return getRawResiduesFromSequence(featureLocation.to, featureLocation.fmin, featureLocation.fmax)
     }
 
 
@@ -81,23 +88,24 @@ class SequenceService {
         }
 
         StringBuilder residues = new StringBuilder(residueString);
-        List<SequenceAlterationArtifact> sequenceAlterationList = SequenceAlterationArtifact.withCriteria {
-            createAlias('featureLocations', 'fl', JoinType.INNER_JOIN)
-            createAlias('fl.sequence', 's', JoinType.INNER_JOIN)
-            and {
-                or {
-                    and {
-                        ge("fl.fmin", fmin)
-                        le("fl.fmin", fmax)
-                    }
-                    and {
-                        ge("fl.fmax", fmin)
-                        le("fl.fmax", fmax)
-                    }
-                }
-                eq("s.id", sequence.id)
-            }
-        }.unique()
+//        List<SequenceAlterationArtifact> sequenceAlterationList = SequenceAlterationArtifact.withCriteria {
+//            createAlias('featureLocations', 'fl', JoinType.INNER_JOIN)
+//            createAlias('fl.sequence', 's', JoinType.INNER_JOIN)
+//            and {
+//                or {
+//                    and {
+//                        ge("fl.fmin", fmin)
+//                        le("fl.fmin", fmax)
+//                    }
+//                    and {
+//                        ge("fl.fmax", fmin)
+//                        le("fl.fmax", fmax)
+//                    }
+//                }
+//                eq("s.id", sequence.id)
+//            }
+//        }.unique()
+        List<SequenceAlterationArtifact> sequenceAlterationList = []
         log.debug "sequence alterations found ${sequenceAlterationList.size()}"
         List<SequenceAlterationInContext> sequenceAlterationsInContextList = new ArrayList<SequenceAlterationInContext>()
         for (SequenceAlterationArtifact sequenceAlteration : sequenceAlterationList) {
@@ -210,11 +218,29 @@ class SequenceService {
     }
 
     String getRawResiduesFromSequence(Sequence sequence, int fmin, int fmax) {
+        log.debug "inuput sequence ${sequence}"
+        log.debug "with orgs $sequence.organism , $sequence.organismId "
+        log.debug "sequence as JSON ${sequence as JSON}"
+//        log.debug "org count ${Organism.count}"
+//        for(def o in Organism.all){
+//            log.debug "organisms ${o as JSON}"
+//        }
+//        log.debug "INPUT ${sequence as JSON}"
+//        String query = "MATCH (o:Organism)--(s:Sequence) where s.name = '${sequence.name}' and o.commonName = ${} RETURN {organism: o} LIMIT 25"
+//        log.debug "query ${query}"
+//        def organisms = Organism.executeQuery(query)
+//        log.debug "organism ${organisms}"
+//        Organism organism = organisms[0]
+//        log.debug "OUTOPUT ORGANISM:  ${organism}"
+
+        // TODO: fix this with a query
+        String outputSequence
         if (sequence.organism.genomeFasta) {
-            getRawResiduesFromSequenceFasta(sequence, fmin, fmax)
+            outputSequence = getRawResiduesFromSequenceFasta(sequence, fmin, fmax)
         } else {
-            getRawResiduesFromSequenceChunks(sequence, fmin, fmax)
+            outputSequence = getRawResiduesFromSequenceChunks(sequence, fmin, fmax)
         }
+        return outputSequence
     }
 
     String getRawResiduesFromSequenceFasta(Sequence sequence, int fmin, int fmax) {
@@ -233,7 +259,6 @@ class SequenceService {
 
         int startChunkNumber = fmin / sequence.seqChunkSize;
         int endChunkNumber = (fmax - 1) / sequence.seqChunkSize;
-
 
         for (int i = startChunkNumber; i <= endChunkNumber; i++) {
             sequenceString.append(loadResidueForSequence(sequence, i))
@@ -442,7 +467,7 @@ class SequenceService {
                       sequence.start = 0
                       sequence.end = entry.size as Integer
                       sequence.save(failOnError: true,insert:false)
-                    log.debug "replaced sequence ${sequence}"
+                      log.debug "replaced sequence ${sequence}"
                     }
                     else {
                         log.debug "skipped existing unchanged sequence ${entry.contig}"
@@ -511,7 +536,7 @@ class SequenceService {
         // Method returns the sequence for a single feature
         // Directly called for FASTA Export
         String featureResidues = null
-        Organism organism = gbolFeature.featureLocation.sequence.organism
+        Organism organism = gbolFeature.featureLocation.to.organism
         TranslationTable translationTable = organismService.getTranslationTable(organism)
 
         if (type.equals(FeatureStringEnum.TYPE_PEPTIDE.value)) {
@@ -607,7 +632,7 @@ class SequenceService {
                 }
 
             }
-            featureResidues = getGenomicResiduesFromSequenceWithAlterations(gbolFeature.featureLocation.sequence, fmin, fmax, Strand.getStrandForValue(gbolFeature.strand))
+            featureResidues = getGenomicResiduesFromSequenceWithAlterations(gbolFeature.featureLocation.to, fmin, fmax, Strand.getStrandForValue(gbolFeature.strand))
         }
         return featureResidues
     }
@@ -673,11 +698,12 @@ class SequenceService {
             int fmin = gbolFeature.fmin
             int fmax = gbolFeature.fmax
 
-            Sequence sequence = gbolFeature.featureLocation.sequence
+            Sequence sequence = gbolFeature.featureLocation.to
 
             // TODO: does strand and alteration length matter here?
-            List<Feature> listOfSequenceAlterations = Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl join fl.sequence s where s = :sequence and f.class in :sequenceTypes and fl.fmin >= :fmin and fl.fmax <= :fmax ", [sequence: sequence, sequenceTypes: requestHandlingService.viewableAlterations, fmin: fmin, fmax: fmax])
-            featuresToWrite += listOfSequenceAlterations
+            // TODO: fix query
+//            List<Feature> listOfSequenceAlterations = Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl join fl.sequence s where s = :sequence and f.class in :sequenceTypes and fl.fmin >= :fmin and fl.fmax <= :fmax ", [sequence: sequence, sequenceTypes: requestHandlingService.viewableAlterations, fmin: fmin, fmax: fmax])
+//            featuresToWrite += listOfSequenceAlterations
         }
         gff3HandlerService.writeFeaturesToText(outputFile.absolutePath, featuresToWrite, grailsApplication.config.apollo.gff3.source as String)
     }

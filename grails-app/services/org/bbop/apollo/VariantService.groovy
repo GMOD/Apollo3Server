@@ -1,7 +1,16 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.user.User
+import org.bbop.apollo.variant.Allele
+import org.bbop.apollo.variant.AlleleInfo
+import org.bbop.apollo.variant.SequenceAlteration
+import org.bbop.apollo.variant.SequenceAlterationArtifact
+import org.bbop.apollo.variant.VariantInfo
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
@@ -36,7 +45,7 @@ class VariantService {
             log.error "Unable to find valid user to set on variant: " + jsonFeature.toString()
         }
 
-        featureService.updateNewGsolFeatureAttributes(variant, sequence)
+        featureService.setSequenceForChildFeatures(variant, sequence)
         variant.save(flush: true)
 
         // TODO: parse metadata
@@ -380,6 +389,6 @@ class VariantService {
     def getSequenceAlterationEffectsForFeature(Feature feature) {
         Integer fmin = feature.fmin
         Integer fmax = feature.fmax
-        return getSequenceAlterationEffectsForLocation(fmin,fmax,feature.featureLocation.sequence)
+        return getSequenceAlterationEffectsForLocation(fmin,fmax,feature.featureLocation.to)
     }
 }

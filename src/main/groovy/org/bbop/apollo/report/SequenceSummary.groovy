@@ -1,6 +1,6 @@
 package org.bbop.apollo.report
 
-import org.bbop.apollo.Sequence
+import org.bbop.apollo.organism.Sequence
 
 /**
  * Created by nathandunn on 7/17/15.

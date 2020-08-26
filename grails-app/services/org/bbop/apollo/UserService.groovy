@@ -5,6 +5,10 @@ import grails.gorm.transactions.Transactional
 import org.apache.shiro.crypto.hash.Sha256Hash
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
+import org.bbop.apollo.permission.GroupOrganismPermission
+import org.bbop.apollo.permission.UserOrganismPermission
+import org.bbop.apollo.user.Role
+import org.bbop.apollo.user.User
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 

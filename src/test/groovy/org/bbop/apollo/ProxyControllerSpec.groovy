@@ -1,9 +1,9 @@
 package org.bbop.apollo
 
-import grails.converters.JSON
-import grails.test.mixin.*
+
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
+import org.bbop.apollo.system.Proxy
 import spock.lang.*
 
 //@TestFor(ProxyController)

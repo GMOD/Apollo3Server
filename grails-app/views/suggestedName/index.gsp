@@ -1,5 +1,5 @@
 
-<%@ page import="org.bbop.apollo.SuggestedName" %>
+<%@ page import="org.bbop.apollo.attributes.SuggestedName" %>
 <!DOCTYPE html>
 <html>
 	<head>

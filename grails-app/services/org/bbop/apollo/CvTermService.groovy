@@ -1,6 +1,8 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.cv.CV
+import org.bbop.apollo.cv.CVTerm
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.grails.web.json.JSONObject
 

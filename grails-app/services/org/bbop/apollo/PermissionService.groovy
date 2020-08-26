@@ -11,10 +11,17 @@ import org.apache.shiro.subject.Subject
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.permission.GroupOrganismPermission
+import org.bbop.apollo.permission.UserOrganismPermission
 import org.bbop.apollo.preference.OrganismDTO
 import org.bbop.apollo.preference.SequenceDTO
 import org.bbop.apollo.preference.UserDTO
 import org.bbop.apollo.preference.UserOrganismPreferenceDTO
+import org.bbop.apollo.user.Role
+import org.bbop.apollo.user.User
+import org.bbop.apollo.user.UserGroup
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
@@ -31,7 +38,7 @@ class PermissionService {
     def usernamePasswordAuthenticatorService
 
 
-    boolean isUserBetterOrEqualRank(User user,GlobalPermissionEnum globalPermissionEnum) {
+    boolean isUserBetterOrEqualRank(User user, GlobalPermissionEnum globalPermissionEnum) {
         // TODO: remove
         return true
         if (user != null) {
@@ -43,8 +50,9 @@ class PermissionService {
         }
         return false
     }
+
     boolean isUserGlobalAdmin(User user) {
-        return isUserBetterOrEqualRank(user,GlobalPermissionEnum.ADMIN)
+        return isUserBetterOrEqualRank(user, GlobalPermissionEnum.ADMIN)
     }
 
     boolean isAdmin() {
@@ -89,7 +97,7 @@ class PermissionService {
         return returnOrganismList
     }
 
-    List<Organism> getOrganismsWithMinimumPermission(User user,PermissionEnum permissionEnum) {
+    List<Organism> getOrganismsWithMinimumPermission(User user, PermissionEnum permissionEnum) {
         if (isUserGlobalAdmin(user)) {
             return Organism.listOrderByCommonName()
         }
@@ -104,8 +112,8 @@ class PermissionService {
         }
         List<Organism> returnOrganismList = []
         for (Organism organism in organismList.sort() { a, b -> a.commonName <=> b.commonName }) {
-            PermissionEnum highestPermission = getOrganismPermissionsForUser(organism,currentUser).sort(){ a,b -> a.rank <=> b.rank }.first()
-            if(highestPermission.rank>=permissionEnum.rank){
+            PermissionEnum highestPermission = getOrganismPermissionsForUser(organism, currentUser).sort() { a, b -> a.rank <=> b.rank }.first()
+            if (highestPermission.rank >= permissionEnum.rank) {
                 returnOrganismList.add(organism)
             }
         }
@@ -113,7 +121,7 @@ class PermissionService {
         return returnOrganismList
     }
 
-    Map<Organism,PermissionEnum> getOrganismsWithPermission(User user) {
+    Map<Organism, PermissionEnum> getOrganismsWithPermission(User user) {
         if (isUserGlobalAdmin(user)) {
             return Organism.listOrderByCommonName()
         }
@@ -126,10 +134,10 @@ class PermissionService {
         for (UserGroup userGroup in user?.userGroups) {
             organismList.addAll(getOrganismsForGroup(userGroup))
         }
-        Map<Organism,PermissionEnum> returnOrganismMap= [:]
+        Map<Organism, PermissionEnum> returnOrganismMap = [:]
         for (Organism organism in organismList.sort() { a, b -> a.commonName <=> b.commonName }) {
-            PermissionEnum highestPermission = getOrganismPermissionsForUser(organism,currentUser).sort(){ a,b -> a.rank <=> b.rank }.first()
-            returnOrganismMap.put(organism,highestPermission)
+            PermissionEnum highestPermission = getOrganismPermissionsForUser(organism, currentUser).sort() { a, b -> a.rank <=> b.rank }.first()
+            returnOrganismMap.put(organism, highestPermission)
         }
 
         return returnOrganismMap
@@ -211,10 +219,10 @@ class PermissionService {
         UserOrganismPermission userOrganismPermission = UserOrganismPermission.findByOrganismAndUser(organism, user)
         if (!userOrganismPermission) {
             new UserOrganismPermission(
-                    organism: organism
-                    , permissions: generatePermissionString(permissions)
-                    , user: user
-                    , token: token
+                organism: organism
+                , permissions: generatePermissionString(permissions)
+                , user: user
+                , token: token
             ).save(insert: true)
         } else {
             userOrganismPermission.permissions = generatePermissionString(permissions)
@@ -228,10 +236,10 @@ class PermissionService {
         GroupOrganismPermission groupOrganismPermission = GroupOrganismPermission.findByOrganismAndGroup(organism, group)
         if (!groupOrganismPermission) {
             new GroupOrganismPermission(
-                    organism: organism
-                    , permissions: generatePermissionString(permissions)
-                    , group: group
-                    , token: token
+                organism: organism
+                , permissions: generatePermissionString(permissions)
+                , group: group
+                , token: token
             ).save(insert: true)
         } else {
             groupOrganismPermission.permissions = generatePermissionString(permissions)
@@ -254,7 +262,7 @@ class PermissionService {
      */
     Map<String, Integer> getPermissionsForUser(User user) {
         Map<String, Integer> returnMap = new HashMap<>()
-        if(!user) {
+        if (!user) {
             log.warn("No user provided, please log in")
             return returnMap
         }
@@ -346,7 +354,7 @@ class PermissionService {
 
         User user = User.findByUsername(username)
 
-        if(!user){
+        if (!user) {
             // TODO: remove
             user = User.all.first()
         }
@@ -407,6 +415,7 @@ class PermissionService {
 
         User user = getCurrentUser(inputObject)
         organism = getOrganismFromInput(inputObject)
+//        println "organism ${organism} from input ${inputObject as JSON}"
 
 //        if (!organism) {
 //            String clientToken = inputObject.getString(FeatureStringEnum.CLIENT_TOKEN.value)
@@ -421,8 +430,42 @@ class PermissionService {
 //        if (!sequenceName) {
 //            sequence = UserOrganismPreference.findByClientTokenAndOrganism(sequenceName, organism, [max: 1, sort: "lastUpdated", order: "desc"])?.sequence
 //        } else {
-          Sequence sequence = Sequence.findByNameAndOrganism(sequenceName, organism)
-//        println "seq ${sequence} org ${organism} "
+//        println "sequence name ${sequenceName} and ${organism}"
+//        for (s in Sequence.all) {
+//            println "sequence: ${s as JSON}"
+//            println "seq name: ${s.name}"
+//            println "seq org: ${s.organism}"
+//            println "seq org id: ${s.organismId}"
+//        }
+//        Sequence sequence = Sequence.findByNameAndOrganismId(sequenceName, organism.id, [fetch: [organism: 'join']])
+//        sequence = sequence ?: Sequence.(sequenceName, organism.id, [fetch: [organism: 'join']])
+//        println "sequence join json ${sequenceJoin as JSON}"
+//        Sequence sequence = Sequence.findByNameAndOrganismId(sequenceName, organism.id)
+//        println "sequence name ${sequenceName} $sequence"
+//        println "sequence json ${sequence as JSON}"
+//        println "input ${sequenceName} ${organism.id}"
+//        Sequence sequence = Sequence.executeQuery("MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence) where o.commonName = ${organism.commonName} RETURN o,r,s LIMIT 1")?.first()
+        Sequence sequence = null
+        if(organism && sequenceName){
+            String query = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence) where o.commonName = '${organism.commonName}' and s.name = '${sequenceName}' RETURN { sequence: s} LIMIT 1"
+            def sequences = Sequence.executeQuery(query)
+            sequence = sequences ? sequences.first().sequence as Sequence : null
+        }
+//        def retrievedSequences = Sequence.createCriteria().listDistinct {
+//            eq("name", sequenceName)
+//            eq("organismId", organism.id as Long)
+////            join("organism")
+//        }
+//        println "A retrieved sequences ${retrievedSequences as JSON}"
+//        retrievedSequences = retrievedSequences?: Sequence.createCriteria().listDistinct {
+//            eq("name", sequenceName)
+//                organism{
+//                    eq("commonName",organism.commonName)
+//                }
+////            eq("organismId", organism.id as Long)
+//        }
+//        println "B retrieved sequences ${retrievedSequences as JSON}"
+//        println "seq ${sequence} org ${organism} , sorg ${sequence.organismId}, ${sequence.organism}"
 //            if (!sequence) {
 //                throw new AnnotationException("No sequence found for name '${sequenceName}' and organism '${organism?.commonName}'")
 //            }
@@ -453,7 +496,7 @@ class PermissionService {
             if (session) {
                 Map<String, Integer> permissions = (Map<String, Integer>) session.getAttribute(FeatureStringEnum.PERMISSIONS.getValue())
                 // permissions not always on session if they come through a web-service, see #1759
-                if(!permissions){
+                if (!permissions) {
                     User user = User.findByUsername(SecurityUtils.subject.principal.toString())
                     permissions = getPermissionsForUser(user)
                 }
@@ -537,7 +580,7 @@ class PermissionService {
                     return jsonObject
                 }
             } catch (Exception ae) {
-                log.debug("Problem authenticating: " + ae.fillInStackTrace())
+                log.error("Problem authenticating: " + ae.fillInStackTrace())
                 jsonObject.error_message = "Problem authenticating: " + ae.fillInStackTrace()
                 return jsonObject
             }
@@ -562,7 +605,7 @@ class PermissionService {
     Boolean hasGlobalPermissions(JSONObject jsonObject, PermissionEnum permissionEnum) {
 
         GlobalPermissionEnum globalPermissionEnum = mapLocalPermissionToGlobal(permissionEnum)
-        return hasGlobalPermissions(jsonObject,globalPermissionEnum)
+        return hasGlobalPermissions(jsonObject, globalPermissionEnum)
     }
 
     /**
@@ -575,8 +618,8 @@ class PermissionService {
     GlobalPermissionEnum mapLocalPermissionToGlobal(PermissionEnum permissionEnum) {
         int rank = permissionEnum.rank
 
-        for(gpe in GlobalPermissionEnum.values().sort(){ a,b -> a.rank <=> b.rank }){
-            if(gpe.rank>=rank){
+        for (gpe in GlobalPermissionEnum.values().sort() { a, b -> a.rank <=> b.rank }) {
+            if (gpe.rank >= rank) {
                 return gpe
             }
         }
@@ -584,18 +627,18 @@ class PermissionService {
 
     }
 /**
-     * If a user exists and is a admin (not just for organism), then check, otherwise a regular user is still a valid user.
-     * @param jsonObject
-     * @param permissionEnum
-     * @return
-     */
+ * If a user exists and is a admin (not just for organism), then check, otherwise a regular user is still a valid user.
+ * @param jsonObject
+ * @param permissionEnum
+ * @return
+ */
     Boolean hasGlobalPermissions(JSONObject jsonObject, GlobalPermissionEnum permissionEnum) {
         // TODO: remove this line
         return true
         // check the authentication
         // we need to validate the session before we check for the username
         jsonObject = validateSessionForJsonObject(jsonObject)
-        if(jsonObject.username == null){
+        if (jsonObject.username == null) {
             log.debug("User not logged in")
             return false
         }
@@ -608,7 +651,7 @@ class PermissionService {
             log.error("Error with user permissions ${user.username}:  ${jsonObject.error_message}")
             return false
         }
-        return isUserBetterOrEqualRank(user,permissionEnum)
+        return isUserBetterOrEqualRank(user, permissionEnum)
         // if the rank required is less than administrator than ask if they are an administrator
 //        if (PermissionEnum.ADMINISTRATE.rank < permissionEnum.rank) {
 //            return isUserGlobalAdmin(user)
@@ -754,7 +797,7 @@ class PermissionService {
     }
 
     @Transactional
-    def removeAllPermissions(Organism organism){
+    def removeAllPermissions(Organism organism) {
         def userPermissions = UserOrganismPermission.findAllByOrganism(organism)
         UserOrganismPermission.deleteAll(userPermissions)
         def groupPermissions = GroupOrganismPermission.findAllByOrganism(organism)
@@ -816,8 +859,7 @@ class PermissionService {
         JSONObject payloadJson = new JSONObject()
         if (request.JSON) {
             payloadJson = request.JSON as JSONObject
-        }
-        else {
+        } else {
             params.keySet().each { key ->
                 // TODO: what about this?
                 payloadJson.put(key, params.get(key)[0])

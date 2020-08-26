@@ -1,4 +1,8 @@
 package org.bbop.apollo
+
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.location.FeatureLocation
+
 /**
  * Created by ndunn on 10/29/14.
  */
@@ -16,6 +20,7 @@ class FeaturePositionComparator<T extends Feature> implements  Comparator<T>{
 
     int compare(T feature1, T feature2) {
 
+        println "input features ${feature1} vs ${feature2} "
         if (feature1 == null || feature2 == null) {
 //            log.info("both features null");
         }
@@ -23,6 +28,7 @@ class FeaturePositionComparator<T extends Feature> implements  Comparator<T>{
         int retVal = 0;
         FeatureLocation featureLocation1 = feature1.featureLocation
         FeatureLocation featureLocation2  = feature2.featureLocation
+        println "input feature locations ${featureLocation1} vs ${featureLocation2} "
         if (featureLocation1.fmin < featureLocation2.fmin) {
             retVal = -1;
         }

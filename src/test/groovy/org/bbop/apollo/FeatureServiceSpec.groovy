@@ -3,20 +3,23 @@ package org.bbop.apollo
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.location.FeatureLocation
 import org.bbop.apollo.sequence.Strand
 import org.grails.web.json.JSONObject
 import spock.lang.Specification
+import spock.lang.Ignore
 
 /**
  */
-//@TestFor(FeatureService)
-//@Mock([Sequence, FeatureLocation, Feature, MRNA])
 class FeatureServiceSpec extends Specification implements ServiceUnitTest<FeatureService>, DataTest {
 
     def setup() {
         mockDomain Sequence
-        mockDomain FeatureLocation
         mockDomain Feature
         mockDomain MRNA
     }
@@ -41,8 +44,8 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
 
 
         then: "We should return a valid FeatureLocation"
-        FeatureLocation featureLocation = service.convertJSONToFeatureLocation(jsonObject, sequence)
-        assert featureLocation.sequence.name == "Chr3"
+        FeatureLocation featureLocation = service.convertJSONToFeatureLocation(jsonObject, sequence,null)
+        assert featureLocation.to.name == "Chr3"
         assert featureLocation.fmin == 73
         assert featureLocation.fmax == 113
         assert featureLocation.strand == Strand.POSITIVE.value

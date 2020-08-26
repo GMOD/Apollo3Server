@@ -1,4 +1,4 @@
-<%@ page import="org.bbop.apollo.CannedKey" %>
+<%@ page import="org.bbop.apollo.attributes.CannedKey" %>
 
 
 
@@ -25,7 +25,7 @@
         <g:message code="cannedKey.featureTypes.label" default="Feature Types"/>
 
     </label>
-    <g:select name="featureTypes" from="${org.bbop.apollo.FeatureType.list()}" multiple="multiple" optionKey="id"
+    <g:select name="featureTypes" from="${org.bbop.apollo.attributes.FeatureType.list()}" multiple="multiple" optionKey="id"
               size="10" value="${cannedKey?.featureTypes*.id}" class="many-to-many" optionValue="display"/>
 
 </div>
@@ -35,7 +35,7 @@
         <g:message code="cannedKey.organisms.label" default="Organisms" />
 
     </label>
-    <g:select name="organisms" from="${org.bbop.apollo.Organism.list()}"
+    <g:select name="organisms" from="${org.bbop.apollo.organism.Organism.list()}"
               multiple="multiple"
               optionKey="id" size="10"
               optionValue="commonName"

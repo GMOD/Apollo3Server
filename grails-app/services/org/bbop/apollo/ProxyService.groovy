@@ -1,6 +1,7 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.system.Proxy
 
 @Transactional(readOnly = true)
 class ProxyService {

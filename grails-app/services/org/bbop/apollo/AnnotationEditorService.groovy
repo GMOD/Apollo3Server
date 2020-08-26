@@ -3,6 +3,7 @@ package org.bbop.apollo
 import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import groovy.json.JsonBuilder
+import org.bbop.apollo.feature.Gene
 
 @Transactional
 class AnnotationEditorService {

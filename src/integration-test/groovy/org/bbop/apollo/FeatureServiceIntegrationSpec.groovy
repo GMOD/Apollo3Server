@@ -3,12 +3,17 @@ package org.bbop.apollo
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
 import grails.gorm.transactions.Rollback
+import org.bbop.apollo.attributes.Comment
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.Strand
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
-import spock.lang.Ignore
-import spock.lang.IgnoreRest
 
 @Integration
 @Rollback

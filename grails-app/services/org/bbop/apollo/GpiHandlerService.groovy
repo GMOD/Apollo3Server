@@ -1,8 +1,9 @@
 package org.bbop.apollo
 
-import groovy.json.JsonSlurper
+
+import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.go.GoAnnotation
-import org.grails.web.json.JSONArray
+
 import java.text.SimpleDateFormat
 
 /**
@@ -33,7 +34,7 @@ class GpiHandlerService {
         def goAnnotations = GoAnnotation.findAllByFeatureInList(features as List<Feature>)
 
         if (features) {
-            writeObject.organismString = features.first().featureLocation.sequence.organism.commonName
+            writeObject.organismString = features.first().featureLocation.to.organism.commonName
         }
 
         for (GoAnnotation goAnnotation in goAnnotations) {

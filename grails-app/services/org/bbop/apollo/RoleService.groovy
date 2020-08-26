@@ -3,6 +3,7 @@ package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
+import org.bbop.apollo.user.Role
 
 @Transactional
 class RoleService {
@@ -24,7 +25,7 @@ class RoleService {
         }
 
         def userRole = Role.findByName(GlobalPermissionEnum.USER.name())
-        if (!userRole.rank) {
+        if (!userRole?.rank) {
             userRole.rank = GlobalPermissionEnum.USER.rank
             userRole.save()
         }

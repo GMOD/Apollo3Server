@@ -1,9 +1,9 @@
 package org.bbop.apollo
 
-import org.bbop.apollo.gwt.shared.PermissionEnum
+import grails.gorm.transactions.Transactional
+import org.bbop.apollo.attributes.FeatureType
 
 import static org.springframework.http.HttpStatus.*
-import grails.gorm.transactions.Transactional
 
 @Transactional(readOnly = true)
 class FeatureTypeController {

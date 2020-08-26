@@ -1,4 +1,4 @@
-<%@ page import="org.bbop.apollo.CannedComment" %>
+<%@ page import="org.bbop.apollo.attributes.CannedComment" %>
 <!DOCTYPE html>
 <html>
 	<head>

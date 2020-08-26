@@ -12,21 +12,21 @@ if [ ! -e "${WEBAPOLLO_COMMON_DATA}/test_file" ];then
 	su -c "touch ${WEBAPOLLO_COMMON_DATA}/test_file"
 fi
 
-WEBAPOLLO_DB_DATA="/var/lib/postgresql/9.6/main"
+#WEBAPOLLO_DB_DATA="/var/lib/postgresql/9.6/main"
 
-if [ ! -e ${WEBAPOLLO_DB_DATA} ]; then
-	mkdir -p ${WEBAPOLLO_DB_DATA}
-	chown -R postgres:postgres ${WEBAPOLLO_DB_DATA}
-fi
+#if [ ! -e ${WEBAPOLLO_DB_DATA} ]; then
+#	mkdir -p ${WEBAPOLLO_DB_DATA}
+#	chown -R postgres:postgres ${WEBAPOLLO_DB_DATA}
+#fi
 
-if [ ! -e "${WEBAPOLLO_DB_DATA}/PG_VERSION" ];then
-	su -c "/usr/lib/postgresql/9.6/bin/initdb -D ${WEBAPOLLO_DB_DATA}" postgres
-fi
+#if [ ! -e "${WEBAPOLLO_DB_DATA}/PG_VERSION" ];then
+#	su -c "/usr/lib/postgresql/9.6/bin/initdb -D ${WEBAPOLLO_DB_DATA}" postgres
+#fi
 
 export WEBAPOLLO_START_POSTGRES="${WEBAPOLLO_START_POSTGRES:-true}"
 
 if [[ "${WEBAPOLLO_START_POSTGRES}" == "true" ]]; then
-    service postgresql start
+    service neo4j start
 fi
 
 export WEBAPOLLO_DB_HOST="${WEBAPOLLO_DB_HOST:-127.0.0.1}"
@@ -53,21 +53,21 @@ fi
 echo "WEBAPOLLO_HOST_FLAG: $WEBAPOLLO_HOST_FLAG"
 #echo "CHADO_HOST_FLAG: $CHADO_HOST_FLAG"
 
-echo "Waiting for DB"
-until pg_isready $WEBAPOLLO_HOST_FLAG; do
-	echo -n "."
-	sleep 1;
-done
+#echo "Waiting for DB"
+#until pg_isready $WEBAPOLLO_HOST_FLAG; do
+#	echo -n "."
+#	sleep 1;
+#done
 
-echo "Postgres is up, configuring database"
+#echo "Postgres is up, configuring database"
 
-su postgres -c "PGPASSWORD=$WEBAPOLLO_DB_PASSWORD psql $WEBAPOLLO_HOST_FLAG -U $WEBAPOLLO_DB_USERNAME -lqt | cut -d \| -f 1 | grep -qw $WEBAPOLLO_DB_NAME"
-if [[ "$?" == "1" ]]; then
-	echo "Apollo database not found, creating..."
-	su postgres -c "createdb $WEBAPOLLO_HOST_FLAG $WEBAPOLLO_DB_NAME"
-	su postgres -c "psql $WEBAPOLLO_HOST_FLAG -c \"CREATE USER $WEBAPOLLO_DB_USERNAME WITH PASSWORD '$WEBAPOLLO_DB_PASSWORD';\""
-	su postgres -c "psql $WEBAPOLLO_HOST_FLAG -c \"GRANT ALL PRIVILEGES ON DATABASE $WEBAPOLLO_DB_NAME to $WEBAPOLLO_DB_USERNAME;\""
-fi
+#su postgres -c "PGPASSWORD=$WEBAPOLLO_DB_PASSWORD psql $WEBAPOLLO_HOST_FLAG -U $WEBAPOLLO_DB_USERNAME -lqt | cut -d \| -f 1 | grep -qw $WEBAPOLLO_DB_NAME"
+#if [[ "$?" == "1" ]]; then
+#	echo "Apollo database not found, creating..."
+#	su postgres -c "createdb $WEBAPOLLO_HOST_FLAG $WEBAPOLLO_DB_NAME"
+#	su postgres -c "psql $WEBAPOLLO_HOST_FLAG -c \"CREATE USER $WEBAPOLLO_DB_USERNAME WITH PASSWORD '$WEBAPOLLO_DB_PASSWORD';\""
+#	su postgres -c "psql $WEBAPOLLO_HOST_FLAG -c \"GRANT ALL PRIVILEGES ON DATABASE $WEBAPOLLO_DB_NAME to $WEBAPOLLO_DB_USERNAME;\""
+#fi
 
 #if [[ "${WEBAPOLLO_USE_CHADO}" == "true" ]]; then
 #    echo "Configuring Chado"
@@ -91,6 +91,9 @@ export CATALINA_BASE="${CATALINA_BASE}"
 echo "CATALINA_HOME '${CATALINA_HOME}'"
 echo "CATALINA_BASE '${CATALINA_BASE}'"
 
+#CATALINA_HOME '/usr/share/tomcat9'
+#CATALINA_BASE '/var/lib/tomcat9'
+
 APOLLO_PATH="${APOLLO_PATH:${CONTEXT_PATH}}"
 FIXED_CTX=$(echo "${APOLLO_PATH}" | sed 's|/|#|g')
 WAR_FILE=${CATALINA_BASE}/webapps/${FIXED_CTX}.war
@@ -99,11 +102,24 @@ echo "APOLLO PATH '${APOLLO_PATH}'"
 echo "FIXED_CTX PATH '${FIXED_CTX}'"
 echo "WAR FILE '${WAR_FILE}'"
 
+
+${CATALINA_HOME}/bin/catalina.sh stop 5 -force
+
+echo "Waiting for neo4j to come up"
+# TODO: handle this for a more efficient wakeup time
+sleep 20
+echo "Changing password if not already changed"
+curl -H "Content-Type: application/json" -X POST -d '{"password":"testpass"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
+
+
+mkdir ${CATALINA_BASE}/temp
 cp ${CATALINA_BASE}/apollo.war ${WAR_FILE}
 
 # Set environment variables for tomcat
-bash /createenv.sh
+#bash /createenv.sh
 
 # Launch tomcat, stopping of already running.
-${CATALINA_HOME}/bin/catalina.sh stop 5 -force
 ${CATALINA_HOME}/bin/catalina.sh run
+
+#cd /apollo
+#./grailsw run-app

@@ -3,7 +3,15 @@ package org.bbop.apollo
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
 import grails.gorm.transactions.Rollback
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.relationship.FeatureRelationship
 import org.grails.web.json.JSONObject
 
 import java.util.zip.CRC32
@@ -101,7 +109,7 @@ class SequenceServiceIntegrationSpec extends AbstractIntegrationSpec{
         JSONObject inputObject = JSON.parse(getGff3String) as JSONObject
         Sequence refSequence = Sequence.first()
         FeatureLocation.all.each { featureLocation->
-            refSequence.addToFeatureLocations(featureLocation)
+            refSequence.setFeatureLocation(featureLocation)
         }
         File gffFile = File.createTempFile("feature", ".gff3")
         sequenceService.getGff3ForFeature(inputObject, gffFile)
@@ -196,7 +204,7 @@ class SequenceServiceIntegrationSpec extends AbstractIntegrationSpec{
         JSONObject inputObject = JSON.parse(getGff3String) as JSONObject
         Sequence refSequence = Sequence.first()
         FeatureLocation.all.each { featureLocation->
-            refSequence.addToFeatureLocations(featureLocation)
+            refSequence.setFeatureLocation(featureLocation)
         }
         
         File gffFile = File.createTempFile("feature", ".gff3")
@@ -235,7 +243,7 @@ class SequenceServiceIntegrationSpec extends AbstractIntegrationSpec{
         JSONObject inputObject = JSON.parse(getGff3String) as JSONObject
         Sequence refSequence = Sequence.first()
         FeatureLocation.all.each { featureLocation->
-            refSequence.addToFeatureLocations(featureLocation)
+            refSequence.setFeatureLocation(featureLocation)
         }
         File gffFile = File.createTempFile("feature", ".gff3");
         sequenceService.getGff3ForFeature(inputObject, gffFile)

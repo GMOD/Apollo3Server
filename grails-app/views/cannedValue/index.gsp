@@ -1,4 +1,4 @@
-<%@ page import="org.bbop.apollo.CannedValue" %>
+<%@ page import="org.bbop.apollo.attributes.CannedValue" %>
 <!DOCTYPE html>
 <html>
 <head>

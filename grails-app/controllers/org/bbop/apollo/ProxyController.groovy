@@ -1,7 +1,8 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
-import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.system.Proxy
+import org.bbop.apollo.user.User
 
 import static org.springframework.http.HttpStatus.*
 

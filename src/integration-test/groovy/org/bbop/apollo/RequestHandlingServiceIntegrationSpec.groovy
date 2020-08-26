@@ -3,8 +3,39 @@ package org.bbop.apollo
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
 import grails.gorm.transactions.Rollback
+import org.bbop.apollo.attributes.Comment
+import org.bbop.apollo.attributes.DBXref
+import org.bbop.apollo.attributes.FeatureProperty
+import org.bbop.apollo.feature.CDS
+import org.bbop.apollo.feature.Exon
+import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.Gene
+import org.bbop.apollo.feature.MRNA
+import org.bbop.apollo.feature.NcRNA
+import org.bbop.apollo.feature.NonCanonicalFivePrimeSpliceSite
+import org.bbop.apollo.feature.NonCanonicalThreePrimeSpliceSite
+import org.bbop.apollo.feature.Pseudogene
+import org.bbop.apollo.feature.RepeatRegion
+import org.bbop.apollo.feature.StopCodonReadThrough
+import org.bbop.apollo.feature.Terminator
+import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.feature.TransposableElement
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.organism.Organism
+import org.bbop.apollo.organism.Sequence
+import org.bbop.apollo.relationship.FeatureRelationship
 import org.bbop.apollo.sequence.Strand
+import org.bbop.apollo.variant.Allele
+import org.bbop.apollo.variant.AlleleInfo
+import org.bbop.apollo.variant.Deletion
+import org.bbop.apollo.variant.DeletionArtifact
+import org.bbop.apollo.variant.Insertion
+import org.bbop.apollo.variant.InsertionArtifact
+import org.bbop.apollo.variant.SNV
+import org.bbop.apollo.variant.SequenceAlterationArtifact
+import org.bbop.apollo.variant.SubstitutionArtifact
+import org.bbop.apollo.variant.VariantInfo
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
@@ -277,10 +308,10 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
             assert locationObject.strand == -1
             assert locationObject != null
         }
-        assert MRNA.first().featureLocations.first().strand == -1
-        assert Gene.first().featureLocations.first().strand == -1
-        assert Exon.first().featureLocations.first().strand == -1
-        assert Exon.last().featureLocations.first().strand == -1
+        assert MRNA.first().featureLocation.strand == -1
+        assert Gene.first().featureLocation.strand == -1
+        assert Exon.first().featureLocation.strand == -1
+        assert Exon.last().featureLocation.strand == -1
 
 
         when: "we flip the strand"
@@ -304,10 +335,10 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert NonCanonicalFivePrimeSpliceSite.count == 1
         assert NonCanonicalThreePrimeSpliceSite.count == 1
         assert childrenArray.size() == 5
-        assert MRNA.first().featureLocations.first().strand == 1
-        assert Gene.first().featureLocations.first().strand == 1
-        assert Exon.first().featureLocations.first().strand == 1
-        assert Exon.last().featureLocations.first().strand == 1
+        assert MRNA.first().featureLocation.strand == 1
+        assert Gene.first().featureLocation.strand == 1
+        assert Exon.first().featureLocation.strand == 1
+        assert Exon.last().featureLocation.strand == 1
 
         when: "we flip it back the other way"
         returnedAfterExonObject = requestHandlingService.flipStrand(commandObject)
@@ -327,10 +358,10 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert CDS.count == 1
         assert NonCanonicalFivePrimeSpliceSite.count == 0
         assert NonCanonicalThreePrimeSpliceSite.count == 0
-        assert MRNA.first().featureLocations.first().strand == -1
-        assert Gene.first().featureLocations.first().strand == -1
-        assert Exon.first().featureLocations.first().strand == -1
-        assert Exon.last().featureLocations.first().strand == -1
+        assert MRNA.first().featureLocation.strand == -1
+        assert Gene.first().featureLocation.strand == -1
+        assert Exon.first().featureLocation.strand == -1
+        assert Exon.last().featureLocation.strand == -1
     }
 
     void "flip strand on an existing transcript with two isoforms"() {
@@ -383,11 +414,11 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         }
 
         then: "the strand should be correct"
-        assert mrna00001.featureLocations.first().strand == -1
-        assert mrna00002.featureLocations.first().strand == -1
-        assert gene.featureLocations.first().strand == -1
+        assert mrna00001.featureLocation.strand == -1
+        assert mrna00002.featureLocation.strand == -1
+        assert gene.featureLocation.strand == -1
         for (exon in Exon.all) {
-            assert exon.featureLocations.first().strand == -1
+            assert exon.featureLocation.strand == -1
         }
 
 
@@ -426,24 +457,24 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
 
         // have to rename the new gene
-        assert mrna00001.featureLocations.first().strand == 1
+        assert mrna00001.featureLocation.strand == 1
         assert mrna00001.name == 'GB40772-RAa-00001'
         assert newGene.name == 'GB40772-RAa'
-        assert newGene.featureLocations.first().strand == 1
-        assert cds00001.featureLocations.first().strand == 1
+        assert newGene.featureLocation.strand == 1
+        assert cds00001.featureLocation.strand == 1
         for (exon in exons00001) {
-            assert exon.featureLocations.first().strand == 1
+            assert exon.featureLocation.strand == 1
         }
 
-        assert originalGene.featureLocations.first().strand == -1
+        assert originalGene.featureLocation.strand == -1
         // sae gene
         assert originalGene.name == 'GB40772-RA'
-        assert mrna00002.featureLocations.first().strand == -1
+        assert mrna00002.featureLocation.strand == -1
         // sae transcript
         assert mrna00002.name == 'GB40772-RA-00002'
-        assert cds00002.featureLocations.first().strand == -1
+        assert cds00002.featureLocation.strand == -1
         for (exon in exons00002) {
-            assert exon.featureLocations.first().strand == -1
+            assert exon.featureLocation.strand == -1
         }
 
         when: "we flip it back the other way"
@@ -473,22 +504,22 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         assert newGene == originalGene
 
-        assert newGene.featureLocations.first().strand == -1
+        assert newGene.featureLocation.strand == -1
         assert newGene.name == 'GB40772-RA'
-        assert mrna00001.featureLocations.first().strand == -1
+        assert mrna00001.featureLocation.strand == -1
         assert mrna00001.name == 'GB40772-RA-00001'
-        assert cds00001.featureLocations.first().strand == -1
+        assert cds00001.featureLocation.strand == -1
         for (exon in exons00001) {
-            assert exon.featureLocations.first().strand == -1
+            assert exon.featureLocation.strand == -1
         }
 
-        assert originalGene.featureLocations.first().strand == -1
+        assert originalGene.featureLocation.strand == -1
         assert originalGene.name == 'GB40772-RA'
-        assert mrna00002.featureLocations.first().strand == -1
+        assert mrna00002.featureLocation.strand == -1
         assert mrna00002.name == 'GB40772-RA-00002'
-        assert cds00002.featureLocations.first().strand == -1
+        assert cds00002.featureLocation.strand == -1
         for (exon in exons00002) {
-            assert exon.featureLocations.first().strand == -1
+            assert exon.featureLocation.strand == -1
         }
 
 
@@ -3816,8 +3847,8 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert SequenceAlterationArtifact.count == 3
 
         when: "do a GFF3 export"
-        Organism organism = Gene.all.get(0).featureLocation.sequence.organism
-        Sequence sequence = Gene.all.get(0).featureLocation.sequence
+        Organism organism = Gene.all.get(0).featureLocation.to.organism
+        Sequence sequence = Gene.all.get(0).featureLocation.to
         File tempFile = File.createTempFile("round-trip-output", ".gff3")
         String filePath = tempFile.absolutePath
         tempFile.deleteOnExit()

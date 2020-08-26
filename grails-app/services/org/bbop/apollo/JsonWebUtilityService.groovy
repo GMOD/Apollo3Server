@@ -2,6 +2,7 @@ package org.bbop.apollo
 
 import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONException

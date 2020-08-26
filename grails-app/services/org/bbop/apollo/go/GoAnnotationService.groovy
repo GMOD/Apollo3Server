@@ -1,7 +1,7 @@
 package org.bbop.apollo.go
 
 import grails.gorm.transactions.Transactional
-import org.bbop.apollo.Feature
+import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.Gff3ConstantEnum
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
