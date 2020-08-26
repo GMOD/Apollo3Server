@@ -20,6 +20,8 @@ if [[ $TEST_SUITE == "python-apollo" ]]; then
   export ARROW_GLOBAL_CONFIG_PATH
   python3 --version
   python3 -m venv .venv
+#  apt-get update
+#  apt-get install python3-venv
   . .venv/bin/activate
   python3 --version
   pip3 install .
