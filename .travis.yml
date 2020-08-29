@@ -37,9 +37,11 @@ addons:
 #install:
 #  - true
 
-#services:
+services:
 # - postgresql
 #- mysql
+  - neo4j
+  - docker
 
 before_script:
   - "echo $JAVA_OPTS"
