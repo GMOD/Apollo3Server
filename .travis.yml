@@ -10,9 +10,6 @@ jdk:
 python:
   - "3.7.1"
 
-env:
-  - NEO4J_VERSION=3.5.20
-
 before_install:
   - sudo apt-get -y install python3-venv
   - "pyenv global 3.7.1"
@@ -32,8 +29,8 @@ before_install:
 env:
   #  - DB=postgres TEST_SUITE=apollo
   #  - DB=mysql TEST_SUITE=apollo
-  - TEST_SUITE=apollo
-  - TEST_SUITE=python-apollo
+  - TEST_SUITE=apollo NEO4J_VERSION=3.5.20
+  - TEST_SUITE=python-apollo NEO4J_VERSION=3.5.20
 #
 #python:
 #  - "3.7"
