@@ -30,7 +30,7 @@ if [[ $TEST_SUITE == "python-apollo" ]]; then
   python3 --version
   pip3 install nose
   pip3 install .
-  ./bootstrap_apollo.sh --local-docker3
+  ./bootstrap_apollo.sh --local3
 #  ./bootstrap_apollo.sh --docker3
   python3 setup.py nosetests
   killall java || true
