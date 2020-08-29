@@ -10,6 +10,8 @@ jdk:
 python:
   - "3.7.1"
 
+env:
+  - NEO4J_VERSION=3.5.20
 
 before_install:
   - sudo apt-get -y install python3-venv
@@ -18,6 +20,14 @@ before_install:
   - python --version
   - python3 --version
   - pip install nose
+  # Install Neo4j locally:
+  - wget dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz
+  - tar -xzf neo4j-community-$NEO4J_VERSION-unix.tar.gz
+  - neo4j-community-$NEO4J_VERSION/bin/neo4j start
+  # HACK need to change the password initially; changing it and then reverting:
+  - sleep 10  # give Neo4J some time to start
+  - curl -v POST http://neo4j:neo4j@localhost:7474/user/neo4j/password -d"password=testpass"
+#  - curl -v POST http://neo4j:neo4j2@localhost:7474/user/neo4j/password -d"password=neo4j"
 
 env:
   #  - DB=postgres TEST_SUITE=apollo
@@ -40,8 +50,8 @@ addons:
 services:
 # - postgresql
 #- mysql
-  - neo4j
-  - docker
+#  - neo4j
+#  - docker
 
 before_script:
   - "echo $JAVA_OPTS"
