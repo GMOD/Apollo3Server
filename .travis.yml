@@ -28,9 +28,9 @@ before_install:
   - echo "Checking version"
   - neo4j-community-$NEO4J_VERSION/bin/neo4j --version
   - echo "Setting password"
-  - curl -H "Content-Type: application/json" -X POST -d '{"password":"testpass"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
+  - curl -v POST http://neo4j:neo4j@localhost:7474/user/neo4j/password -d"password=testpass"
+  #  - curl -H "Content-Type: application/json" -X POST -d '{"password":"testpass"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
   - echo "Password set"
-#  - curl -v POST http://neo4j:neo4j@localhost:7474/user/neo4j/password -d"password=testpass"
 #  - curl -v POST http://neo4j:neo4j2@localhost:7474/user/neo4j/password -d"password=neo4j"
 
 env:
