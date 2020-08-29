@@ -14,8 +14,7 @@ if [[ $TEST_SUITE == "python-apollo" ]]; then
 #  cp src/integration-test/groovy/resources/travis/python-apollo.travis apollo-config.groovy
   ps -ef | grep neo4j
 #  service neo4j start
-  ./grailsw run-app &
-  ps -ef | grep neo4j
+#  ps -ef | grep neo4j
   git clone --single-branch --branch fix-all-exons --depth=1 https://github.com/galaxy-genome-annotation/python-apollo
   cd python-apollo
 #  sed -i 's|8888|8080/apollo|' `pwd`/test-data/local-apollo3-arrow.yml
@@ -30,6 +29,13 @@ if [[ $TEST_SUITE == "python-apollo" ]]; then
   python3 --version
   pip3 install nose
   pip3 install .
+  echo "setting password 1"
+  curl -H "Content-Type: application/json" -X POST -d '{"password":"testpass"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
+  echo "setting password 2"
+  curl -v -X POST http://neo4j:neo4j@localhost:7474/user/neo4j/password -d"password=testpass"
+  echo "setting password 3 - > starting grails"
+  ./grailsw run-app &
+  echo "doing bootstrap"
   ./bootstrap_apollo.sh --local3
 #  ./bootstrap_apollo.sh --docker3
   python3 setup.py nosetests
