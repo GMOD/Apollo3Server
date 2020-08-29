@@ -24,7 +24,7 @@ before_install:
   # HACK need to change the password initially; changing it and then reverting:
   - echo "STARING UP Neo4J"
   - neo4j-community-$NEO4J_VERSION/bin/neo4j --version
-  - sleep 25  # give Neo4J some time to start
+  - sleep 35  # give Neo4J some time to start
   - echo "STARTED"
   - echo "Checking version"
   - ps -ef | grep neo4j
