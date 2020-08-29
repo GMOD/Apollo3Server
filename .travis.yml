@@ -23,10 +23,10 @@ before_install:
   - neo4j-community-$NEO4J_VERSION/bin/neo4j start
   # HACK need to change the password initially; changing it and then reverting:
   - echo "STARING UP Neo4J"
-  - sleep 20  # give Neo4J some time to start
+  - sleep 15  # give Neo4J some time to start
   - echo "STARTED"
   - echo "Checking version"
-  - neo4j --version
+  - neo4j-community-$NEO4J_VERSION/bin/neo4j --version
   - echo "Setting password"
   - curl -H "Content-Type: application/json" -X POST -d '{"password":"testpass"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
   - echo "Password set"
