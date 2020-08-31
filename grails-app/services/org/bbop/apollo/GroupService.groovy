@@ -33,17 +33,9 @@ class GroupService {
             // assign group creator as group admin
             def creatorId = group.getMetaData(FeatureStringEnum.CREATOR.value)
             User creator = User.findById(creatorId)
-            println "find the creator ID ${creatorId}, ${creator}"
             String query = "MATCH (g:UserGroup ), (u:User) where g.name= '${name}' and (u.id = ${creator.id} OR u.username = '${creator.username}') create (g)-[admin:ADMIN]->(u)"
-            println "query ${query }"
             def updates = GroupPermission.executeUpdate(query)
-            println "updestae ${updates}"
-//            group.addToAdmin(creator)
-            println "Add metadata creator: ${group.getMetaData(FeatureStringEnum.CREATOR.value)}"
-
             log.info "Added group ${group.name}"
-//            groupIds.add(group.id)
-//            group.addToAdmin(creator)
             groups.add(group)
         }
 

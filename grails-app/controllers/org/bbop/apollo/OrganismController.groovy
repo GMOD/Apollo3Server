@@ -58,8 +58,8 @@ class OrganismController {
 
         try {
             JSONObject organismJson = permissionService.handleInput(request, params)
-            println "deleteOrganism ${organismJson}"
-            println "organism ID: ${organismJson.id}"
+            log.debug "deleteOrganism ${organismJson}"
+            log.debug "organism ID: ${organismJson.id}"
             // backporting a bug here:
             Organism organism = null
 
@@ -91,10 +91,10 @@ class OrganismController {
             }
             OrganismFilter.deleteAll(OrganismFilter.findAllByOrganism(organism))
             organism.delete()
-            println "Success deleting organism: ${organismJson.organism}"
+            log.debug "Success deleting organism: ${organismJson.organism}"
 
             if (organism.directory.startsWith(trackService.commonDataDirectory)) {
-                println "Directoy is part of the common data directory ${trackService.commonDataDirectory}, so deleting ${organism.directory}"
+                log.debug "Directoy is part of the common data directory ${trackService.commonDataDirectory}, so deleting ${organism.directory}"
                 File directoryToRemove = new File(organism.directory)
                 assert directoryToRemove.deleteDir()
             }
@@ -121,7 +121,7 @@ class OrganismController {
 
         JSONObject requestObject = permissionService.handleInput(request, params)
         JSONObject responseObject = new JSONObject()
-        println "deleteOrganismWithSequence ${requestObject}"
+        log.debug "deleteOrganismWithSequence ${requestObject}"
 
         try {
             //if (permissionService.isUserGlobalAdmin(permissionService.getCurrentUser(requestObject))) {
@@ -139,10 +139,10 @@ class OrganismController {
                     organism.delete()
 
                     if (dataAddedViaWebServices) {
-                        println "organism ${organism.id} was added via web services;"
+                        log.debug "organism ${organism.id} was added via web services;"
                         File dataDirectory = new File(organismDirectory)
                         if (dataDirectory.deleteDir()) {
-                            println "dataDirectory: ${organismDirectory} deleted successfully."
+                            log.debug "dataDirectory: ${organismDirectory} deleted successfully."
                         } else {
                             log.error "Could not delete data directory: ${organismDirectory}."
                             responseObject.put("warn", "Could not delete data directory: ${organismDirectory}")
@@ -152,9 +152,9 @@ class OrganismController {
                         responseObject.put("warn", "Organism ${organism.id} was not added via web services; Organism deleted but cannot delete data directory ${organismDirectory}.")
                         File extendedDataDirectory = trackService.getExtendedDataDirectory(organism)
                         if (extendedDataDirectory.exists()) {
-                            println "Extended data directory found: ${extendedDataDirectory.absolutePath}"
+                            log.debug "Extended data directory found: ${extendedDataDirectory.absolutePath}"
                             if (extendedDataDirectory.deleteDir()) {
-                                println "extended data directory found and deleted"
+                                log.debug "extended data directory found and deleted"
                             } else {
                                 log.error "Extended data directory found but could not be deleted"
                                 responseObject.put("warn", responseObject.get("warn") + " Extended data directory found but could not be deleted.")
@@ -163,7 +163,7 @@ class OrganismController {
                     }
                     //render organismAsJSON
                     responseObject.put("organism", JSON.parse(organismAsJSON.toString()) as JSONObject)
-                    println "Success deleting organism: ${requestObject.organism}"
+                    log.debug "Success deleting organism: ${requestObject.organism}"
                 } else {
                     log.error "Organism: ${requestObject.organism} not found"
                     responseObject.put("error", "Organism: ${requestObject.organism} not found.")
@@ -204,14 +204,10 @@ class OrganismController {
                 return
             }
 
-            println "A"
             Organism organism = Organism.findByCommonName(organismJson.organism)
-            println "B"
 
             if (!organism) {
-                println "C"
                 organism = Organism.findById(organismJson.organism as Long)
-                println "D"
             }
 
             if (!organism) {
@@ -225,12 +221,8 @@ class OrganismController {
                 List<Sequence> sequences = Sequence.findAllByOrganismAndNameInList(organism, sequenceNames)
                 deletedFeatures = organismService.deleteAllFeaturesForSequences(sequences)
             } else {
-                println "E ${organism} ${organism as JSON}"
                 deletedFeatures = organismService.deleteAllFeaturesForOrganism(organism)
-                println "F"
             }
-            println "deleted features"
-            println deletedFeatures
             def jsonObject = new JSONObject()
             jsonObject.result = deletedFeatures
             render jsonObject as JSON
@@ -265,15 +257,10 @@ class OrganismController {
 
         JSONObject returnObject = new JSONObject()
         JSONObject requestObject = permissionService.handleInput(request, params)
-        println "Adding organism with SEQUENCE ${requestObject as String}"
         String clientToken = requestObject.getString(FeatureStringEnum.CLIENT_TOKEN.value)
         MultipartFile organismDataFile = request.getFile(FeatureStringEnum.ORGANISM_DATA.value)
         MultipartFile sequenceDataFile = request.getFile(FeatureStringEnum.SEQUENCE_DATA.value)
         MultipartFile searchDatabaseDataFile = request.getFile(FeatureStringEnum.SEARCH_DATABASE_DATA.value)
-        println "input request ${request}"
-        println "organism data file ${organismDataFile}"
-        println "sequence data file ${sequenceDataFile}"
-        println "search database data file ${searchDatabaseDataFile}"
 
         if (!requestObject.containsKey(FeatureStringEnum.ORGANISM_NAME.value)) {
             returnObject.put("error", "/addOrganismWithSequence requires '${FeatureStringEnum.ORGANISM_NAME.value}'.")
@@ -322,25 +309,16 @@ class OrganismController {
                     userId = currentUser ? currentUser.id?.toString() : userId
                 }
                 organism.addMetaData("creator", userId)
-                println "oirganism ${organism as JSON}"
                 File directory = trackService.getExtendedDataDirectory(organism)
-                println "DIRECTORY ${directory}"
 
                 if (directory.mkdirs() && directory.setWritable(true)) {
 
                     if (organismDataFile) {
-                        println "Successfully created directory ${directory.absolutePath}"
-                        println "file type is ${organismDataFile.getClass().getCanonicalName()}"
-                        println "original name ${organismDataFile.getOriginalFilename()} is empty ? ${organismDataFile.empty} ${organismDataFile}"
-//            File archiveFile = new File(organismDataFile.getOriginalFilename())
                         File archiveFile = File.createTempFile("archive", ".tar.gz")
-                        println "1 archive file ${archiveFile} "
-                        println "2 archive file${archiveFile.absolutePath}, ${archiveFile.exists()} ${archiveFile.size()}"
                         organismDataFile.transferTo(archiveFile)
-                        println "3 archive file ${archiveFile} ${archiveFile.absolutePath}, ${archiveFile.exists()} . . size > 0 ${archiveFile.size()}"
                         try {
                             fileService.decompress(archiveFile, directory.absolutePath, null, false)
-                            println "Adding ${organismName} with directory: ${directory.absolutePath}"
+                            log.debug "Adding ${organismName} with directory: ${directory.absolutePath}"
                             organism.directory = directory.absolutePath
 
                             // if directory has a "searchDatabaseData" directory then any file in that that is a 2bit is the blatdb
@@ -389,7 +367,7 @@ class OrganismController {
                                 oldFile.renameTo(newFile)
                             }
 
-                            println "search db file : ${searchDatabaseDataFile.name} ${searchDatabaseDataFile.size} ${searchDatabaseDataFile.originalFilename} ${searchDatabaseDataFile.contentType}"
+                            log.debug "search db file : ${searchDatabaseDataFile.name} ${searchDatabaseDataFile.size} ${searchDatabaseDataFile.originalFilename} ${searchDatabaseDataFile.contentType}"
 
 
                             if (searchDatabaseDataFile != null && searchDatabaseDataFile.size > 0) {
@@ -401,13 +379,13 @@ class OrganismController {
                                 organism.blatdb = searchFile.absolutePath
                             }
 
-                            println "faToTwoBit exec file specified ${configWrapperService.faToTwobitExe}"
+                            log.debug "faToTwoBit exec file specified ${configWrapperService.faToTwobitExe}"
                             if ((searchDatabaseDataFile == null || searchDatabaseDataFile.size == 0) && configWrapperService.getFaToTwobitExe().size() > 0) {
                                 try {
                                     String searchPath = "${fastaPath}.2bit"
-                                    println "Creating 2bit file ${searchPath}"
+                                    log.debug "Creating 2bit file ${searchPath}"
                                     String indexCommand = "${configWrapperService.faToTwobitExe} ${fastaPath} ${searchPath}"
-                                    println "executing command '${indexCommand}"
+                                    log.debug "executing command '${indexCommand}"
                                     indexCommand.execute()
                                     organism.blatdb = searchPath
                                 } catch (e) {
@@ -469,7 +447,7 @@ class OrganismController {
     def removeTrackFromOrganism() {
         JSONObject returnObject = new JSONObject()
         JSONObject requestObject = permissionService.handleInput(request, params)
-        println "removing track from organism with ${requestObject}"
+        log.debug "removing track from organism with ${requestObject}"
 
         if (!requestObject.containsKey(FeatureStringEnum.ORGANISM.value)) {
             returnObject.put("error", "/removeTrackFromOrganism requires '${FeatureStringEnum.ORGANISM.value}'.")
@@ -557,8 +535,8 @@ class OrganismController {
         JSONObject returnObject = new JSONObject()
         JSONObject requestObject = permissionService.handleInput(request, params)
         String pathToJBrowseBinaries = servletContext.getRealPath("/jbrowse/bin")
-        println "path to JBrowse binaries ${pathToJBrowseBinaries}"
-        println "request object 2: ${requestObject.toString()}"
+        log.debug "path to JBrowse binaries ${pathToJBrowseBinaries}"
+        log.debug "request object 2: ${requestObject.toString()}"
 
         if (!requestObject.containsKey(FeatureStringEnum.ORGANISM.value)) {
             returnObject.put("error", "/addTrackToOrganism requires '${FeatureStringEnum.ORGANISM.value}'.")
@@ -607,11 +585,11 @@ class OrganismController {
 
         try {
             permissionService.checkPermissions(requestObject, PermissionEnum.ADMINISTRATE)
-//            println "user ${requestObject.get(FeatureStringEnum.USERNAME.value)} is admin"
+//            log.debug "user ${requestObject.get(FeatureStringEnum.USERNAME.value)} is admin"
             Organism organism = permissionService.getOrganismForToken(requestObject.get(FeatureStringEnum.ORGANISM.value))
 
             if (organism) {
-                println "Adding track to organism: ${organism.commonName}"
+                log.debug "Adding track to organism: ${organism.commonName}"
                 String organismDirectoryName = organism.directory
                 File organismDirectory = new File(organismDirectoryName)
                 File commonDataDirectory = new File(trackService.commonDataDirectory)
@@ -777,7 +755,7 @@ class OrganismController {
                                         trackListJsonWriter << "{'${FeatureStringEnum.TRACKS.value}':[]}"
                                         trackListJsonWriter.close()
                                     } else {
-                                        println "FILE EXISTS, so nothing to do ${extendedTrackListJsonFile.text}"
+                                        log.debug "FILE EXISTS, so nothing to do ${extendedTrackListJsonFile.text}"
                                     }
                                     JSONObject extendedTrackListObject = JSON.parse(extendedTrackListJsonFile.text) as JSONObject
                                     JSONArray extendedTracksArray = extendedTrackListObject.getJSONArray(FeatureStringEnum.TRACKS.value)
@@ -817,7 +795,7 @@ class OrganismController {
                                             returnObject.put("error", e.message)
                                         }
                                     }
-                                    println "trackJsonWriter: -> ${extendedTrackListJsonFile.absolutePath}, ${extendedTrackListJsonFile.text}"
+                                    log.debug "trackJsonWriter: -> ${extendedTrackListJsonFile.absolutePath}, ${extendedTrackListJsonFile.text}"
                                 } else {
                                     log.error "an entry for track with label '${trackConfigObject.get(FeatureStringEnum.LABEL.value)}' already exists in ${organism.directory}/${trackService.TRACKLIST}"
                                     returnObject.put("error", "an entry for track with label '${trackConfigObject.get(FeatureStringEnum.LABEL.value)}' already exists in ${organism.directory}/${trackService.TRACKLIST}.")
@@ -869,18 +847,18 @@ class OrganismController {
 
             String trackLabel = requestObject.get(FeatureStringEnum.TRACK_LABEL.value)
             permissionService.checkPermissions(requestObject, PermissionEnum.ADMINISTRATE)
-            println "user ${requestObject.get(FeatureStringEnum.USERNAME.value)} is admin"
+            log.debug "user ${requestObject.get(FeatureStringEnum.USERNAME.value)} is admin"
             Organism organism = permissionService.getOrganismForToken(requestObject.get(FeatureStringEnum.ORGANISM.value))
 
             if (organism) {
-                println "organism ${organism}"
+                log.debug "organism ${organism}"
                 File trackListJsonFile = new File(organism.trackList)
                 JSONObject trackListObject = JSON.parse(trackListJsonFile.text) as JSONObject
                 JSONObject trackObject = trackService.findTrackFromArrayByLabel(trackListObject.getJSONArray(FeatureStringEnum.TRACKS.value), trackLabel)
 
                 if (trackObject == null) {
                     // track not found in trackList.json
-                    println "Track with label '${trackLabel}' not found; searching in extendedTrackList.json"
+                    log.debug "Track with label '${trackLabel}' not found; searching in extendedTrackList.json"
                     File extendedTrackListJsonFile = trackService.getExtendedTrackList(organism)
                     if (extendedTrackListJsonFile.exists()) {
                         JSONObject extendedTrackListObject = JSON.parse(extendedTrackListJsonFile.text) as JSONObject
@@ -890,14 +868,14 @@ class OrganismController {
                             log.error "Track with label '${trackLabel}' not found"
                             returnObject.put("error", "Track with label '${trackLabel}' not found.")
                         } else {
-                            println "Track with label '${trackLabel}' found; removing from extendedTrackList.json"
+                            log.debug "Track with label '${trackLabel}' found; removing from extendedTrackList.json"
                             extendedTrackListObject.getJSONArray(FeatureStringEnum.TRACKS.value).remove(trackObject)
                             String urlTemplate = trackObject.get(FeatureStringEnum.URL_TEMPLATE.value)
                             String trackDirectory = urlTemplate.split("/").first()
                             File commonDirectory = trackService.getExtendedDataDirectory(organism)
                             File trackDir = new File(commonDirectory.absolutePath + File.separator + trackDirectory + File.separator + trackObject.get(FeatureStringEnum.LABEL.value))
                             if (trackDir.exists()) {
-                                println "Deleting ${trackDir.getAbsolutePath()}"
+                                log.debug "Deleting ${trackDir.getAbsolutePath()}"
                                 if (trackDir.deleteDir()) {
                                     // updating extendedTrackList.json
                                     def trackListJsonWriter = extendedTrackListJsonFile.newWriter()
@@ -920,16 +898,16 @@ class OrganismController {
                     }
                 } else {
                     // track found in trackList.json
-                    println "track with label '${trackLabel}' found in trackList.json"
+                    log.debug "track with label '${trackLabel}' found in trackList.json"
                     if (organism.dataAddedViaWebServices) {
-                        println "organism data was added via web services; thus can remove the track"
+                        log.debug "organism data was added via web services; thus can remove the track"
                         // track can be deleted since the organism and all subsequent tracks were added via web services
                         trackListObject.getJSONArray(FeatureStringEnum.TRACKS.value).remove(trackObject)
                         String urlTemplate = trackObject.get(FeatureStringEnum.URL_TEMPLATE.value)
                         String trackDirectory = urlTemplate.split("/").first()
                         File trackDir = new File(organism.directory + File.separator + trackDirectory + File.separator + trackObject.get(FeatureStringEnum.LABEL.value))
                         if (trackDir.exists()) {
-                            println "Deleting ${trackDir.getAbsolutePath()}"
+                            log.debug "Deleting ${trackDir.getAbsolutePath()}"
                             if (trackDir.deleteDir()) {
                                 // updating trackList.json
                                 def trackListJsonWriter = trackListJsonFile.newWriter()
@@ -1010,7 +988,7 @@ class OrganismController {
 
         try {
             permissionService.checkPermissions(requestObject, PermissionEnum.ADMINISTRATE)
-            println "user ${requestObject.get(FeatureStringEnum.USERNAME.value)} is admin"
+            log.debug "user ${requestObject.get(FeatureStringEnum.USERNAME.value)} is admin"
             Organism organism = permissionService.getOrganismForToken(requestObject.get(FeatureStringEnum.ORGANISM.value))
 
             if (organism) {
@@ -1020,7 +998,7 @@ class OrganismController {
 
                 if (organismDirectory.getParentFile().getAbsolutePath() == commonDataDirectory.getAbsolutePath()) {
                     // organism data is in common data directory
-                    println "organism data is in common data directory"
+                    log.debug "organism data is in common data directory"
                     File trackListJsonFile = new File(organism.directory + File.separator + trackService.TRACKLIST)
                     JSONObject trackListObject = JSON.parse(trackListJsonFile.text)
                     JSONArray tracksArray = trackListObject.getJSONArray(FeatureStringEnum.TRACKS.value)
@@ -1044,7 +1022,7 @@ class OrganismController {
                     }
                 } else {
                     // organism data is somewhere on the server where we don't want to modify anything
-                    println "organism data is somewhere on the FS"
+                    log.debug "organism data is somewhere on the FS"
                     File trackListJsonFile = new File(organism.directory + File.separator + trackService.TRACKLIST)
                     JSONObject trackListObject = JSON.parse(trackListJsonFile.text)
                     JSONArray tracksArray = trackListObject.getJSONArray(FeatureStringEnum.TRACKS.value)
@@ -1058,7 +1036,7 @@ class OrganismController {
                         File extendedDirectory = trackService.getExtendedDataDirectory(organism)
                         if (extendedDirectory.exists()) {
                             // extended organism directory present in common data directory
-                            println "extended organism directory ${extendedDirectory.absolutePath} present in common data directory"
+                            log.debug "extended organism directory ${extendedDirectory.absolutePath} present in common data directory"
                             File extendedTrackListJsonFile = trackService.getExtendedTrackList(organism)
                             JSONObject extendedTrackListObject = JSON.parse(extendedTrackListJsonFile.text)
                             JSONArray extendedTracksArray = extendedTrackListObject.getJSONArray(FeatureStringEnum.TRACKS.value)
@@ -1115,7 +1093,7 @@ class OrganismController {
     def addOrganism() {
         JSONObject organismJson = permissionService.handleInput(request, params)
         String clientToken = organismJson.getString(FeatureStringEnum.CLIENT_TOKEN.value)
-        println "organism json ${organismJson as JSON} -> ${clientToken}"
+        log.debug "organism json ${organismJson as JSON} -> ${clientToken}"
         try {
             // use permissionService.hasGlobalPermissions to check both authentication and authorization
             if (!permissionService.hasGlobalPermissions(organismJson, GlobalPermissionEnum.INSTRUCTOR)) {
@@ -1129,7 +1107,7 @@ class OrganismController {
                 throw new Exception('empty fields detected')
             }
 
-            println "Adding organsim json ${organismJson as JSON}"
+            log.debug "Adding organsim json ${organismJson as JSON}"
             Organism organism = new Organism(
                 commonName: organismJson.commonName
                 , directory: organismJson.directory
@@ -1141,15 +1119,15 @@ class OrganismController {
                 , nonDefaultTranslationTable: organismJson.nonDefaultTranslationTable ?: null
                 , publicMode: organismJson.publicMode ?: false
             )
-            println "organism ${organism as JSON}"
+            log.debug "organism ${organism as JSON}"
             // to support webservice, get current user from session or input object
             def currentUser = permissionService.getCurrentUser(organismJson)
 //      currentUser = currentUser ?: User.findByUsername()
-            println "user ${currentUser}"
+            log.debug "user ${currentUser}"
 
             // allow specify the metadata creator through webservice, if not specified, take current user as the creator
             if (!organism.getMetaData(FeatureStringEnum.CREATOR.value)) {
-                println "creator does not exist, set current user as the creator"
+                log.debug "creator does not exist, set current user as the creator"
                 organism.addMetaData(FeatureStringEnum.CREATOR.value, currentUser.id as String)
             }
 
@@ -1159,13 +1137,13 @@ class OrganismController {
 //      def user = currentUser ?: permissionService.currentUser
             def userOrganismPermission = UserOrganismPermission.findByUserAndOrganism(currentUser, organism)
             if (!userOrganismPermission) {
-                println "creating new permissions! "
+                log.debug "creating new permissions! "
                 userOrganismPermission = new UserOrganismPermission(
                     user: currentUser
                     , organism: organism
                     , permissions: "[]"
                 ).save(insert: true, failOnError: true)
-                println "created new permissions! ${userOrganismPermission}"
+                log.debug "created new permissions! ${userOrganismPermission}"
             }
 
             JSONArray permissionsArray = new JSONArray()
@@ -1190,7 +1168,7 @@ class OrganismController {
 
 
         } catch (e) {
-            println "actually an error ${e}"
+            log.debug "actually an error ${e}"
             def error = [error: 'problem saving organism: ' + e]
             render error as JSON
             e.printStackTrace()
@@ -1237,7 +1215,7 @@ class OrganismController {
                 eq('organism', organism)
                 order('name', "asc")
             }
-            println "Sequence list fetched at getSequencesForOrganism: ${sequenceList}"
+            log.debug "Sequence list fetched at getSequencesForOrganism: ${sequenceList}"
         } else {
             def error = ['error': 'Username ' + organismJson.username + ' does not have export permissions for organism ' + organismJson.organism]
             render error as JSON
@@ -1388,14 +1366,14 @@ class OrganismController {
     ])
     @Transactional
     def updateOfficialGeneSetTrack() {
-        println "updating organism official track name ${params}"
+        log.debug "updating organism official track name ${params}"
         try {
             JSONObject organismJson = permissionService.handleInput(request, params)
             permissionService.checkPermissions(organismJson, PermissionEnum.ADMINISTRATE)
             Organism organism = Organism.findById(organismJson.id as Long)
             if (organism) {
                 String startTrackName = organism.officialGeneSetTrack
-                println "Updating organism official track name ${organismJson as JSON}"
+                log.debug "Updating organism official track name ${organismJson as JSON}"
                 if (organismJson.trackCommand == "CLEAR" || organismJson.trackLabel == null || organismJson.trackLabel.trim().size() == 0) {
                     startTrackName = null
                 } else if (organismJson.trackCommand == "ADD") {
@@ -1440,13 +1418,13 @@ class OrganismController {
     ])
     @Transactional
     def updateOrganismMetadata() {
-        println "updating organism metadata ${params}"
+        log.debug "updating organism metadata ${params}"
         try {
             JSONObject organismJson = permissionService.handleInput(request, params)
             permissionService.checkPermissions(organismJson, PermissionEnum.ADMINISTRATE)
             Organism organism = Organism.findById(organismJson.id as Long)
             if (organism) {
-                println "Updating organism metadata ${organismJson as JSON}"
+                log.debug "Updating organism metadata ${organismJson as JSON}"
                 organism.metadata = organismJson.metadata?.toString()
                 organism.save(flush: true, insert: false, failOnError: true)
             } else {
