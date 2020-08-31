@@ -45,6 +45,9 @@ class Gff3HandlerService {
         writeObject.file = new File(path)
         writeObject.format = Format.TEXT
 
+        println "Writing neo4j features to GFF3 text"
+        println features
+
         // TODO: use specified metadata?
         writeObject.attributesToExport.add(FeatureStringEnum.NAME.value);
         writeObject.attributesToExport.add(FeatureStringEnum.SYMBOL.value);
