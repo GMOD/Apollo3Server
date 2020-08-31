@@ -70,7 +70,7 @@ class Gff3HandlerService {
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(writeObject.file, true)));
         writeObject.out = out
         out.println("##gff-version 3")
-        println "input features ${features}"
+//        println "input features ${features}"
 
         writeNeo4jFeatures(writeObject, features, source)
         if (exportSequence) {
@@ -124,15 +124,15 @@ class Gff3HandlerService {
 
     void writeNeo4jFeatures(WriteObject writeObject, def features, String source) throws IOException {
         Map<Sequence, ?> featuresBySource = new HashMap<Sequence, ?>();
-        println("writing features " + features)
+        log.debug("writing features " + features)
         for (def result : features) {
 
 //            Feature feature = neo4jFeature as Feature
-////            println "a feature ${feature.properties}"
-//            println "neo4j feature ${neo4jFeature}"
-//            println "feature keys ${feature.keys()}"
+////            log.debug "a feature ${feature.properties}"
+//            log.debug "neo4j feature ${neo4jFeature}"
+//            log.debug "feature keys ${feature.keys()}"
             Sequence sourceFeature = result.sequence as Sequence
-//            println "source feature ${sourceFeature}"
+//            log.debug "source feature ${sourceFeature}"
             Collection<Feature> featureList = featuresBySource.get(sourceFeature);
             if (!featureList) {
                 featureList = new ArrayList<Feature>();
@@ -153,14 +153,14 @@ class Gff3HandlerService {
 
     void writeFeatures(WriteObject writeObject, Collection<Feature> features, String source) throws IOException {
         Map<Sequence, Collection<Feature>> featuresBySource = new HashMap<Sequence, Collection<Feature>>();
-        println("writing features " + features)
+        log.debug("writing features " + features)
         for (Feature feature : features) {
 //            Feature feature = neo4jFeature as Feature
-////            println "a feature ${feature.properties}"
-//            println "neo4j feature ${neo4jFeature}"
-//            println "feature ${feature}"
+////            log.debug "a feature ${feature.properties}"
+//            log.debug "neo4j feature ${neo4jFeature}"
+//            log.debug "feature ${feature}"
             Sequence sourceFeature = feature.featureLocation.to
-            println "source feature ${sourceFeature}"
+            log.debug "source feature ${sourceFeature}"
             Collection<Feature> featureList = featuresBySource.get(sourceFeature);
             if (!featureList) {
                 featureList = new ArrayList<Feature>();
@@ -206,7 +206,6 @@ class Gff3HandlerService {
 
     private void writeNeo4jFeature(WriteObject writeObject, def result, String source) {
         for (GFF3Entry entry : convertNeo4jToEntry(writeObject, result, source)) {
-            println "writing out ${entry.toString()}"
             writeObject.out.println(entry.toString());
         }
     }
@@ -311,7 +310,6 @@ class Gff3HandlerService {
     private void convertNeo4jToEntry(WriteObject writeObject, def result, String source, Collection<GFF3Entry> gffEntries) {
 
         //log.debug "converting feature to ${feature.name} entry of # of entries ${gffEntries.size()}"
-        println "input result ${result}, ${gffEntries.size()}"
         Sequence seq = result.sequence as Sequence
         FeatureLocation featureLocation = result.location as FeatureLocation
         def children = result.children
@@ -319,10 +317,8 @@ class Gff3HandlerService {
         String seqId = seq.name
 
         Feature feature = result.feature as Feature
-        println "feature type ${result.feature.labels()}"
 //        String type = featureService.getCvTermFromFeature(feature)
         String type = featureService.getCvTermFromNeo4jFeature(result.feature)
-        println "type ${type}"
         int start = featureLocation.getFmin() + 1;
         int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
         String score = "."
@@ -339,16 +335,16 @@ class Gff3HandlerService {
 //            CDS cds = (CDS) feature
             def locationNodes = Feature.executeQuery("MATCH (n:CDS)--(t:Transcript)--(e:Exon)-[el]-(s:Sequence) where (n.uniqueName=${feature.uniqueName} or n.id=${feature.id}) RETURN el ")
             List<FeatureLocation> featureLocationList = new ArrayList<>()
-            println "location nodes ${locationNodes}"
+            log.debug "location nodes ${locationNodes}"
             locationNodes.each {
-//                println it
-//                println it.keys()
+//                log.debug it
+//                log.debug it.keys()
 //                FeatureLocation featureLocation1 = it as FeatureLocation
-//                println featureLocation1
-//                println featureLocation1 as JSON
+//                log.debug featureLocation1
+//                log.debug featureLocation1 as JSON
                 featureLocationList.add(it as FeatureLocation)
             }
-            println "output feature locations ${featureLocationList} "
+            log.debug "output feature locations ${featureLocationList} "
             featureLocationList.sort(new Comparator<FeatureLocation>() {
                 @Override
                 int compare(FeatureLocation featureLocation1, FeatureLocation featureLocation2) {
@@ -379,16 +375,16 @@ class Gff3HandlerService {
                 }
             })
             int length = 0
-            println "sorted feature location list ${featureLocationList} "
+            log.debug "sorted feature location list ${featureLocationList} "
             for (FeatureLocation exonLocation : featureLocationList) {
-                println "exon location ${exonLocation}"
+                log.debug "exon location ${exonLocation}"
                 if (!overlapperService.overlaps(exonLocation.fmin, exonLocation.fmax,start,  end)) {
-                    println "not overlapping ${exonLocation.fmin}, ${exonLocation.fmax}, ${start}, ${end}}"
+                    log.debug "not overlapping ${exonLocation.fmin}, ${exonLocation.fmax}, ${start}, ${end}}"
                     continue;
                 }
                 int fmin = exonLocation.fmin < start ? start : exonLocation.fmin
                 int fmax = exonLocation.fmax > end ? end : exonLocation.fmax
-                println "fmin ${fmin},${fmax}"
+                log.debug "fmin ${fmin},${fmax}"
                 String phase;
                 if (length % 3 == 0) {
                     phase = "0";
@@ -398,13 +394,13 @@ class Gff3HandlerService {
                     phase = "1";
                 }
                 length += fmax - fmin;
-                println "adding for type: ${type}"
+                log.debug "adding for type: ${type}"
                 GFF3Entry entry = new GFF3Entry(seqId, source, type, fmin , fmax, score, strand, phase);
                 entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
                 gffEntries.add(entry);
 
             }
-//            println "feature location list ${featureLocationList}"
+//            log.debug "feature location list ${featureLocationList}"
 //            Transcript transcript = transcriptService.getParentTranscriptForFeature(feature)
 //            List<Exon> exons = transcriptService.getSortedExons(transcript,true)
 //            int length = 0;
@@ -431,14 +427,14 @@ class Gff3HandlerService {
 //            GFF3Entry entry = new GFF3Entry(seqId, source, type, start, end, score, strand, phase);
 ////        entry.setAttributes(extractAttributes(writeObject, feature));
 //            entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
-////            println "adding entry with type ${entry.type}"
+////            log.debug "adding entry with type ${entry.type}"
 //            gffEntries.add(entry);
         } else {
             String phase = ".";
             GFF3Entry entry = new GFF3Entry(seqId, source, type, start, end, score, strand, phase);
 //        entry.setAttributes(extractAttributes(writeObject, feature));
             entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
-//            println "adding entry with type ${entry.type}"
+//            log.debug "adding entry with type ${entry.type}"
             gffEntries.add(entry);
         }
 //        if(featureService.typeHasChildren(feature)){
@@ -452,10 +448,10 @@ class Gff3HandlerService {
 //        }
         if (children) {
             for (def childNode : children) {
-                println "child ${childNode}"
-                println "child thype ${childNode.feature?.labels()}"
-                println "child feature id ${childNode.feature?.id()}"
-//                println "child id ${child.id()}"
+//                log.debug "child ${childNode}"
+//                log.debug "child thype ${childNode.feature?.labels()}"
+//                log.debug "child feature id ${childNode.feature?.id()}"
+//                log.debug "child id ${child.id()}"
 //                Feature child = childNode.feature as Feature
 //                if (child instanceof CDS) {
 //                    convertNeo4jToEntry(writeObject, childNode, source, gffEntries);
@@ -467,7 +463,7 @@ class Gff3HandlerService {
             }
         }
 
-        println "output entries ${gffEntries.size()} -> ${gffEntries.toString()}"
+        log.debug "output entries ${gffEntries.size()} -> ${gffEntries.toString()}"
     }
 
     private void convertToEntry(WriteObject writeObject, Feature feature, String source, Collection<GFF3Entry> gffEntries) {

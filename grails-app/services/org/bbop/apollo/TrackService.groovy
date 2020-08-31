@@ -689,9 +689,9 @@ class TrackService {
     @Transactional(readOnly = true)
     File getExtendedDataDirectory(Organism organism){
         File returnFile = new File(commonDataDirectory + File.separator + organism.id + "-" + organism.commonName.replaceAll(" ","_"))
-        println "common data directory [${commonDataDirectory}]"
-        println "org id [${organism.id}]"
-        println "org id [${organism.commonName}]"
+        log.info "common data directory [${commonDataDirectory}]"
+        log.info "org id [${organism.id}]"
+        log.info "org common name [${organism.commonName}]"
         if(!returnFile.exists()){
             log.warn("File ${returnFile.absolutePath} does not exist")
         }

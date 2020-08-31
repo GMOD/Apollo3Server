@@ -48,18 +48,14 @@ class TranscriptService {
 
     Collection<Exon> getSortedExons(Transcript transcript, boolean sortByStrand) {
         Collection<Exon> exons = getExons(transcript)
-        println "input transcript ${transcript as JSON}"
-        println "exons ${exons}"
         List<Exon> sortedExons = new LinkedList<Exon>(exons);
-        println "sorted exonds ${sortedExons}"
-        println " sorted locations "
-        sortedExons.each {
-            println it.featureLocation
-            println it.featureLocation as JSON
-        }
-        def inputQuery ="MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = '${sortedExons.first().uniqueName}' RETURN fl "
-        def cypherLocations = FeatureLocation.executeQuery(inputQuery)
-        println "cypher location ${cypherLocations}"
+//        sortedExons.each {
+//            println it.featureLocation
+//            println it.featureLocation as JSON
+//        }
+//        def inputQuery ="MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = '${sortedExons.first().uniqueName}' RETURN fl "
+//        def cypherLocations = FeatureLocation.executeQuery(inputQuery)
+//        println "cypher location ${cypherLocations}"
 //        def cypherExon = FeatureLocation.executeQuery("MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = ${sortedExons.first().uniqueName} RETURN fl LIMIT 1")?.first() as Exon
 //        println "cypher exon ${cypherExon}"
         Collections.sort(sortedExons, new FeaturePositionComparator<Exon>(sortByStrand))

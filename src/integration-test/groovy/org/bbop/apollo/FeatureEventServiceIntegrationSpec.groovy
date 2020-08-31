@@ -44,7 +44,6 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
     void "we can undo and redo a transcript split"() {
 
         given: "transcript data"
-        println "pre-setup"
         String jsonString = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40736-RA\",\"children\":[{\"location\":{\"fmin\":938708,\"fmax\":938770,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":939570,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}],\"operation\":\"add_transcript\"}"
         String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@EXON_1@\" }, { \"uniquename\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
         String undoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
@@ -52,8 +51,6 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         String redoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"redo\", \"count\": 1}"
 
         when: "we insert a transcript"
-        println "org count ${Organism.count} and credentials ${getTestCredentials()}"
-//        setupDefaultUserOrg()
         Organism organism = new Organism(
             directory: "src/integration-test/groovy/resources/sequences/honeybee-Group1.10/"
             , commonName: "sampleAnimal"
@@ -74,24 +71,11 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         Sequence.executeQuery("MATCH (o:Organism {commonName:'sampleAnimal'}),(s:Sequence {name:'Group1.10'}) create (o)-[seq:SEQUENCES]->(s)")
 
-        println "organism ${organism} abnd ${organism as JSON}"
-        println "sequence ${sequence} and ${sequence as JSON}"
-        println "sequence organism ${sequence.organism} "
-//        sequence.organism = organism
-//        sequence.organismId = organism.id
-//        organism.addToSequences(sequence)
-        println "2 organism ${organism} abnd ${organism as JSON}"
-        println "2 sequence ${sequence} and ${sequence as JSON}"
-        println "2 sequence organism ${sequence.organism} "
         organism.save(flush: true, failOnError: true)
         sequence.save(flush: true, failOnError: true)
-        println "2 org count ${Organism.count} and credentials ${getTestCredentials()}"
         JSONObject returnObject = requestHandlingService.addTranscript(JSON.parse(jsonString) as JSONObject)
-        println "return object ${returnObject}"
-        println "return object string ${returnObject.toString()}"
 
         then: "we have a transcript"
-
         FeatureLocation featureLocation = new FeatureLocation(
             from: Feature.all.first()
             ,to: Sequence.all.first()
@@ -103,20 +87,8 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
             "CREATE (f)-[fr:FEATURELOCATION { fmin: 3,fmax: 10,strand: 1}]->(s)\n" +
             "RETURN type(fr), fr.fmin LIMIT 25"
         FeatureLocation.executeUpdate(updateQuery)
-        println "feature cournt ${Feature.count}"
-        println "feature cournt 2 ${Feature.count()}"
-        println "feature locatino ${FeatureLocation.count}"
-        println "feature relation  ${FeatureRelationship.count}"
-        println "feature locatino ${FeatureLocation.count()}"
-        println "feature relation  ${FeatureRelationship.count()}"
         def locationCount = FeatureLocation.executeQuery("MATCH (n:Feature)-[fl]-(s:Sequence) RETURN count(fl)")
         def relationshipCount = FeatureRelationship.executeQuery("MATCH (n:Feature)-[fr]-(g:Feature) RETURN count(fr)")
-        println "location coiunt ${locationCount}"
-        println "relationship count ${relationshipCount}"
-        println Exon.all.each{println "exon feature location ${it.featureLocation}"}
-        println CDS.all.each{println "CDS feature location ${it.featureLocation}"}
-        println MRNA.all.each{println "MRNA feature location ${it.featureLocation}"}
-        println Gene.all.each{println "Gene feature location ${it.featureLocation}"}
         assert Exon.count == 2
         assert CDS.count == 1
         assert MRNA.count == 1
@@ -1257,8 +1229,6 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         }
         String exon1UniqueName = sortedExons[1].uniqueName
         String exon2UniqueName = sortedExons[2].uniqueName
-        println "left fmin: ${sortedExons[1].fmin}"
-        println "right fmin: ${sortedExons[2].fmin}"
         splitString = splitString.replace("@EXON_1@", exon1UniqueName)
         splitString = splitString.replace("@EXON_2@", exon2UniqueName)
         JSONObject splitJsonObject = requestHandlingService.splitTranscript(JSON.parse(splitString))
@@ -1380,8 +1350,6 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         }
         String exon1UniqueName = sortedExons[1].uniqueName
         String exon2UniqueName = sortedExons[2].uniqueName
-        println "left fmin: ${sortedExons[1].fmin}"
-        println "right fmin: ${sortedExons[2].fmin}"
         splitString = splitString.replace("@EXON_1@", exon1UniqueName)
         splitString = splitString.replace("@EXON_2@", exon2UniqueName)
         JSONObject splitJsonObject = requestHandlingService.splitTranscript(JSON.parse(splitString))
