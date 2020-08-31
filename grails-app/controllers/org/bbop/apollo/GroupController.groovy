@@ -139,11 +139,8 @@ class GroupController {
 
                 String otherQuery = "MATCH (g:UserGroup)-[admin:ADMIN]-(u:User) where g.name = '${it.name}' return { admin: u } limit 1"
                 def admins = User.executeQuery(otherQuery)
-                println "admins ${admins}"
                 if (admins) {
                     def admin = admins.first().admin
-                    println "admin ${admin.keys()}"
-//                    println "admin keys ${firstAdmin.keys()}"
                     JSONObject userObject = new JSONObject()
 //                    userObject.id = user.id
                     userObject.email = admin.get(FeatureStringEnum.USERNAME.value).asString()
@@ -202,16 +199,16 @@ class GroupController {
             response.status = HttpStatus.INTERNAL_SERVER_ERROR.value()
             def error = [error: e.message]
 //            log.error error
-            println "Error: ${error as JSON}"
+            log.error "Error: ${error as JSON}"
             render error as JSON
         }
     }
 
-    private JSONObject convertGroup(UserGroup userGroup) {
-        JSONObject jsonObject = userGroup.properties
-        println "user grou pproperly ${jsonObject as JSON}"
-        return jsonObject
-    }
+//    private JSONObject convertGroup(UserGroup userGroup) {
+//        JSONObject jsonObject = userGroup.properties
+//        println "user grou pproperly ${jsonObject as JSON}"
+//        return jsonObject
+//    }
 
     @ApiOperation(value = "Create group", nickname = "/group/createGroup", httpMethod = "POST")
     @ApiImplicitParams([
@@ -294,8 +291,8 @@ class GroupController {
             groupList = UserGroup.findAllByIdInList(ids)
         } else if (dataObject.name) {
             List<String> splitGroups = dataObject.name.split(",") as List<String>
-            println splitGroups
-            println splitGroups.size()
+//            println splitGroups
+//            println splitGroups.size()
             groupList = UserGroup.findAllByNameInList(splitGroups)
         }
         if (!groupList) {
@@ -418,7 +415,7 @@ class GroupController {
         }
 
         if (!groupOrganismPermission && permissionsArray) {
-            println "creating new permissions! "
+//            println "creating new permissions! "
             groupOrganismPermission = new GroupOrganismPermission(
                 group: group
                 , organism: organism
@@ -428,7 +425,7 @@ class GroupController {
         } else
 //        groupOrganismPermission.group = group
         if (permissionsArray.size() == 0) {
-            println "deleting ${permissionsArray}"
+//            println "deleting ${permissionsArray}"
             groupOrganismPermission.delete(flush: true)
             render groupOrganismPermission as JSON
             return
@@ -437,14 +434,14 @@ class GroupController {
 //            groupOrganismPermission.permissionsArray = permissionsArray
         }
 
-        println "input data object ${dataObject} -> ${permissionsArray}"
+//        println "input data object ${dataObject} -> ${permissionsArray}"
 
 //        groupOrganismPermission.permissions = permissionsArray
 //        groupOrganismPermission.save(flush: true)
 
         log.info "Updated permissions for group ${group.name} and organism ${organism?.commonName} and permissions ${permissionsArray?.toString()}"
 
-        println "group organism permissions: ${groupOrganismPermission.permissions} rendering ${groupOrganismPermission as JSON}"
+        log.info "group organism permissions: ${groupOrganismPermission.permissions} rendering ${groupOrganismPermission as JSON}"
 
         String query = "MATCH (p:GroupOrganismPermission)--(g:UserGroup) where g.name = '${group.name}' create (p)<-[ug:GROUP]-(g) return { permission: p }"
 //        String query = "MATCH (p:GroupOrganismPermission)--(g:UserGroup)  return p"
@@ -452,14 +449,14 @@ class GroupController {
         def groupOrganismPermissions = GroupOrganismPermission.executeQuery(query)
         if (groupOrganismPermissions) {
 //        List<GroupOrganismPermission> groupOrganismPermissions = GroupOrganismPermission.findAllByGroup(group)
-            println "post-save found permissions ${groupOrganismPermissions} ... ${groupOrganismPermissions as JSON}"
+//            println "post-save found permissions ${groupOrganismPermissions} ... ${groupOrganismPermissions as JSON}"
 //        JSONArray permissionsArray =
             JSONObject permissionsJSONObject = new JSONObject()
             def permissionObject = groupOrganismPermissions.first().permission
-            println "keys ${permissionObject.keys()}"
+//            println "keys ${permissionObject.keys()}"
             permissionsJSONObject.permissions = permissionObject.get(FeatureStringEnum.PERMISSIONS.value).asString()
 
-            println "keys ${permissionsJSONObject as JSON}"
+//            println "keys ${permissionsJSONObject as JSON}"
 
 //            permissionObject.permissions = groupOrganismPermissions
             render permissionsJSONObject as JSON
