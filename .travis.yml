@@ -14,6 +14,7 @@ before_install:
   - sudo apt-get -y install python3-venv
   - "pyenv global 3.7.1"
   - "pip install pip --upgrade"
+  - echo "Running $TEST_SUITE"
   - python --version
   - python3 --version
   - pip install nose
@@ -41,7 +42,8 @@ env:
   #  - DB=postgres TEST_SUITE=apollo
   #  - DB=mysql TEST_SUITE=apollo
   - TEST_SUITE=apollo NEO4J_VERSION=3.5.21
-  - TEST_SUITE=python-apollo NEO4J_VERSION=3.5.21
+  - TEST_SUITE=python-apollo3-local NEO4J_VERSION=3.5.21
+  - TEST_SUITE=python-apollo3-docker NEO4J_VERSION=3.5.21
 #
 #python:
 #  - "3.7"
