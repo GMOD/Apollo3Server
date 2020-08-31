@@ -25,8 +25,8 @@ if [[ $TEST_SUITE == "python-apollo" ]]; then
   git clone --single-branch --branch fix-all-exons --depth=1 https://github.com/galaxy-genome-annotation/python-apollo
   cd python-apollo
 #  sed -i 's|8888|8080/apollo|' `pwd`/test-data/local-apollo3-arrow.yml
-  ARROW_GLOBAL_CONFIG_PATH=`pwd`/test-data/local-apollo3-arrow.yml
-#  ARROW_GLOBAL_CONFIG_PATH=`pwd`/test-data/docker-apollo3-arrow.yml
+#  ARROW_GLOBAL_CONFIG_PATH=`pwd`/test-data/local-apollo3-arrow.yml
+  ARROW_GLOBAL_CONFIG_PATH=`pwd`/test-data/docker-apollo3-arrow.yml
   export ARROW_GLOBAL_CONFIG_PATH
   python3 --version
   python3 -m venv .venv
@@ -37,8 +37,8 @@ if [[ $TEST_SUITE == "python-apollo" ]]; then
   pip3 install nose
   pip3 install .
   echo "doing bootstrap"
-  ./bootstrap_apollo.sh --local3
-#  ./bootstrap_apollo.sh --docker3
+#  ./bootstrap_apollo.sh --local3
+  ./bootstrap_apollo.sh --docker3
   python3 setup.py nosetests
   killall java || true
 fi
