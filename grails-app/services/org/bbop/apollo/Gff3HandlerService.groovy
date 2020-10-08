@@ -316,6 +316,10 @@ class Gff3HandlerService {
         Sequence seq = result.sequence as Sequence
         FeatureLocation featureLocation = result.location as FeatureLocation
         def children = result.children
+        println "result.parent ${result.parent}"
+        if(result.parent){
+            println "result type: ${featureService.getCvTermFromNeo4jFeature(result.parent.feature)}"
+        }
 
         String seqId = seq.name
 

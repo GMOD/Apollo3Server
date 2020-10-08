@@ -168,7 +168,6 @@ class IOServiceController extends AbstractApolloController {
 //                String fullGenesQuery = "MATCH (g:Gene)--(t:Transcript)--(f:Feature),(g)--(s:Sequence)--(o:Organism) where (o.commonName = '${organism.commonName}' or o.id = ${organism.id}) " + (genesNoExon.id ? " and g.id not in ${queryParams.geneIds}" : "")   +  (sequences ? "and s.name in ${sequences}" :"")  + " RETURN distinct g"
 
                 // query transcripts
-                // TODO: redo by querying genes and others instead
 
                 String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Transcript)," +
                     "(f)-[owner:OWNERS]-(u)\n" +
@@ -182,9 +181,10 @@ class IOServiceController extends AbstractApolloController {
 //
                 println "full genes query ${fullGenesQuery}"
 
-                // TODO: query single-level (RR, etc.), excluding if a parent or child feature relationship
 //
                 def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery).unique()
+
+                // TODO: query single-level (RR, etc.), excluding if a parent or child feature relationship
 
 //                List<Feature> myFeatureList = []
 //                neo4jFeatureNodes.each {
