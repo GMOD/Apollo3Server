@@ -166,10 +166,14 @@ class IOServiceController extends AbstractApolloController {
 
 //                String fullGenesQuery = "MATCH (g:Gene)--(t:Transcript)--(f:Feature),(g)--(s:Sequence)--(o:Organism) where (o.commonName = '${organism.commonName}' or o.id = ${organism.id}) " + (genesNoExon.id ? " and g.id not in ${queryParams.geneIds}" : "")   +  (sequences ? "and s.name in ${sequences}" :"")  + " RETURN distinct g"
 //                String fullGenesQuery = "MATCH (g:Gene)--(t:Transcript)--(f:Feature),(g)--(s:Sequence)--(o:Organism) where (o.commonName = '${organism.commonName}' or o.id = ${organism.id}) " + (genesNoExon.id ? " and g.id not in ${queryParams.geneIds}" : "")   +  (sequences ? "and s.name in ${sequences}" :"")  + " RETURN distinct g"
-                String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)," +
+
+                // query transcripts
+                // TODO: redo by querying genes and others instead
+
+                String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Transcript)," +
                     "(f)-[owner:OWNERS]-(u)\n" +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
-                    "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Feature)<-[gfr]-(f) " +
+                    "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Gene)-[gfr]->(f) " +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
                     "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature) " +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
@@ -177,6 +181,8 @@ class IOServiceController extends AbstractApolloController {
                     "owners: collect(u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
 //
                 println "full genes query ${fullGenesQuery}"
+
+                // TODO: query single-level (RR, etc.), excluding if a parent or child feature relationship
 //
                 def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery).unique()
 

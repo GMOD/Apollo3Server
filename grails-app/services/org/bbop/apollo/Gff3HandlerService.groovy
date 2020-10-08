@@ -613,9 +613,10 @@ class Gff3HandlerService {
                 String productString = geneProductService.convertGeneProductsToGff3String(feature.geneProducts)
                 attributes.put(FeatureStringEnum.GENE_PRODUCT.value, encodeString(productString))
             }
-            if (writeObject.attributesToExport.contains(FeatureStringEnum.STATUS.value) && feature.getStatus() != null) {
-                attributes.put(FeatureStringEnum.STATUS.value, encodeString(feature.getStatus().value));
-            }
+            // TODO: ignore for now
+//            if (writeObject.attributesToExport.contains(FeatureStringEnum.STATUS.value) && feature.getStatus() != null) {
+//                attributes.put(FeatureStringEnum.STATUS.value, encodeString(feature.getStatus().value));
+//            }
             if (writeObject.attributesToExport.contains(FeatureStringEnum.SYMBOL.value) && feature.getSymbol() != null && !isBlank(feature.getSymbol())) {
                 attributes.put(FeatureStringEnum.SYMBOL.value, encodeString(feature.getSymbol()));
             }
