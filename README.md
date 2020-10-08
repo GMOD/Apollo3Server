@@ -28,9 +28,17 @@ The [User's Guide](docs/UsersGuide.md) provides guidance on how to use it.  Plea
 
     ./grailsw run-app 
     
+OR 
+    
+    ./gradlew bootRun 
+    
 ### Run tests 
 
     ./grailsw test-app
+    
+OR 
+    
+    ./gradlew test
     
 ### Run with Docker
 
