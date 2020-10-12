@@ -73,7 +73,6 @@ class Gff3HandlerService {
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(writeObject.file, true)));
         writeObject.out = out
         out.println("##gff-version 3")
-//        println "input features ${features}"
 
         writeNeo4jFeatures(writeObject, features, source)
         if (exportSequence) {

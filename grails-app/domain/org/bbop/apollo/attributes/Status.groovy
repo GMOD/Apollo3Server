@@ -1,7 +1,5 @@
 package org.bbop.apollo.attributes
 
-import org.bbop.apollo.attributes.FeatureProperty
-
 class Status extends FeatureProperty{
 
     static constraints = {
