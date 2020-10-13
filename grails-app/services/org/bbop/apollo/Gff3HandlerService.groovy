@@ -312,7 +312,7 @@ class Gff3HandlerService {
     private GFF3Entry calculateParentGFF3Entry(WriteObject writeObject, def neo4jEntry,String source,String seqId){
         Feature feature = neo4jEntry.feature as Feature
         FeatureLocation featureLocation = neo4jEntry.location as FeatureLocation
-        int start = featureLocation.getFmin() + 1;
+        int start = featureLocation.getFmin()
         int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
         String score = "."
         String strand;
@@ -326,7 +326,7 @@ class Gff3HandlerService {
         String type = featureService.getCvTermFromNeo4jFeature(neo4jEntry.feature)
 
         String phase = ".";
-        GFF3Entry gff3Entry = new GFF3Entry(seqId, source, type, start, end, score, strand, phase);
+        GFF3Entry gff3Entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand, phase);
 //        entry.setAttributes(extractAttributes(writeObject, feature));
         gff3Entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
         return gff3Entry
@@ -350,7 +350,7 @@ class Gff3HandlerService {
         Feature feature = result.feature as Feature
 //        String type = featureService.getCvTermFromFeature(feature)
         String type = featureService.getCvTermFromNeo4jFeature(result.feature)
-        int start = featureLocation.getFmin() + 1;
+        int start = featureLocation.getFmin()
         int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
         String score = "."
         String strand;
@@ -413,7 +413,7 @@ class Gff3HandlerService {
                     log.debug "not overlapping ${exonLocation.fmin}, ${exonLocation.fmax}, ${start}, ${end}}"
                     continue;
                 }
-                int fmin = exonLocation.fmin < start ? start : exonLocation.fmin + 1
+                int fmin = exonLocation.fmin < start ? start : exonLocation.fmin
                 int fmax = exonLocation.fmax > end ? end : exonLocation.fmax
                 log.debug "fmin ${fmin},${fmax}"
                 String phase;
@@ -426,7 +426,7 @@ class Gff3HandlerService {
                 }
                 length += fmax - fmin;
                 log.debug "adding for type: ${type}"
-                GFF3Entry entry = new GFF3Entry(seqId, source, type, fmin , fmax, score, strand, phase);
+                GFF3Entry entry = new GFF3Entry(seqId, source, type, fmin+1 , fmax, score, strand, phase);
                 entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
                 gffEntries.add(entry);
 
@@ -462,7 +462,7 @@ class Gff3HandlerService {
 //            gffEntries.add(entry);
         } else {
             String phase = ".";
-            GFF3Entry entry = new GFF3Entry(seqId, source, type, start, end, score, strand, phase);
+            GFF3Entry entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand, phase);
 //        entry.setAttributes(extractAttributes(writeObject, feature));
             entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
 //            log.debug "adding entry with type ${entry.type}"
