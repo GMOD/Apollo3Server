@@ -413,7 +413,7 @@ class Gff3HandlerService {
                     log.debug "not overlapping ${exonLocation.fmin}, ${exonLocation.fmax}, ${start}, ${end}}"
                     continue;
                 }
-                int fmin = exonLocation.fmin < start ? start : exonLocation.fmin
+                int fmin = exonLocation.fmin < start ? start : exonLocation.fmin + 1
                 int fmax = exonLocation.fmax > end ? end : exonLocation.fmax
                 log.debug "fmin ${fmin},${fmax}"
                 String phase;
