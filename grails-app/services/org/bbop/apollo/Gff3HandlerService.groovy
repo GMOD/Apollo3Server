@@ -46,7 +46,7 @@ class Gff3HandlerService {
         writeObject.format = Format.TEXT
 
         println "Writing neo4j features to GFF3 text"
-        println features
+//        println features
 
         // TODO: use specified metadata?
         writeObject.attributesToExport.add(FeatureStringEnum.NAME.value);
@@ -368,11 +368,6 @@ class Gff3HandlerService {
             List<FeatureLocation> featureLocationList = new ArrayList<>()
             log.debug "location nodes ${locationNodes}"
             locationNodes.each {
-//                log.debug it
-//                log.debug it.keys()
-//                FeatureLocation featureLocation1 = it as FeatureLocation
-//                log.debug featureLocation1
-//                log.debug featureLocation1 as JSON
                 featureLocationList.add(it as FeatureLocation)
             }
             log.debug "output feature locations ${featureLocationList} "
@@ -431,41 +426,10 @@ class Gff3HandlerService {
                 gffEntries.add(entry);
 
             }
-//            log.debug "feature location list ${featureLocationList}"
-//            Transcript transcript = transcriptService.getParentTranscriptForFeature(feature)
-//            List<Exon> exons = transcriptService.getSortedExons(transcript,true)
-//            int length = 0;
-//            for (Exon exon : exons) {
-//                if (!overlapperService.overlaps(exon, cds)) {
-//                    continue;
-//                }
-//                int fmin = exon.getFmin() < cds.getFmin() ? cds.getFmin() : exon.getFmin();
-//                int fmax = exon.getFmax() > cds.getFmax() ? cds.getFmax() : exon.getFmax();
-//                String phase;
-//                if (length % 3 == 0) {
-//                    phase = "0";
-//                } else if (length % 3 == 1) {
-//                    phase = "2";
-//                } else {
-//                    phase = "1";
-//                }
-//                length += fmax - fmin;
-//                GFF3Entry entry = new GFF3Entry(seqId, source, type, fmin + 1, fmax, score, strand, phase);
-//                entry.setAttributes(extractAttributes(writeObject, cds));
-//                gffEntries.add(entry);
-//            }
-//            String phase = "0";
-//            GFF3Entry entry = new GFF3Entry(seqId, source, type, start, end, score, strand, phase);
-////        entry.setAttributes(extractAttributes(writeObject, feature));
-//            entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
-////            log.debug "adding entry with type ${entry.type}"
-//            gffEntries.add(entry);
         } else {
             String phase = ".";
             GFF3Entry entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand, phase);
-//        entry.setAttributes(extractAttributes(writeObject, feature));
             entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
-//            log.debug "adding entry with type ${entry.type}"
             gffEntries.add(entry);
         }
 //        if(featureService.typeHasChildren(feature)){
@@ -480,7 +444,10 @@ class Gff3HandlerService {
         if (children) {
             for (def childNode : children) {
 //                log.debug "child ${childNode}"
-//                log.debug "child thype ${childNode.feature?.labels()}"
+                println "child thype ${childNode.feature?.labels()}"
+                println "child location ${childNode.location}"
+                FeatureLocation childFeatureLocation = childNode.location as FeatureLocation
+                println "min / max ${childFeatureLocation.fmin} / ${childFeatureLocation.fmax}"
 //                log.debug "child feature id ${childNode.feature?.id()}"
 //                log.debug "child id ${child.id()}"
 //                Feature child = childNode.feature as Feature
