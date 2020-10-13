@@ -309,18 +309,43 @@ class Gff3HandlerService {
         return gffEntries;
     }
 
+    private GFF3Entry calculateParentGFF3Entry(WriteObject writeObject, def neo4jEntry,String source,String seqId){
+        Feature feature = neo4jEntry.feature as Feature
+        FeatureLocation featureLocation = neo4jEntry.location as FeatureLocation
+        int start = featureLocation.getFmin() + 1;
+        int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
+        String score = "."
+        String strand;
+        if (featureLocation.getStrand() == Strand.POSITIVE.getValue()) {
+            strand = Strand.POSITIVE.getDisplay()
+        } else if (featureLocation.getStrand() == Strand.NEGATIVE.getValue()) {
+            strand = Strand.NEGATIVE.getDisplay()
+        } else {
+            strand = "."
+        }
+        String type = featureService.getCvTermFromNeo4jFeature(neo4jEntry.feature)
+
+        String phase = ".";
+        GFF3Entry gff3Entry = new GFF3Entry(seqId, source, type, start, end, score, strand, phase);
+//        entry.setAttributes(extractAttributes(writeObject, feature));
+        gff3Entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
+        return gff3Entry
+    }
+
     private void convertNeo4jToEntry(WriteObject writeObject, def result, String source, Collection<GFF3Entry> gffEntries) {
 
         //log.debug "converting feature to ${feature.name} entry of # of entries ${gffEntries.size()}"
         Sequence seq = result.sequence as Sequence
+        String seqId = seq.name
         FeatureLocation featureLocation = result.location as FeatureLocation
         def children = result.children
         println "result.parent ${result.parent}"
         if(result.parent){
-            println "result type: ${featureService.getCvTermFromNeo4jFeature(result.parent.feature)}"
+            println "result parent type: ${featureService.getCvTermFromNeo4jFeature(result.parent.feature)}"
+            // add a GFF3 entry for parent
+            gffEntries.add(calculateParentGFF3Entry(writeObject,result.parent,source,seqId))
         }
 
-        String seqId = seq.name
 
         Feature feature = result.feature as Feature
 //        String type = featureService.getCvTermFromFeature(feature)

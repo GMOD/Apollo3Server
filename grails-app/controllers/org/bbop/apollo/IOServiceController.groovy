@@ -177,7 +177,7 @@ class IOServiceController extends AbstractApolloController {
                     "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature) " +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
                     "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child,sequence: s}), " +
-                    "owners: collect(u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
+                    "owners: collect(u),parent: { location: pl,r2:gfr,feature:parent }}"
 //
                 println "full genes query ${fullGenesQuery}"
 
