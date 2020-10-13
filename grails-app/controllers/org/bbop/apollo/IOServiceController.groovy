@@ -174,10 +174,10 @@ class IOServiceController extends AbstractApolloController {
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
                     "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Gene)-[gfr]->(f) " +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
-                    "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature) " +
+                    "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature)-[pl2:FEATURELOCATION]-(s) " +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
-                    "RETURN {type: labels(f),sequence: s,feature: f,location: fl,children: collect(DISTINCT {type: labels(child), location: cl,r1: fr,feature: child,sequence: s}), " +
-                    "owners: collect(u),parent: { type: labels(parent), location: pl,r2:gfr,feature:parent }}"
+                    "RETURN {type: labels(f),sequence: s,feature: f,location: fl,children: collect(DISTINCT {type: labels(child), location: pl2,r1: fr,feature: child,sequence: s}), " +
+                    "owners: collect(distinct u),parent: { type: labels(parent), location: pl,r2:gfr,feature:parent }}"
 //
                 println "full genes query ${fullGenesQuery}"
 
