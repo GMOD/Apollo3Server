@@ -328,7 +328,7 @@ class Gff3HandlerService {
         String phase = ".";
         GFF3Entry gff3Entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand, phase);
 //        entry.setAttributes(extractAttributes(writeObject, feature));
-        gff3Entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
+        gff3Entry.setAttributes(extractNeo4jAttributes(writeObject, feature,null));
         return gff3Entry
     }
 
@@ -339,6 +339,8 @@ class Gff3HandlerService {
         String seqId = seq.name
         FeatureLocation featureLocation = result.location as FeatureLocation
         def children = result.children
+        def owners = result.owners
+        println "result.owners ${owners}"
         println "result.parent ${result.parent}"
         if(result.parent){
             println "result parent type: ${featureService.getCvTermFromNeo4jFeature(result.parent.feature)}"
@@ -422,14 +424,14 @@ class Gff3HandlerService {
                 length += fmax - fmin;
                 log.debug "adding for type: ${type}"
                 GFF3Entry entry = new GFF3Entry(seqId, source, type, fmin+1 , fmax, score, strand, phase);
-                entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
+                entry.setAttributes(extractNeo4jAttributes(writeObject,feature,result.parent ? result.parent.feature as Feature: null));
                 gffEntries.add(entry);
 
             }
         } else {
             String phase = ".";
             GFF3Entry entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand, phase);
-            entry.setAttributes(extractNeo4jAttributes(writeObject, feature));
+            entry.setAttributes(extractNeo4jAttributes(writeObject, feature,result.parent ? result.parent.feature as Feature: null));
             gffEntries.add(entry);
         }
 //        if(featureService.typeHasChildren(feature)){
@@ -539,17 +541,17 @@ class Gff3HandlerService {
     }
 
     // TODO: make work
-    private Map<String, String> extractNeo4jAttributes(WriteObject writeObject, Feature feature) {
-        Map<String, String> attributes = new HashMap<String, String>();
+    private Map<String, String> extractNeo4jAttributes(WriteObject writeObject, Feature feature,Feature parentFeature = null) {
+        Map<String, String> attributes = new HashMap<String, String>()
         attributes.put(FeatureStringEnum.EXPORT_ID.value, encodeString(feature.getUniqueName()));
         if (feature.getName() != null && !isBlank(feature.getName()) && writeObject.attributesToExport.contains(FeatureStringEnum.NAME.value)) {
             attributes.put(FeatureStringEnum.EXPORT_NAME.value, encodeString(feature.getName()));
         }
         // TODO: handle exporting parent
-//        if (!(feature.class.name in requestHandlingService.viewableAnnotationList+requestHandlingService.viewableAlterations)) {
+        if (parentFeature!=null && !(parentFeature.class.name in requestHandlingService.viewableAnnotationList+requestHandlingService.viewableAlterations)) {
 //            def parent= featureRelationshipService.getParentForFeature(feature)
-//            attributes.put(FeatureStringEnum.EXPORT_PARENT.value, encodeString(parent.uniqueName));
-//        }
+            attributes.put(FeatureStringEnum.EXPORT_PARENT.value, encodeString(parentFeature.uniqueName));
+        }
         if (configWrapperService.exportSubFeatureAttrs() || feature.class.name in requestHandlingService.viewableAnnotationList + requestHandlingService.viewableAnnotationTranscriptList + requestHandlingService.viewableAlterations) {
             if (writeObject.attributesToExport.contains(FeatureStringEnum.SYNONYMS.value)) {
                 Iterator<FeatureSynonym> synonymIter = feature.featureSynonyms.iterator();

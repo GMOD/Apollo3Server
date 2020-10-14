@@ -169,6 +169,7 @@ class IOServiceController extends AbstractApolloController {
 
                 // query transcripts
 
+                // TODO: note that "type" is being passed in for debugging only
                 String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Transcript)," +
                     "(f)-[owner:OWNERS]-(u)\n" +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
