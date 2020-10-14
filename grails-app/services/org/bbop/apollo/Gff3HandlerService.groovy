@@ -207,7 +207,7 @@ class Gff3HandlerService {
     }
 
     private void writeNeo4jFeature(WriteObject writeObject, def result, String source) {
-        for (GFF3Entry entry : convertNeo4jToEntry(writeObject, result, source)) {
+        for (GFF3Entry entry : convertNeo4jTranscriptToEntry(writeObject, result, source)) {
             writeObject.out.println(entry.toString());
         }
     }
@@ -303,9 +303,9 @@ class Gff3HandlerService {
         return gffEntries;
     }
 
-    private Collection<GFF3Entry> convertNeo4jToEntry(WriteObject writeObject, def result, String source) {
+    private Collection<GFF3Entry> convertNeo4jTranscriptToEntry(WriteObject writeObject, def result, String source) {
         List<GFF3Entry> gffEntries = new ArrayList<GFF3Entry>();
-        convertNeo4jToEntry(writeObject, result, source, gffEntries)
+        convertNeo4jTranscriptToEntry(writeObject, result, source, gffEntries)
         return gffEntries;
     }
 
@@ -332,26 +332,10 @@ class Gff3HandlerService {
         return gff3Entry
     }
 
-    private void convertNeo4jToEntry(WriteObject writeObject, def result, String source, Collection<GFF3Entry> gffEntries) {
-
-        //log.debug "converting feature to ${feature.name} entry of # of entries ${gffEntries.size()}"
-        Sequence seq = result.sequence as Sequence
-        String seqId = seq.name
-        FeatureLocation featureLocation = result.location as FeatureLocation
-        def children = result.children
-        def owners = result.owners
-        println "result.owners ${owners}"
-        println "result.parent ${result.parent}"
-        if(result.parent){
-            println "result parent type: ${featureService.getCvTermFromNeo4jFeature(result.parent.feature)}"
-            // add a GFF3 entry for parent
-            gffEntries.add(calculateParentGFF3Entry(writeObject,result.parent,source,seqId))
-        }
-
-
-        Feature feature = result.feature as Feature
-//        String type = featureService.getCvTermFromFeature(feature)
-        String type = featureService.getCvTermFromNeo4jFeature(result.feature)
+    // NOTE: taking in list as we can have multiple gff3 entires created here because we split the CDS across exons
+    private void calculateChildGFF3Entry(WriteObject writeObject, def childNeo4jEntry,def parentNeo4jEntry,String source,String seqId,Collection<GFF3Entry> gffEntries){
+        Feature feature = childNeo4jEntry.feature as Feature
+        FeatureLocation featureLocation = childNeo4jEntry.location as FeatureLocation
         int start = featureLocation.getFmin()
         int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
         String score = "."
@@ -363,6 +347,9 @@ class Gff3HandlerService {
         } else {
             strand = "."
         }
+        String type = featureService.getCvTermFromNeo4jFeature(childNeo4jEntry.feature)
+
+
         if (type == "CDS") {
             // TODO: sort exons
 //            CDS cds = (CDS) feature
@@ -376,7 +363,7 @@ class Gff3HandlerService {
             featureLocationList.sort(new Comparator<FeatureLocation>() {
                 @Override
                 int compare(FeatureLocation featureLocation1, FeatureLocation featureLocation2) {
-                    int retVal = 0
+                    int retVal
                     if (featureLocation1.fmin < featureLocation2.fmin) {
                         retVal = -1
                     } else if (featureLocation1.fmin > featureLocation2.fmin) {
@@ -424,40 +411,69 @@ class Gff3HandlerService {
                 length += fmax - fmin;
                 log.debug "adding for type: ${type}"
                 GFF3Entry entry = new GFF3Entry(seqId, source, type, fmin+1 , fmax, score, strand, phase);
-                entry.setAttributes(extractNeo4jAttributes(writeObject,feature,result.parent ? result.parent.feature as Feature: null));
+                entry.setAttributes(extractNeo4jAttributes(writeObject,feature,parentNeo4jEntry.feature as Feature))
                 gffEntries.add(entry);
-
             }
-        } else {
+        }
+        else {
             String phase = ".";
             GFF3Entry entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand, phase);
-            entry.setAttributes(extractNeo4jAttributes(writeObject, feature,result.parent ? result.parent.feature as Feature: null));
+            entry.setAttributes(extractNeo4jAttributes(writeObject, feature,parentNeo4jEntry.feature as Feature))
+//            return entry
             gffEntries.add(entry);
         }
-//        if(featureService.typeHasChildren(feature)){
-//            for (Feature child : featureRelationshipService.getChildren(feature)) {
-//                if (child instanceof CDS) {
-//                    convertToEntry(writeObject, (CDS) child, source, gffEntries);
-//                } else {
-//                    convertToEntry(writeObject, child, source, gffEntries);
-//                }
-//            }
-//        }
+
+//        String phase = ".";
+//        GFF3Entry gff3Entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand, phase);
+////        entry.setAttributes(extractAttributes(writeObject, feature));
+//        gff3Entry.setAttributes(extractNeo4jAttributes(writeObject, feature,null));
+//        return gff3Entry
+    }
+
+    private void convertNeo4jTranscriptToEntry(WriteObject writeObject, def result, String source, Collection<GFF3Entry> gffEntries) {
+
+        //log.debug "converting feature to ${feature.name} entry of # of entries ${gffEntries.size()}"
+        Sequence seq = result.sequence as Sequence
+        String seqId = seq.name
+        FeatureLocation featureLocation = result.location as FeatureLocation
+        def children = result.children
+        def owners = result.owners
+        println "result.owners ${owners}"
+        println "result.parent ${result.parent}"
+        if(result.parent){
+            println "result parent type: ${featureService.getCvTermFromNeo4jFeature(result.parent.feature)}"
+            // add a GFF3 entry for parent
+            gffEntries.add(calculateParentGFF3Entry(writeObject,result.parent,source,seqId))
+        }
+
+
+        Feature feature = result.feature as Feature
+//        String type = featureService.getCvTermFromFeature(feature)
+        String type = featureService.getCvTermFromNeo4jFeature(result.feature)
+        int start = featureLocation.getFmin()
+        int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
+        String score = "."
+        String strand;
+        if (featureLocation.getStrand() == Strand.POSITIVE.getValue()) {
+            strand = Strand.POSITIVE.getDisplay()
+        } else if (featureLocation.getStrand() == Strand.NEGATIVE.getValue()) {
+            strand = Strand.NEGATIVE.getDisplay()
+        } else {
+            strand = "."
+        }
+        GFF3Entry entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand);
+        println "start of type is parent : ${type} -> parent: ${result.parent}"
+        entry.setAttributes(extractNeo4jAttributes(writeObject, feature,result.parent ? result.parent.feature as Feature: null));
+        gffEntries.add(entry);
         if (children) {
+            println "children ${children.size()} from ${entry.toString()}"
             for (def childNode : children) {
-//                log.debug "child ${childNode}"
                 println "child thype ${childNode.feature?.labels()}"
                 println "child location ${childNode.location}"
                 FeatureLocation childFeatureLocation = childNode.location as FeatureLocation
                 println "min / max ${childFeatureLocation.fmin} / ${childFeatureLocation.fmax}"
-//                log.debug "child feature id ${childNode.feature?.id()}"
-//                log.debug "child id ${child.id()}"
-//                Feature child = childNode.feature as Feature
-//                if (child instanceof CDS) {
-//                    convertNeo4jToEntry(writeObject, childNode, source, gffEntries);
-//                } else {
                 if (childNode.feature) {
-                    convertNeo4jToEntry(writeObject, childNode, source, gffEntries)
+                    calculateChildGFF3Entry(writeObject,childNode,result,source,seqId,gffEntries)
                 }
 //                }
             }

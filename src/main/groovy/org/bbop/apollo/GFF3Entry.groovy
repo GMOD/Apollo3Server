@@ -1,4 +1,7 @@
 package org.bbop.apollo
+
+import org.bbop.apollo.gwt.shared.FeatureStringEnum
+
 /**
  * Created by Deepak on 3/9/15.
  */
@@ -14,7 +17,7 @@ class GFF3Entry {
     private String phase;
     private Map<String, String> attributes;
 
-    GFF3Entry(String seqId, String source, String type, int start, int end, String score, String strand, String phase) {
+    GFF3Entry(String seqId, String source, String type, int start, int end, String score, String strand, String phase = ".") {
         this.seqId = seqId;
         this.source = source;
         this.type = type;
@@ -120,5 +123,31 @@ class GFF3Entry {
             }
         }
         return buf.toString();
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        GFF3Entry gff3Entry = (GFF3Entry) o
+
+        if (end != gff3Entry.end) return false
+        if (start != gff3Entry.start) return false
+        if(!attributes.get(FeatureStringEnum.EXPORT_ID.value).equals(gff3Entry.attributes.get(FeatureStringEnum.EXPORT_ID.value)))
+//        if (attributes != gff3Entry.attributes) return false
+        if (seqId != gff3Entry.seqId) return false
+        if (type != gff3Entry.type) return false
+
+        return true
+    }
+
+    int hashCode() {
+        int result
+        result = (seqId != null ? seqId.hashCode() : 0)
+        result = 31 * result + (type != null ? type.hashCode() : 0)
+        result = 31 * result + start
+        result = 31 * result + end
+        result = 31 * result + (attributes != null ? attributes.get(FeatureStringEnum.EXPORT_ID.value) : 0)
+        return result
     }
 }
