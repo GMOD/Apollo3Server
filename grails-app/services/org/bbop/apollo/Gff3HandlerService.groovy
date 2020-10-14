@@ -309,7 +309,7 @@ class Gff3HandlerService {
         return gffEntries;
     }
 
-    private GFF3Entry calculateParentGFF3Entry(WriteObject writeObject, def neo4jEntry,String source,String seqId){
+    private GFF3Entry calculateParentGFF3Entry(WriteObject writeObject, def neo4jEntry,String source,String seqId, def owners){
         Feature feature = neo4jEntry.feature as Feature
         FeatureLocation featureLocation = neo4jEntry.location as FeatureLocation
         int start = featureLocation.getFmin()
@@ -328,12 +328,12 @@ class Gff3HandlerService {
         String phase = ".";
         GFF3Entry gff3Entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand, phase);
 //        entry.setAttributes(extractAttributes(writeObject, feature));
-        gff3Entry.setAttributes(extractNeo4jAttributes(writeObject, feature,null));
+        gff3Entry.setAttributes(extractNeo4jAttributes(writeObject, feature,null,owners));
         return gff3Entry
     }
 
     // NOTE: taking in list as we can have multiple gff3 entires created here because we split the CDS across exons
-    private void calculateChildGFF3Entry(WriteObject writeObject, def childNeo4jEntry,def parentNeo4jEntry,String source,String seqId,Collection<GFF3Entry> gffEntries){
+    private void calculateChildGFF3Entry(WriteObject writeObject, def childNeo4jEntry,def parentNeo4jEntry,String source,String seqId,Collection<GFF3Entry> gffEntries,def owners){
         Feature feature = childNeo4jEntry.feature as Feature
         FeatureLocation featureLocation = childNeo4jEntry.location as FeatureLocation
         int start = featureLocation.getFmin()
@@ -411,14 +411,14 @@ class Gff3HandlerService {
                 length += fmax - fmin;
                 log.debug "adding for type: ${type}"
                 GFF3Entry entry = new GFF3Entry(seqId, source, type, fmin+1 , fmax, score, strand, phase);
-                entry.setAttributes(extractNeo4jAttributes(writeObject,feature,parentNeo4jEntry.feature as Feature))
+                entry.setAttributes(extractNeo4jAttributes(writeObject,feature,parentNeo4jEntry.feature as Feature,owners))
                 gffEntries.add(entry);
             }
         }
         else {
             String phase = ".";
             GFF3Entry entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand, phase);
-            entry.setAttributes(extractNeo4jAttributes(writeObject, feature,parentNeo4jEntry.feature as Feature))
+            entry.setAttributes(extractNeo4jAttributes(writeObject, feature,parentNeo4jEntry.feature as Feature,owners))
 //            return entry
             gffEntries.add(entry);
         }
@@ -436,14 +436,12 @@ class Gff3HandlerService {
         Sequence seq = result.sequence as Sequence
         String seqId = seq.name
         FeatureLocation featureLocation = result.location as FeatureLocation
-        def children = result.children
         def owners = result.owners
         println "result.owners ${owners}"
         println "result.parent ${result.parent}"
         if(result.parent){
-            println "result parent type: ${featureService.getCvTermFromNeo4jFeature(result.parent.feature)}"
             // add a GFF3 entry for parent
-            gffEntries.add(calculateParentGFF3Entry(writeObject,result.parent,source,seqId))
+            gffEntries.add(calculateParentGFF3Entry(writeObject,result.parent,source,seqId,owners))
         }
 
 
@@ -463,8 +461,9 @@ class Gff3HandlerService {
         }
         GFF3Entry entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand);
         println "start of type is parent : ${type} -> parent: ${result.parent}"
-        entry.setAttributes(extractNeo4jAttributes(writeObject, feature,result.parent ? result.parent.feature as Feature: null));
+        entry.setAttributes(extractNeo4jAttributes(writeObject, feature,result.parent ? result.parent.feature as Feature: null,owners))
         gffEntries.add(entry);
+        def children = result.children
         if (children) {
             println "children ${children.size()} from ${entry.toString()}"
             for (def childNode : children) {
@@ -472,12 +471,14 @@ class Gff3HandlerService {
                 println "child location ${childNode.location}"
                 FeatureLocation childFeatureLocation = childNode.location as FeatureLocation
                 println "min / max ${childFeatureLocation.fmin} / ${childFeatureLocation.fmax}"
-                if (childNode.feature) {
-                    calculateChildGFF3Entry(writeObject,childNode,result,source,seqId,gffEntries)
-                }
+                println "owners ${owners}"
+//                if (childNode.feature) {
+                    calculateChildGFF3Entry(writeObject,childNode,result,source,seqId,gffEntries,owners)
 //                }
             }
         }
+
+        // set owners for each node
 
         log.debug "output entries ${gffEntries.size()} -> ${gffEntries.toString()}"
     }
@@ -557,28 +558,28 @@ class Gff3HandlerService {
     }
 
     // TODO: make work
-    private Map<String, String> extractNeo4jAttributes(WriteObject writeObject, Feature feature,Feature parentFeature = null) {
+    private Map<String, String> extractNeo4jAttributes(WriteObject writeObject, Feature feature,Feature parentFeature,def owners ) {
         Map<String, String> attributes = new HashMap<String, String>()
-        attributes.put(FeatureStringEnum.EXPORT_ID.value, encodeString(feature.getUniqueName()));
+        attributes.put(FeatureStringEnum.EXPORT_ID.value, encodeString(feature.getUniqueName()))
+        println "handling owners ${owners}"
         if (feature.getName() != null && !isBlank(feature.getName()) && writeObject.attributesToExport.contains(FeatureStringEnum.NAME.value)) {
-            attributes.put(FeatureStringEnum.EXPORT_NAME.value, encodeString(feature.getName()));
+            attributes.put(FeatureStringEnum.EXPORT_NAME.value, encodeString(feature.getName()))
         }
         // TODO: handle exporting parent
         if (parentFeature!=null && !(parentFeature.class.name in requestHandlingService.viewableAnnotationList+requestHandlingService.viewableAlterations)) {
-//            def parent= featureRelationshipService.getParentForFeature(feature)
-            attributes.put(FeatureStringEnum.EXPORT_PARENT.value, encodeString(parentFeature.uniqueName));
+            attributes.put(FeatureStringEnum.EXPORT_PARENT.value, encodeString(parentFeature.uniqueName))
         }
         if (configWrapperService.exportSubFeatureAttrs() || feature.class.name in requestHandlingService.viewableAnnotationList + requestHandlingService.viewableAnnotationTranscriptList + requestHandlingService.viewableAlterations) {
             if (writeObject.attributesToExport.contains(FeatureStringEnum.SYNONYMS.value)) {
-                Iterator<FeatureSynonym> synonymIter = feature.featureSynonyms.iterator();
+                Iterator<FeatureSynonym> synonymIter = feature.featureSynonyms.iterator()
                 if (synonymIter.hasNext()) {
-                    StringBuilder synonyms = new StringBuilder();
-                    synonyms.append(synonymIter.next().synonym.name);
+                    StringBuilder synonyms = new StringBuilder()
+                    synonyms.append(synonymIter.next().synonym.name)
                     while (synonymIter.hasNext()) {
                         synonyms.append(",");
-                        synonyms.append(encodeString(synonymIter.next().synonym.name));
+                        synonyms.append(encodeString(synonymIter.next().synonym.name))
                     }
-                    attributes.put(FeatureStringEnum.EXPORT_ALIAS.value, synonyms.toString());
+                    attributes.put(FeatureStringEnum.EXPORT_ALIAS.value, synonyms.toString())
                 }
             }
 
@@ -667,17 +668,17 @@ class Gff3HandlerService {
                     }
                 }
             }
-            if (writeObject.attributesToExport.contains(FeatureStringEnum.OWNER.value) && feature.getOwner()) {
-                String ownersString = feature.owners.collect { owner ->
-                    encodeString(owner.username)
+            if (writeObject.attributesToExport.contains(FeatureStringEnum.OWNER.value) && owners!=null) {
+                String ownersString = owners.collect { owner ->
+                    encodeString(owner.username as String)
                 }.join(",")
+                attributes.put(FeatureStringEnum.OWNER.value.toLowerCase(), ownersString);
                 // Note: how to do this using history directly, but only the top-level visible object gets annotated (e.g., the mRNA)
                 // also, this is a separate query to the history table for each GFF3, so very slow
 //                def owners = FeatureEvent.findAllByUniqueName(feature.uniqueName).editor.unique()
 //                String ownersString = owners.collect{ owner ->
 //                    encodeString(owner.username)
 //                }.join(",")
-                attributes.put(FeatureStringEnum.OWNER.value.toLowerCase(), ownersString);
             }
             if (writeObject.attributesToExport.contains(FeatureStringEnum.DATE_CREATION.value)) {
                 Calendar calendar = Calendar.getInstance();
