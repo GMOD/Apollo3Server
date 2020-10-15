@@ -166,32 +166,29 @@ class IOServiceController extends AbstractApolloController {
 
 //                String fullGenesQuery = "MATCH (g:Gene)--(t:Transcript)--(f:Feature),(g)--(s:Sequence)--(o:Organism) where (o.commonName = '${organism.commonName}' or o.id = ${organism.id}) " + (genesNoExon.id ? " and g.id not in ${queryParams.geneIds}" : "")   +  (sequences ? "and s.name in ${sequences}" :"")  + " RETURN distinct g"
 //                String fullGenesQuery = "MATCH (g:Gene)--(t:Transcript)--(f:Feature),(g)--(s:Sequence)--(o:Organism) where (o.commonName = '${organism.commonName}' or o.id = ${organism.id}) " + (genesNoExon.id ? " and g.id not in ${queryParams.geneIds}" : "")   +  (sequences ? "and s.name in ${sequences}" :"")  + " RETURN distinct g"
-                String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)," +
+
+                // query transcripts
+
+                // TODO: note that "type" is being passed in for debugging only
+                String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Transcript)," +
                     "(f)-[owner:OWNERS]-(u)\n" +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
-                    "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Feature)<-[gfr]-(f) " +
+                    "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Gene)-[gfr]->(f) " +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
-                    "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature) " +
+                    "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature)-[pl2:FEATURELOCATION]-(s) " +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
-                    "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child,sequence: s}), " +
-                    "owners: collect(u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
+                    "RETURN {type: labels(f),sequence: s,feature: f,location: fl,children: collect(DISTINCT {type: labels(child), location: pl2,r1: fr,feature: child,sequence: s}), " +
+                    "owners: collect(distinct u),parent: { type: labels(parent), location: pl,r2:gfr,feature:parent }}"
 //
-//                println "full genes query ${fullGenesQuery}"
+                println "full genes query ${fullGenesQuery}"
+
 //
                 def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery).unique()
+                log.debug "neo4j nodes ${neo4jFeatureNodes as JSON}"
 
-//                List<Feature> myFeatureList = []
-//                neo4jFeatureNodes.each {
-//                    Feature feature = featureService.convertNeo4jFeatureToFeature(it, false)
-//                    myFeatureList.push(feature)
-//                }
-//
-//                println "output myfeature list ${myFeatureList}"
-//
-//                features = myFeatureList
+                // TODO: query single-level (RR, etc.), excluding if a parent or child feature relationship
+
                 features = neo4jFeatureNodes
-
-                println "final features: ${features}"
 
                 log.debug "IOService query: ${System.currentTimeMillis() - st}ms"
             }
@@ -218,6 +215,7 @@ class IOServiceController extends AbstractApolloController {
                     gff3HandlerService.writeNeo4jFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String, true, sequenceList)
                 } else {
 //                    gff3HandlerService.writeFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String)
+//                    println("features to write ${features as JSON}")
                     gff3HandlerService.writeNeo4jFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String)
                 }
             } else if (typeOfExport == FeatureStringEnum.TYPE_GO.value) {
