@@ -48,28 +48,28 @@ class Gff3HandlerService {
         println "Writing neo4j features to GFF3 text"
 
         // TODO: use specified metadata?
-        writeObject.attributesToExport.add(FeatureStringEnum.NAME.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.SYMBOL.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.SYNONYMS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.DESCRIPTION.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.STATUS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.DBXREFS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.OWNER.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.ATTRIBUTES.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.PUBMEDIDS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.GENE_PRODUCT.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.PROVENANCE.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.GO_ANNOTATIONS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.GOIDS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.COMMENTS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.DATE_CREATION.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.DATE_LAST_MODIFIED.value);
+        writeObject.attributesToExport.add(FeatureStringEnum.NAME.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.SYMBOL.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.SYNONYMS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.DESCRIPTION.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.STATUS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.DBXREFS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.OWNER.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.ATTRIBUTES.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.PUBMEDIDS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.GENE_PRODUCT.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.PROVENANCE.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.GO_ANNOTATIONS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.GOIDS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.COMMENTS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.DATE_CREATION.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.DATE_LAST_MODIFIED.value)
 
         if (!writeObject.file.canWrite()) {
-            throw new IOException("Cannot write GFF3 to: " + writeObject.file.getAbsolutePath());
+            throw new IOException("Cannot write GFF3 to: " + writeObject.file.getAbsolutePath())
         }
 
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(writeObject.file, true)));
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(writeObject.file, true)))
         writeObject.out = out
         out.println("##gff-version 3")
 
@@ -90,28 +90,28 @@ class Gff3HandlerService {
         writeObject.format = Format.TEXT
 
         // TODO: use specified metadata?
-        writeObject.attributesToExport.add(FeatureStringEnum.NAME.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.SYMBOL.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.SYNONYMS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.DESCRIPTION.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.STATUS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.DBXREFS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.OWNER.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.ATTRIBUTES.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.PUBMEDIDS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.GENE_PRODUCT.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.PROVENANCE.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.GO_ANNOTATIONS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.GOIDS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.COMMENTS.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.DATE_CREATION.value);
-        writeObject.attributesToExport.add(FeatureStringEnum.DATE_LAST_MODIFIED.value);
+        writeObject.attributesToExport.add(FeatureStringEnum.NAME.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.SYMBOL.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.SYNONYMS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.DESCRIPTION.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.STATUS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.DBXREFS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.OWNER.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.ATTRIBUTES.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.PUBMEDIDS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.GENE_PRODUCT.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.PROVENANCE.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.GO_ANNOTATIONS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.GOIDS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.COMMENTS.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.DATE_CREATION.value)
+        writeObject.attributesToExport.add(FeatureStringEnum.DATE_LAST_MODIFIED.value)
 
         if (!writeObject.file.canWrite()) {
-            throw new IOException("Cannot write GFF3 to: " + writeObject.file.getAbsolutePath());
+            throw new IOException("Cannot write GFF3 to: " + writeObject.file.getAbsolutePath())
         }
 
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(writeObject.file, true)));
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(writeObject.file, true)))
         writeObject.out = out
         out.println("##gff-version 3")
         writeFeatures(writeObject, features, source)
@@ -142,11 +142,13 @@ class Gff3HandlerService {
             featureList.add(result);
         }
         featuresBySource.sort { it.key }
+        Set<String> geneIds = new HashSet<>()
         for (Map.Entry<Sequence, Collection> entry : featuresBySource.entrySet()) {
             writeGroupDirectives(writeObject, entry.getKey())
             for (def result : entry.getValue()) {
-                writeNeo4jFeature(writeObject, result, source)
+                writeNeo4jFeature(writeObject, result, source,geneIds)
                 writeFeatureGroupEnd(writeObject.out)
+                println "result ${result}"
             }
         }
     }
@@ -205,8 +207,8 @@ class Gff3HandlerService {
         out.println("##FASTA");
     }
 
-    private void writeNeo4jFeature(WriteObject writeObject, def result, String source) {
-        for (GFF3Entry entry : convertNeo4jTranscriptToEntry(writeObject, result, source)) {
+    private void writeNeo4jFeature(WriteObject writeObject, def result, String source,Set<String> writtenGeneIds) {
+        for (GFF3Entry entry : convertNeo4jTranscriptToEntry(writeObject, result, source,writtenGeneIds)) {
             writeObject.out.println(entry.toString());
         }
     }
@@ -302,9 +304,9 @@ class Gff3HandlerService {
         return gffEntries;
     }
 
-    private Collection<GFF3Entry> convertNeo4jTranscriptToEntry(WriteObject writeObject, def result, String source) {
+    private Collection<GFF3Entry> convertNeo4jTranscriptToEntry(WriteObject writeObject, def result, String source,Set<String> writtenGeneIds) {
         List<GFF3Entry> gffEntries = new ArrayList<GFF3Entry>();
-        convertNeo4jTranscriptToEntry(writeObject, result, source, gffEntries)
+        convertNeo4jTranscriptToEntry(writeObject, result, source, gffEntries,writtenGeneIds)
         return gffEntries;
     }
 
@@ -422,7 +424,7 @@ class Gff3HandlerService {
 
     }
 
-    private void convertNeo4jTranscriptToEntry(WriteObject writeObject, def result, String source, Collection<GFF3Entry> gffEntries) {
+    private void convertNeo4jTranscriptToEntry(WriteObject writeObject, def result, String source, Collection<GFF3Entry> gffEntries,Set<String> writtenGeneIds) {
 
         //log.debug "converting feature to ${feature.name} entry of # of entries ${gffEntries.size()}"
         Sequence seq = result.sequence as Sequence
@@ -431,12 +433,17 @@ class Gff3HandlerService {
         def owners = result.owners
         if(result.parent){
             // add a GFF3 entry for parent
-            gffEntries.add(calculateParentGFF3Entry(writeObject,result.parent,source,seqId,owners))
+
+            // get the ID of the parent to see if we've already written it
+            String parentUniqueName = result.parent.feature.uniqueName
+            println "parent unique name ${parentUniqueName}"
+            if(!writtenGeneIds.contains(parentUniqueName)){
+                gffEntries.add(calculateParentGFF3Entry(writeObject,result.parent,source,seqId,owners))
+                writtenGeneIds.add(parentUniqueName)
+            }
+            println "output unqiue names ${writtenGeneIds.each { println it }}"
         }
 
-
-        Feature feature = result.feature as Feature
-//        String type = featureService.getCvTermFromFeature(feature)
         String type = featureService.getCvTermFromNeo4jFeature(result.feature)
         int start = featureLocation.getFmin()
         int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
