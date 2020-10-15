@@ -184,10 +184,19 @@ class IOServiceController extends AbstractApolloController {
 
 //
                 def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery).unique()
-                log.debug "neo4j nodes ${neo4jFeatureNodes as JSON}"
+                println "neo4j nodes ${neo4jFeatureNodes as JSON}"
+
 
                 // TODO: query single-level (RR, etc.), excluding if a parent or child feature relationship
-
+                // TODO: must exclude prior
+//                String singleLevelQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature),(f)-[owner:OWNERS]-(u)\n" +
+//                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
+//                    "RETURN {type: labels(f),sequence: s,feature: f,location: fl, owners: collect(distinct u)}"
+//
+//                println "single level query ${singleLevelQuery}"
+//                neo4jFeatureNodes += Feature.executeQuery(singleLevelQuery).unique()
+//
+//                println "neo4j with single nodes ${neo4jFeatureNodes as JSON}"
                 features = neo4jFeatureNodes
 
                 log.debug "IOService query: ${System.currentTimeMillis() - st}ms"
