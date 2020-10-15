@@ -184,22 +184,11 @@ class IOServiceController extends AbstractApolloController {
 
 //
                 def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery).unique()
-                println "neo4j nodes ${neo4jFeatureNodes as JSON}"
+                log.debug "neo4j nodes ${neo4jFeatureNodes as JSON}"
 
                 // TODO: query single-level (RR, etc.), excluding if a parent or child feature relationship
 
-//                List<Feature> myFeatureList = []
-//                neo4jFeatureNodes.each {
-//                    Feature feature = featureService.convertNeo4jFeatureToFeature(it, false)
-//                    myFeatureList.push(feature)
-//                }
-//
-//                println "output myfeature list ${myFeatureList}"
-//
-//                features = myFeatureList
                 features = neo4jFeatureNodes
-
-//                println "final features 3: ${features}"
 
                 log.debug "IOService query: ${System.currentTimeMillis() - st}ms"
             }

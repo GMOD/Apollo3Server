@@ -46,7 +46,6 @@ class Gff3HandlerService {
         writeObject.format = Format.TEXT
 
         println "Writing neo4j features to GFF3 text"
-//        println features
 
         // TODO: use specified metadata?
         writeObject.attributesToExport.add(FeatureStringEnum.NAME.value);
@@ -348,7 +347,6 @@ class Gff3HandlerService {
             strand = "."
         }
         String type = featureService.getCvTermFromNeo4jFeature(childNeo4jEntry.feature)
-        println "type ${type}, child: ${childNeo4jEntry.feature}, parent: ${parentNeo4jEntry.feature}"
 
 
         if (type == "CDS") {
@@ -431,8 +429,6 @@ class Gff3HandlerService {
         String seqId = seq.name
         FeatureLocation featureLocation = result.location as FeatureLocation
         def owners = result.owners
-        println "result.owners ${owners}"
-        println "result.parent ${result.parent}"
         if(result.parent){
             // add a GFF3 entry for parent
             gffEntries.add(calculateParentGFF3Entry(writeObject,result.parent,source,seqId,owners))
@@ -454,19 +450,12 @@ class Gff3HandlerService {
             strand = "."
         }
         GFF3Entry entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand);
-        println "start of type is parent : ${type} -> parent: ${result.parent}"
         entry.setAttributes(extractNeo4jAttributes(writeObject, result.feature,result.parent ? result.parent.feature: null,owners))
         gffEntries.add(entry);
         def children = result.children
         if (children) {
-            println "children ${children.size()} from ${entry.toString()}"
             for (def childNode : children) {
-                println "child thype ${childNode.feature?.labels()}"
-                println "child location ${childNode.location}"
                 FeatureLocation childFeatureLocation = childNode.location as FeatureLocation
-                println "min / max ${childFeatureLocation.fmin} / ${childFeatureLocation.fmax}"
-                println "owners ${owners}"
-//                if (childNode.feature) {
                 calculateChildGFF3Entry(writeObject,childNode,result,source,seqId,gffEntries,owners)
 //                }
             }
@@ -662,22 +651,11 @@ class Gff3HandlerService {
                     }
                 }
             }
-            println "has owners ${owners}"
-            println "has attribute ${writeObject.attributesToExport}"
             if (writeObject.attributesToExport.contains(FeatureStringEnum.OWNER.value) && owners!=null) {
-                println "in owner ${owners}"
                 String ownersString = owners.collect { owner ->
                     encodeString(owner.username as String)
                 }.join(",")
-                println "owner string ${ownersString}"
                 attributes.put(FeatureStringEnum.OWNER.value.toLowerCase(), ownersString);
-                println "ADDED owner string ${ownersString}"
-                // Note: how to do this using history directly, but only the top-level visible object gets annotated (e.g., the mRNA)
-                // also, this is a separate query to the history table for each GFF3, so very slow
-//                def owners = FeatureEvent.findAllByUniqueName(feature.uniqueName).editor.unique()
-//                String ownersString = owners.collect{ owner ->
-//                    encodeString(owner.username)
-//                }.join(",")
             }
             if (writeObject.attributesToExport.contains(FeatureStringEnum.DATE_CREATION.value)) {
                 Calendar calendar = Calendar.getInstance();
