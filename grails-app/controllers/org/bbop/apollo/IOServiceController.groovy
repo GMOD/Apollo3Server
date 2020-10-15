@@ -184,6 +184,7 @@ class IOServiceController extends AbstractApolloController {
 
 //
                 def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery).unique()
+                println "neo4j nodes ${neo4jFeatureNodes as JSON}"
 
                 // TODO: query single-level (RR, etc.), excluding if a parent or child feature relationship
 

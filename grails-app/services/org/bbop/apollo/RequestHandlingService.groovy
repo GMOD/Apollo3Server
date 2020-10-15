@@ -95,6 +95,61 @@ class RequestHandlingService {
     def jsonWebUtilityService
     def brokerMessagingTemplate
 
+    public static final List<String> viewableAnnotationFeatureCvTermList =[
+        RepeatRegion.cvTerm,
+        Terminator.cvTerm,
+        TransposableElement.cvTerm
+    ]
+    public static final List<String> viewableAnnotationTranscriptParentCvTermList =[
+        Gene.cvTerm,
+        Pseudogene.cvTerm,
+        PseudogenicRegion.cvTerm,
+        ProcessedPseudogene.cvTerm,
+    ]
+
+    public static final List<String> nonCodingAnnotationTranscriptCvTermList =[
+        Transcript.cvTerm,
+        TRNA.cvTerm,
+        SnRNA.cvTerm,
+        SnoRNA.cvTerm,
+        NcRNA.cvTerm,
+        RRNA.cvTerm,
+        MiRNA.cvTerm,
+        GuideRNA.cvTerm,
+        RNaseMRPRNA.cvTerm,
+        TelomeraseRNA.cvTerm,
+        SrpRNA.cvTerm,
+        LncRNA.cvTerm,
+        RNaseMRPRNA.cvTerm,
+        ScRNA.cvTerm,
+        PiRNA.cvTerm,
+        TmRNA.cvTerm,
+        EnzymaticRNA.cvTerm,
+    ]
+
+    public static final List<String> viewableAnnotationTranscriptCvTermList =[MRNA.cvTerm] + nonCodingAnnotationTranscriptList
+
+    public static final List<String> viewableAlterationCvTermList  = [
+        DeletionArtifact.cvTerm,
+        InsertionArtifact.cvTerm,
+        SubstitutionArtifact.cvTerm
+    ]
+
+    public static final List<String> viewableSequenceAlterationCvTermList =[
+        Deletion.cvTerm,
+        Insertion.cvTerm,
+        Substitution.cvTerm,
+        SNV.cvTerm,
+        SNP.cvTerm,
+        MNV.cvTerm,
+        MNP.cvTerm,
+        Indel.cvTerm
+    ]
+
+    public static
+    final List<String> viewableAnnotationCvTermList = viewableAnnotationFeatureCvTermList + viewableAnnotationTranscriptParentCvTermList + viewableSequenceAlterationCvTermList
+    public static
+    final List<String> viewableAnnotationTypesCvTermList = viewableAnnotationFeatureCvTermList + viewableAnnotationTranscriptCvTermList + viewableAnnotationTranscriptParentCvTermList
 
     public static final List<String> viewableAnnotationFeatureList = [
         RepeatRegion.class.name,
@@ -130,7 +185,7 @@ class RequestHandlingService {
 
     public static final List<String> viewableAnnotationTranscriptList = [MRNA.class.name] + nonCodingAnnotationTranscriptList
 
-    public static final List<String> viewableAlterations = [
+    public static final List<String> viewableAlterationList = [
         DeletionArtifact.class.name,
         InsertionArtifact.class.name,
         SubstitutionArtifact.class.name
