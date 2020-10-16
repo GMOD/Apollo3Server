@@ -23,6 +23,7 @@ import org.bbop.apollo.variant.*
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONException
 import org.grails.web.json.JSONObject
+import org.neo4j.driver.internal.InternalNode
 
 @Transactional(readOnly = true)
 class FeatureService {
@@ -99,6 +100,72 @@ class FeatureService {
         }
 
         return transcriptList
+    }
+
+    /** Get features that overlap a given location.
+     *
+     * @param location - FeatureLocation that the features overlap
+     * @param compareStrands - Whether to compare strands in overlap
+     * @return Collection of Feature objects that overlap the FeatureLocation
+     */
+    Collection<InternalNode> getOverlappingNeo4jFeatures(FeatureLocation location, boolean compareStrands = true) {
+
+//    if (compareStrands) {
+//      //Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl where fl.sequence = :sequence and fl.strand = :strand and ((fl.fmin <= :fmin and fl.fmax > :fmin) or (fl.fmin <= :fmax and fl.fmax >= :fmax ))",[fmin:location.fmin,fmax:location.fmax,strand:location.strand,sequence:location.sequence])
+//      Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl where fl.sequence = :sequence and fl.strand = :strand and ((fl.fmin <= :fmin and fl.fmax > :fmin) or (fl.fmin <= :fmax and fl.fmax >= :fmax) or (fl.fmin >= :fmin and fl.fmax <= :fmax))", [fmin: location.fmin, fmax: location.fmax, strand: location.strand, sequence: location.sequence])
+//        return []
+        println "input location ${location as JSON}"
+        println "compare strands ${compareStrands}"
+
+//        Collection<Feature> features = (Collection<Feature>) Feature.createCriteria().listDistinct {
+//            featureLocation {
+//                eq "to", location.to
+//                if (compareStrands) {
+//                    eq "strand", location.strand
+//                }
+//                or {
+//                    and {
+//                        lte "fmin", location.fmin
+//                        gt "fmax", location.fmax
+//                    }
+//                    and {
+//                        lte "fmin", location.fmax
+//                        gte "fmax", location.fmax
+//                    }
+//                    and {
+//                        gte "fmin", location.fmax
+//                        lte "fmax", location.fmax
+//                    }
+//                }
+//            }
+//        }
+//        println "output overlapping features ${features}"
+
+        Organism organism = location.to.organism
+        println "organism ${organism}"
+        println "organism JSON ${organism as JSON}"
+
+        String neo4jFeatureString = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)\n" +
+            "WHERE (o.commonName='${organism.commonName}' or o.id = ${organism.id})" +
+            (compareStrands ? " AND fl.strand = ${location.strand} " : "" ) +
+            " AND ( (fl.fmin <= ${location.fmin} AND fl.fmax > ${location.fmax}) OR ( fl.fmin <= ${location.fmax} AND fl.fmax >=${location.fmax} ) OR ( fl.fmin >=${location.fmax} AND fl.fmax <= ${location.fmax} ) )" +
+            "RETURN f"
+        println "neo4j String ${neo4jFeatureString}"
+        return Feature.executeQuery(neo4jFeatureString)
+//        println "neo4j output features ${neo4jFeatures}"
+//
+//        List<Feature> features = new ArrayList<>()
+//        neo4jFeatures.each {
+//            features.add( it as Feature)
+//        }
+////        neo4jFeatures as List<Feature>
+//        println "output features  ${features}"
+//
+//        return features
+//    } else {
+//      //Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl where fl.sequence = :sequence and ((fl.fmin <= :fmin and fl.fmax > :fmin) or (fl.fmin <= :fmax and fl.fmax >= :fmax ))",[fmin:location.fmin,fmax:location.fmax,sequence:location.sequence])
+//      Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl where fl.sequence = :sequence and ((fl.fmin <= :fmin and fl.fmax > :fmin) or (fl.fmin <= :fmax and fl.fmax >= :fmax) or (fl.fmin >= :fmin and fl.fmax <= :fmax))", [fmin: location.fmin, fmax: location.fmax, sequence: location.sequence])
+//    }
     }
 
     /** Get features that overlap a given location.
@@ -278,7 +345,7 @@ class FeatureService {
                 calculateCDS(transcript, readThroughStopCodon)
                 log.debug "generatED CDS ${cds}"
             } else {
-                log.debugn "not generated a CDS for some reason "
+                log.debug "not generated a CDS for some reason "
                 // if there are any sequence alterations that overlaps this transcript then
                 // recalculate the CDS to account for these changes
                 def sequenceAlterations = getSequenceAlterationsForFeature(transcript)
@@ -316,12 +383,13 @@ class FeatureService {
                 println "Gene from parent_id doesn't exist; trying to find overlapping isoform"
                 // Scenario II - find an overlapping isoform and if present, add current transcript to its gene
                 FeatureLocation featureLocation = convertJSONToFeatureLocation(jsonTranscript.getJSONObject(FeatureStringEnum.LOCATION.value), sequence, null)
-                Collection<Feature> overlappingFeatures = getOverlappingFeatures(featureLocation).findAll() {
+//                Collection<Feature> overlappingFeatures = getOverlappingFeatures(featureLocation).findAll() {
+                    Collection<InternalNode> overlappingFeatures = getOverlappingNeo4jFeatures(featureLocation).findAll() {
                     println "it as ${it}"
                     String type = getCvTermFromNeo4jFeature(it)
                     println "type = ${type}"
-                    it = Feature.get(it.id)
-                    it instanceof Gene
+//                    it = Feature.get(it.id)
+//                    it instanceof Gene
                     return type == 'gene'
                 }
 
@@ -329,10 +397,13 @@ class FeatureService {
                 println "overlapping genes: ${overlappingFeatures.name}"
                 List<Feature> overlappingFeaturesToCheck = new ArrayList<Feature>()
                 overlappingFeatures.each {
-                    if (!checkForComment(it, MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE) && !checkForComment(it, MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE)) {
-                        overlappingFeaturesToCheck.add(it)
+                    Feature feature = it as Feature
+                    if (!checkForComment(feature, MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE) && !checkForComment(feature, MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE)) {
+                        overlappingFeaturesToCheck.add(feature)
                     }
                 }
+
+                println "overlapping features to check: ${overlappingFeaturesToCheck?.size()} -> ${overlappingFeaturesToCheck}"
 
                 for (Feature eachFeature : overlappingFeaturesToCheck) {
                     // get the proper object instead of its proxy, due to lazy loading
