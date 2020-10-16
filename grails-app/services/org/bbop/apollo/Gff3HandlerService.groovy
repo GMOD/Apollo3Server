@@ -1,6 +1,6 @@
 package org.bbop.apollo
 
-
+import grails.converters.JSON
 import org.apache.commons.lang.WordUtils
 import org.bbop.apollo.attributes.Comment
 import org.bbop.apollo.attributes.DBXref
@@ -337,10 +337,11 @@ class Gff3HandlerService {
     private void calculateChildGFF3Entry(WriteObject writeObject, def childNeo4jEntry,def parentNeo4jEntry,String source,String seqId,Collection<GFF3Entry> gffEntries,def owners){
         Feature childFeature = childNeo4jEntry.feature as Feature
         FeatureLocation featureLocation = childNeo4jEntry.location as FeatureLocation
+        println "incoming feature location ${featureLocation as JSON}"
         int start = featureLocation.getFmin()
         int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
         String score = "."
-        String strand;
+        String strand
         if (featureLocation.getStrand() == Strand.POSITIVE.getValue()) {
             strand = Strand.POSITIVE.getDisplay()
         } else if (featureLocation.getStrand() == Strand.NEGATIVE.getValue()) {
@@ -349,18 +350,23 @@ class Gff3HandlerService {
             strand = "."
         }
         String type = featureService.getCvTermFromNeo4jFeature(childNeo4jEntry.feature)
+        println "type: ${type}"
 
 
         if (type == "CDS") {
-            // TODO: sort exons
-            def locationNodes = Feature.executeQuery("MATCH (n:CDS)--(t:Transcript)--(e:Exon)-[el]-(s:Sequence) where (n.uniqueName=${childFeature.uniqueName} or n.id=${childFeature.id}) RETURN el ")
-            List<FeatureLocation> featureLocationList = new ArrayList<>()
-            log.debug "location nodes ${locationNodes}"
+            // TODO: (1) get sorted exons 
+            // TODO: (2) get CDS
+            String exonQuery = "MATCH (n:CDS)--(t:Transcript)--(e:Exon)-[el]-(s:Sequence) where (n.uniqueName='${childFeature.uniqueName}' or n.id=${childFeature.id}) RETURN el "
+            println "output exon query: ${exonQuery}"
+            println "start / end ${start} / ${end}"
+            def locationNodes = Feature.executeQuery(exonQuery)
+            List<FeatureLocation> sortedFeatureLocationList = new ArrayList<>()
+            println "location nodes ${locationNodes}"
             locationNodes.each {
-                featureLocationList.add(it as FeatureLocation)
+                sortedFeatureLocationList.add(it as FeatureLocation)
             }
-            log.debug "output feature locations ${featureLocationList} "
-            featureLocationList.sort(new Comparator<FeatureLocation>() {
+            println "output feature locations ${sortedFeatureLocationList} "
+            sortedFeatureLocationList.sort(new Comparator<FeatureLocation>() {
                 @Override
                 int compare(FeatureLocation featureLocation1, FeatureLocation featureLocation2) {
                     int retVal
@@ -390,16 +396,16 @@ class Gff3HandlerService {
                 }
             })
             int length = 0
-            log.debug "sorted feature location list ${featureLocationList} "
-            for (FeatureLocation exonLocation : featureLocationList) {
-                log.debug "exon location ${exonLocation}"
+            println "sorted feature location list ${sortedFeatureLocationList as JSON} "
+            for (FeatureLocation exonLocation : sortedFeatureLocationList) {
+                println "exon location ${exonLocation as JSON} overlaps ${start}, ${end}"
                 if (!overlapperService.overlaps(exonLocation.fmin, exonLocation.fmax,start,  end)) {
-                    log.debug "not overlapping ${exonLocation.fmin}, ${exonLocation.fmax}, ${start}, ${end}}"
+                    println "not overlapping ${exonLocation.fmin}, ${exonLocation.fmax}, ${start}, ${end}} ignoreing"
                     continue;
                 }
                 int fmin = exonLocation.fmin < start ? start : exonLocation.fmin
                 int fmax = exonLocation.fmax > end ? end : exonLocation.fmax
-                log.debug "fmin ${fmin},${fmax}"
+                println "does overlap so calculating ${fmin},${fmax}, ${exonLocation.strand}"
                 String phase;
                 if (length % 3 == 0) {
                     phase = "0";
@@ -409,7 +415,7 @@ class Gff3HandlerService {
                     phase = "1";
                 }
                 length += fmax - fmin;
-                log.debug "adding for type: ${type}"
+                println "adding for type: ${type}"
                 GFF3Entry entry = new GFF3Entry(seqId, source, type, fmin+1 , fmax, score, strand, phase);
                 entry.setAttributes(extractNeo4jAttributes(writeObject,childNeo4jEntry.feature,parentNeo4jEntry.feature,owners))
                 gffEntries.add(entry);
