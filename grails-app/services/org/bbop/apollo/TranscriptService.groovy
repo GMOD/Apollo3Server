@@ -220,7 +220,7 @@ class TranscriptService {
      * @param cds - CDS to be set to this transcript
      */
     @Transactional
-    public void setCDS(Feature feature, CDS cds, boolean replace = true) {
+    void setCDS(Feature feature, CDS cds, boolean replace = true) {
         if (replace) {
             log.debug "replacing CDS on feature"
             if (featureRelationshipService.setChildForType(feature, cds)) {
@@ -237,9 +237,9 @@ class TranscriptService {
         ).save(insert: true, failOnError: true)
 
 
-        log.debug "fr: ${fr}"
-        log.debug "feature: ${feature}"
-        log.debug "cds: ${cds}"
+        println "fr: ${fr}"
+        println "feature: ${feature}"
+        println "cds: ${cds}"
         feature.addToParentFeatureRelationships(fr)
         cds.addToChildFeatureRelationships(fr)
 

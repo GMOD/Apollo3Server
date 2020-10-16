@@ -435,10 +435,12 @@ class FeatureService {
 
                         CDS cds = transcriptService.getCDS(tmpTranscript)
                         if (cds) {
+                            println "HAS A CDS: ${cds}"
                             readThroughStopCodon = cdsService.getStopCodonReadThrough(cds) ? true : false
                         }
 
                         if (!useCDS || cds == null) {
+                            println "CDS is null: ${cds} or useCDS is false ${useCDS}"
                             calculateCDS(tmpTranscript, readThroughStopCodon)
                         } else {
                             // if there are any sequence alterations that overlaps this transcript then
@@ -772,8 +774,11 @@ class FeatureService {
 
     @Transactional
     def calculateCDS(Transcript transcript, boolean readThroughStopCodon) {
+        println "calculating CDS"
         CDS cds = transcriptService.getCDS(transcript);
+        println "got CDS ${cds} from transcript ${transcript}"
         if (cds == null) {
+            println "cds is not null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
             setLongestORF(transcript, readThroughStopCodon);
             return;
         }
@@ -1361,17 +1366,20 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     void setLongestORF(Transcript transcript, boolean readThroughStopCodon) {
         Organism organism = transcript.featureLocation.to.organism
         TranslationTable translationTable = organismService.getTranslationTable(organism)
-        String mrna = getResiduesWithAlterationsAndFrameshifts(transcript);
+        String mrna = getResiduesWithAlterationsAndFrameshifts(transcript)
+
+        println "set longest ORF ${organism}, ${translationTable} ${mrna?.size()} -> ${mrna}"
         if (!mrna) {
-            return;
+            println "mrna not found,m so returning nothing"
+            return
         }
-        String longestPeptide = "";
-        int bestStartIndex = -1;
-        int bestStopIndex = -1;
-        int startIndex = -1;
-        int stopIndex = -1;
-        boolean partialStart = false;
-        boolean partialStop = false;
+        String longestPeptide = ""
+        int bestStartIndex = -1
+        int bestStopIndex = -1
+        int startIndex = -1
+        int stopIndex = -1
+        boolean partialStart = false
+        boolean partialStop = false
 
         if (mrna.length() > 3) {
             for (String startCodon : translationTable.getStartCodons()) {
@@ -1413,24 +1421,24 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             bestStopIndex = stopIndex
         }
 
-        log.debug "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop}"
+        println "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop}"
 
         if (transcript instanceof MRNA) {
-            log.debug "is an MRNA"
+            println "is an MRNA"
             CDS cds = transcriptService.getCDS(transcript)
-            log.debug "cds ${cds}"
+            println "cds ${cds}"
             if (cds == null) {
-                log.debug "creating CDS "
+                println "creating CDS "
                 cds = transcriptService.createCDS(transcript);
-                log.debug "created a CDS ${cds}"
+                println "created a CDS ${cds}"
                 transcriptService.setCDS(transcript, cds);
-                log.debug "set CDS ${cds} on transcript ${transcript}"
+                println "set CDS ${cds} on transcript ${transcript}"
             }
 
             int fmin = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStartIndex)
 
             if (bestStopIndex >= 0) {
-                log.debug "bestStopIndex >= 0"
+                println "bestStopIndex >= 0"
                 int fmax = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStopIndex)
                 if (cds.strand == Strand.NEGATIVE.value) {
                     int tmp = fmin
@@ -1440,7 +1448,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 setFmin(cds, fmin)
                 setFmax(cds, fmax)
             } else {
-                log.debug "bestStopIndex < 0"
+                println "bestStopIndex < 0"
                 int fmax = transcript.strand == Strand.NEGATIVE.value ? transcript.fmin : transcript.fmax
                 if (cds.strand == Strand.NEGATIVE.value) {
                     int tmp = fmin
@@ -1450,9 +1458,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 setFmin(cds, fmin)
                 setFmax(cds, fmax)
             }
-            log.debug "looking at strands for ${cds}"
+            println "looking at strands for ${cds}"
 
-            log.debug "c${cds}"
+            println "cds ${cds}"
             if (cds.featureLocation.strand == Strand.NEGATIVE.value) {
                 cds.featureLocation.setIsFminPartial(partialStop)
                 cds.featureLocation.setIsFmaxPartial(partialStart)
@@ -1461,7 +1469,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 cds.featureLocation.setIsFmaxPartial(partialStop)
             }
 
-            log.debug "Final CDS fmin: ${cds.fmin} fmax: ${cds.fmax}"
+            println "Final CDS fmin: ${cds.fmin} fmax: ${cds.fmax}"
 
             if (readThroughStopCodon) {
                 cdsService.deleteStopCodonReadThrough(cds)
