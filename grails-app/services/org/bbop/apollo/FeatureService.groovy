@@ -76,7 +76,7 @@ class FeatureService {
         }
         featureLocation.to = sequence
         featureLocation.from = feature
-        if(feature){
+        if (feature) {
             feature.featureLocation = featureLocation
         }
         return featureLocation;
@@ -147,7 +147,7 @@ class FeatureService {
 
         String neo4jFeatureString = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)\n" +
             "WHERE (o.commonName='${organism.commonName}' or o.id = ${organism.id})" +
-            (compareStrands ? " AND fl.strand = ${location.strand} " : "" ) +
+            (compareStrands ? " AND fl.strand = ${location.strand} " : "") +
             " AND ( (fl.fmin <= ${location.fmin} AND fl.fmax > ${location.fmax}) OR ( fl.fmin <= ${location.fmax} AND fl.fmax >=${location.fmax} ) OR ( fl.fmin >=${location.fmax} AND fl.fmax <= ${location.fmax} ) )" +
             "RETURN f"
         println "neo4j String ${neo4jFeatureString}"
@@ -213,7 +213,7 @@ class FeatureService {
 
         String neo4jFeatureString = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)\n" +
             "WHERE (o.commonName='${organism.commonName}' or o.id = ${organism.id})" +
-            (compareStrands ? " AND fl.strand = ${location.strand} " : "" ) +
+            (compareStrands ? " AND fl.strand = ${location.strand} " : "") +
             " AND ( (fl.fmin <= ${location.fmin} AND fl.fmax > ${location.fmax}) OR ( fl.fmin <= ${location.fmax} AND fl.fmax >=${location.fmax} ) OR ( fl.fmin >=${location.fmax} AND fl.fmax <= ${location.fmax} ) )" +
             "RETURN f"
         println "neo4j String ${neo4jFeatureString}"
@@ -222,7 +222,7 @@ class FeatureService {
 
         List<Feature> features = new ArrayList<>()
         neo4jFeatures.each {
-            features.add( it as Feature)
+            features.add(it as Feature)
         }
 //        neo4jFeatures as List<Feature>
         println "output features  ${features}"
@@ -272,12 +272,11 @@ class FeatureService {
 
     @Transactional
     void setSequenceForChildFeatures(Feature feature, Sequence sequence = null) {
-        if(sequence){
+        if (sequence) {
             FeatureLocation featureLocation = feature.featureLocation
             featureLocation.to = sequence
             featureLocation.save(flush: true)
-        }
-        else{
+        } else {
             FeatureLocation featureLocation = feature.featureLocation
             sequence = featureLocation.to
         }
@@ -384,7 +383,7 @@ class FeatureService {
                 // Scenario II - find an overlapping isoform and if present, add current transcript to its gene
                 FeatureLocation featureLocation = convertJSONToFeatureLocation(jsonTranscript.getJSONObject(FeatureStringEnum.LOCATION.value), sequence, null)
 //                Collection<Feature> overlappingFeatures = getOverlappingFeatures(featureLocation).findAll() {
-                    Collection<InternalNode> overlappingFeatures = getOverlappingNeo4jFeatures(featureLocation).findAll() {
+                Collection<InternalNode> overlappingFeatures = getOverlappingNeo4jFeatures(featureLocation).findAll() {
                     println "it as ${it}"
                     String type = getCvTermFromNeo4jFeature(it)
                     println "type = ${type}"
@@ -410,9 +409,12 @@ class FeatureService {
                     Feature feature = Feature.get(eachFeature.id)
                     println "evaluating overlap of feature ${feature.name} of class ${feature.class.name}"
 
-                    if (!gene && feature instanceof Gene && !(feature instanceof Pseudogene)) {
+//                    if (!gene && feature instanceof Gene && !(feature instanceof Pseudogene)) {
+                    // TODO: note that instanteof casts it to a Non-Canonical prime, etc., should use type instead
+//                    if (!gene) {
+                    if (!gene && feature.instanceOf(Gene.class) && !feature.instanceOf(Pseudogene.class)) {
                         Gene tmpGene = (Gene) feature;
-                        println "found an overlapping gene ${tmpGene}"
+//                        println "found an overlapping gene ${tmpGene} . . and type ${tmpGene.class.name}"
                         // removing name from transcript JSON since its naming will be based off of the overlapping gene
                         Transcript tmpTranscript
                         if (jsonTranscript.has(FeatureStringEnum.NAME.value)) {
