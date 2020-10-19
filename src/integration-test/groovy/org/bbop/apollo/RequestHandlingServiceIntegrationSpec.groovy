@@ -3286,9 +3286,9 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         then: "we should arrive at the state where the current feature is of type Pseudogene"
         Feature feature = Feature.findByUniqueName(featureUniqueName)
-        assert feature instanceof Transcript
+        assert feature.instanceOf(Transcript)
         Gene gene = transcriptService.getGene((Transcript) feature)
-        assert gene instanceof Pseudogene
+        assert gene.instanceOf(Pseudogene)
 
         when: "we change the annotation type to transposable_element"
         changeAnnotationTypeForTranscriptString = changeAnnotationTypeOperationString.replace("@UNIQUENAME@", featureUniqueName).replace("@TYPE@", "transposable_element")
@@ -3407,7 +3407,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert parentGene.symbol == "TGN1"
         assert parentGene.description == "TGN1 gene"
         parentGene.featureProperties.each { fp ->
-            if (fp instanceof Comment) {
+            if (fp.instanceOf(Comment)) {
                 assert fp.value == "This is a test gene"
             } else {
                 String key = fp.tag + ":" + fp.value
@@ -3427,7 +3427,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert transcript.symbol == "TGN1-1A"
         assert transcript.description == "TGN1 isoform 1A"
         transcript.featureProperties.each { fp ->
-            if (fp instanceof Comment) {
+            if (fp.instanceOf(Comment)) {
                 assert fp.value == "This is a test isoform"
             } else {
                 String key = fp.tag + ":" + fp.value
@@ -3457,7 +3457,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert repeatRegionFeature.symbol == "TGN1-1A"
         assert repeatRegionFeature.description == "TGN1 isoform 1A"
         repeatRegionFeature.featureProperties.each { fp ->
-            if (fp instanceof Comment) {
+            if (fp.instanceOf(Comment)) {
                 assert fp.value == "This is a test isoform"
             } else {
                 String key = fp.tag + ":" + fp.value
@@ -3508,7 +3508,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         String comment = ""
         gene.featureProperties.each {
-            if (it instanceof Comment) {
+            if (it.instanceOf(Comment)) {
                 comment = it.value
             }
         }
@@ -3534,7 +3534,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         String comment = ""
         gene.featureProperties.each {
-            if (it instanceof Comment) {
+            if (it.instanceOf(Comment)) {
                 comment = it.value
             }
         }
@@ -4142,11 +4142,11 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         then: "we should also see feature property assigned to the transcript and its new gene"
         assert newGene.featureProperties.size() == 1
-        assert newGene.featureProperties.first() instanceof Comment
+        assert newGene.featureProperties.first().instanceOf(Comment)
         assert newGene.featureProperties.first().value == featureService.MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE
 
         assert mrna.featureProperties.size() == 1
-        assert mrna.featureProperties.first() instanceof Comment
+        assert mrna.featureProperties.first().instanceOf(Comment)
         assert mrna.featureProperties.first().value == featureService.MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE
     }
 
@@ -4186,7 +4186,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         then: "we should also see feature property assigned to the transcript"
         assert mrna.featureProperties.size() == 1
-        assert mrna.featureProperties.first() instanceof Comment
+        assert mrna.featureProperties.first().instanceOf(Comment)
         assert mrna.featureProperties.first().value == featureService.MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE
     }
 
@@ -4223,7 +4223,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         then: "we should also see feature property assigned to the ncRNA"
         assert ncRNA.featureProperties.size() == 1
-        assert ncRNA.featureProperties.first() instanceof Comment
+        assert ncRNA.featureProperties.first().instanceOf(Comment)
         assert ncRNA.featureProperties.first().value == featureService.MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE
     }
 
@@ -4260,11 +4260,11 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         then: "we should also see feature property assigned to the transcript and its new gene"
         assert newGene.featureProperties.size() == 1
-        assert newGene.featureProperties.first() instanceof Comment
+        assert newGene.featureProperties.first().instanceOf(Comment)
         assert newGene.featureProperties.first().value == featureService.MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE
 
         assert mrna.featureProperties.size() == 1
-        assert mrna.featureProperties.first() instanceof Comment
+        assert mrna.featureProperties.first().instanceOf(Comment)
         assert mrna.featureProperties.first().value == featureService.MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE
 
         when: "we associate the transcript to its original gene"
@@ -4275,7 +4275,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         then: "we should also see feature property assigned to the transcript"
         assert mrna.featureProperties.size() == 1
-        assert mrna.featureProperties.first() instanceof Comment
+        assert mrna.featureProperties.first().instanceOf(Comment)
         assert mrna.featureProperties.first().value == featureService.MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE
 
     }
@@ -4317,7 +4317,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         then: "we should also see feature property assigned to the transcript"
         assert mrna.featureProperties.size() == 1
-        assert mrna.featureProperties.first() instanceof Comment
+        assert mrna.featureProperties.first().instanceOf(Comment)
         assert mrna.featureProperties.first().value == featureService.MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE
 
         when: "we dissociate the transcript from its original gene"
@@ -4330,12 +4330,12 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         Gene gene2 = transcriptService.getGene(mrna)
 
         assert gene2.featureProperties.size() == 1
-        assert gene2.featureProperties.first() instanceof Comment
+        assert gene2.featureProperties.first().instanceOf(Comment)
         assert gene2.featureProperties.first().value == featureService.MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE
 
         assert transcriptService.getGene(mrna) != originalGene
         assert mrna.featureProperties.size() == 1
-        assert mrna.featureProperties.first() instanceof Comment
+        assert mrna.featureProperties.first().instanceOf(Comment)
         assert mrna.featureProperties.first().value == featureService.MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE
     }
 
@@ -4442,7 +4442,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         then: "we should also see feature property assigned to the ncRNA"
         assert ncRNA.featureProperties.size() == 1
-        assert ncRNA.featureProperties.first() instanceof Comment
+        assert ncRNA.featureProperties.first().instanceOf(Comment)
         assert ncRNA.featureProperties.first().value == featureService.MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE
 
         when: "we undo the associate transcript to gene operation"
@@ -4469,7 +4469,7 @@ class RequestHandlingServiceIntegrationSpec extends AbstractIntegrationSpec {
         assert geneAfterRedo == codingGene
 
         assert ncrnaAfterRedo.featureProperties.size() == 1
-        assert ncrnaAfterRedo.featureProperties.first() instanceof Comment
+        assert ncrnaAfterRedo.featureProperties.first().instanceOf(Comment)
         assert ncrnaAfterRedo.featureProperties.first().value == featureService.MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE
 
     }

@@ -273,7 +273,7 @@ class AnnotatorController {
         feature.save(flush: true, failOnError: true)
 
         JSONObject updateFeatureContainer = jsonWebUtilityService.createJSONFeatureContainer();
-        if (feature instanceof Gene) {
+        if (feature.instanceOf(Gene)) {
             List<Feature> childFeatures = feature.parentFeatureRelationships*.to
             for (childFeature in childFeatures) {
                 JSONObject jsonFeature = featureService.convertFeatureToJSON(childFeature, false)

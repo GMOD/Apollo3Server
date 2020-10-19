@@ -77,11 +77,7 @@ class TranscriptService {
     }
 
     boolean isProteinCoding(Transcript transcript) {
-        return transcript instanceof MRNA
-//        if (getGene(transcript) != null && getGene(transcript) instanceof Pseudogene) {
-//            return false;
-//        }
-//        return true;
+        return transcript.instanceOf(MRNA)
     }
 
     @Transactional
@@ -303,7 +299,7 @@ class TranscriptService {
 
         transcript.featureProperties.each { fp ->
             // to do: duplicate
-            if (fp instanceof Comment) {
+            if (fp.instanceOf(Comment)) {
                 Comment comment = new Comment(value: fp.value, feature: splitTranscript)
                 splitTranscript.addToFeatureProperties(comment)
             } else {

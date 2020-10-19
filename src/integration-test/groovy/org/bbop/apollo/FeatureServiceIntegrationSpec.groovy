@@ -132,7 +132,7 @@ class FeatureServiceIntegrationSpec extends AbstractIntegrationSpec{
         assert newGene.featureProperties.size() == 4
 
         newGene.featureProperties.each { fp ->
-            if (fp instanceof Comment) {
+            if (fp.instanceOf(Comment)) {
                 assert expectedCommentsForGene.indexOf(fp.value) != -1
                 expectedCommentsForGene.remove(expectedCommentsForGene.indexOf(fp.value))
             }
@@ -161,7 +161,7 @@ class FeatureServiceIntegrationSpec extends AbstractIntegrationSpec{
         assert newTranscript.featureProperties.size() == 4
 
         newTranscript.featureProperties.each { fp ->
-            if (fp instanceof Comment) {
+            if (fp.instanceOf(Comment)) {
                 assert expectedCommentsForTranscript.indexOf(fp.value) != -1
                 expectedCommentsForTranscript.remove(expectedCommentsForTranscript.indexOf(fp.value))
             }

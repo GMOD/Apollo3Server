@@ -278,7 +278,7 @@ class Gff3HandlerService {
 
     void writeFastaForSequenceAlterations(WriteObject writeObject, Collection<? extends Feature> features) {
         for (Feature feature : features) {
-            if (feature instanceof SequenceAlterationArtifact) {
+            if (feature.instanceOf(SequenceAlterationArtifact)) {
                 writeFastaForSequenceAlteration(writeObject, feature)
             }
         }
@@ -502,7 +502,7 @@ class Gff3HandlerService {
         gffEntries.add(entry);
         if (featureService.typeHasChildren(feature)) {
             for (Feature child : featureRelationshipService.getChildren(feature)) {
-                if (child instanceof CDS) {
+                if (child.instanceOf(CDS)) {
                     convertToEntry(writeObject, (CDS) child, source, gffEntries);
                 } else {
                     convertToEntry(writeObject, child, source, gffEntries);
@@ -638,7 +638,7 @@ class Gff3HandlerService {
                     Map<String, StringBuilder> properties = new HashMap<String, StringBuilder>();
                     while (propertyIter.hasNext()) {
                         FeatureProperty prop = propertyIter.next();
-                        if (prop instanceof Comment) {
+                        if (prop.instanceOf(Comment)) {
                             // ignoring 'comment' as they are already processed earlier
                             continue
                         }
@@ -771,7 +771,7 @@ class Gff3HandlerService {
                     Map<String, StringBuilder> properties = new HashMap<String, StringBuilder>();
                     while (propertyIter.hasNext()) {
                         FeatureProperty prop = propertyIter.next();
-                        if (prop instanceof Comment) {
+                        if (prop.instanceOf(Comment)) {
                             // ignoring 'comment' as they are already processed earlier
                             continue
                         }
