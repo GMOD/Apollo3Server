@@ -19,14 +19,10 @@ class UserOrganismPreferenceDTO {
 
     boolean equals(o) {
         if (this.is(o)) return true
-        if (!(o instanceof UserOrganismPreferenceDTO)) return false
+        if (!(o.instanceOf(UserOrganismPreferenceDTO))) return false
 
         UserOrganismPreferenceDTO that = (UserOrganismPreferenceDTO) o
 
-//        if (id != that.id) return false
-//        if (organism != that.organism) return false
-//        if (sequence != that.sequence) return false
-//        if (user != that.user) return false
         if (clientToken != that.clientToken) return false
 
         return true

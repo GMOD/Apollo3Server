@@ -32,7 +32,7 @@ class OverlapperService implements Overlapper{
 
 
     boolean checkForOverlap(Transcript transcript, Gene gene) {
-        long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis()
         for (Transcript geneTranscript : transcriptService.getTranscripts(gene)) {
             if (transcript.uniqueName == geneTranscript.uniqueName) {
                 // if transcript and geneTranscript are the same then don't test for overlap
@@ -41,11 +41,11 @@ class OverlapperService implements Overlapper{
             }
             if (checkForOverlap(transcript, geneTranscript)) {
                 log.debug "@Duration for cdsOverlap: ${System.currentTimeMillis() - start}"
-                return true;
+                return true
             }
         }
         log.debug "@Duration for cdsOverlap: ${System.currentTimeMillis() - start}"
-        return false;
+        return false
     }
 
     boolean checkForOverlap(Transcript transcript1, Transcript transcript2) {
@@ -83,15 +83,15 @@ class OverlapperService implements Overlapper{
     boolean overlapsOrf(Transcript transcript1, Transcript transcript2) {
         if ((transcriptService.isProteinCoding(transcript1) && transcriptService.isProteinCoding(transcript2))
                 && ((transcriptService.getGene(transcript1) == null || transcriptService.getGene(transcript2) == null)
-                || (!(transcriptService.getGene(transcript1) instanceof Pseudogene) && !(transcriptService.getGene(transcript2) instanceof Pseudogene)))
+                || (!(transcriptService.getGene(transcript1).instanceOf(Pseudogene)) && !(transcriptService.getGene(transcript2).instanceOf(Pseudogene))))
         ) {
 
             CDS cds = transcriptService.getCDS(transcript1);
             CDS cds2 = transcriptService.getCDS(transcript2)
             if (cds2 && cds && overlaps(cds,cds2) &&  (overlaps(cds2,cds)))  {
-                List<Exon> exons1 = transcriptService.getSortedExons(transcript1,true);
-                List<Exon> exons2 = transcriptService.getSortedExons(transcript2,true);
-                return cdsOverlap(exons1, exons2, true);
+                List<Exon> exons1 = transcriptService.getSortedExons(transcript1,true)
+                List<Exon> exons2 = transcriptService.getSortedExons(transcript2,true)
+                return cdsOverlap(exons1, exons2, true)
             }
         }
         return false
@@ -99,14 +99,14 @@ class OverlapperService implements Overlapper{
 
     private class CDSEntity {
         // POGO for handling CDS of individual exons
-        int fmin;
-        int fmax;
-        int length;
-        int phase;
-        String name;
-        String uniqueName;
-        Sequence sequence;
-        int strand;
+        int fmin
+        int fmax
+        int length
+        int phase
+        String name
+        String uniqueName
+        Sequence sequence
+        int strand
     }
     
     boolean overlaps(CDSEntity cds1, CDSEntity cds2) {

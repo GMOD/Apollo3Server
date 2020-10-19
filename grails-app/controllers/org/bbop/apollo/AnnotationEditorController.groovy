@@ -703,10 +703,10 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
             info.put("time_accessioned", gbolFeature.lastUpdated)
             info.put("owner", gbolFeature.owner ? gbolFeature.owner.username : "N/A")
             info.put("location", gbolFeature.featureLocation.fmin)
-            if(gbolFeature instanceof SequenceAlterationArtifact){
+            if(gbolFeature.instanceOf(SequenceAlterationArtifact)){
                 info.put("length", gbolFeature.offset)
             }
-            if(gbolFeature instanceof SequenceAlteration && gbolFeature.alterationResidue){
+            if(gbolFeature.instanceOf(SequenceAlteration) && gbolFeature.alterationResidue){
                 info.put("length", gbolFeature?.alterationResidue?.size())
             }
             String parentIds = "";

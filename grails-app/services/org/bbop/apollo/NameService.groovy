@@ -28,7 +28,7 @@ class NameService {
     String generateUniqueName(Feature thisFeature, String principalName = null ) {
         Organism organism = thisFeature?.featureLocation?.sequence?.organism
         if(thisFeature.name) {
-            if (thisFeature instanceof Transcript) {
+            if (thisFeature.instanceOf(Transcript)) {
                 if(!principalName){
                     Gene gene = transcriptService.getGene((Transcript) thisFeature)
                     if(!gene){
@@ -49,7 +49,7 @@ class NameService {
                 }
                 return makeUniqueTranscriptName(organism,principalName.trim()+"-")
             } else
-            if (thisFeature instanceof Gene) {
+            if (thisFeature.instanceOf(Gene)) {
                 if(!principalName){
                     principalName = ((Gene) thisFeature).name
                 }
@@ -58,7 +58,7 @@ class NameService {
                 }
                   return makeUniqueGeneName(organism,principalName.trim())
             }
-            if (thisFeature instanceof Exon || thisFeature instanceof NonCanonicalFivePrimeSpliceSite || thisFeature instanceof NonCanonicalThreePrimeSpliceSite || thisFeature instanceof CDS) {
+            if (thisFeature.instanceOf(Exon) || thisFeature.instanceOf(NonCanonicalFivePrimeSpliceSite) || thisFeature.instanceOf(NonCanonicalThreePrimeSpliceSite) || thisFeature.instanceOf(CDS)) {
                 return generateUniqueName()
             }
             else{
