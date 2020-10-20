@@ -114,8 +114,8 @@ class FeatureService {
 //      //Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl where fl.sequence = :sequence and fl.strand = :strand and ((fl.fmin <= :fmin and fl.fmax > :fmin) or (fl.fmin <= :fmax and fl.fmax >= :fmax ))",[fmin:location.fmin,fmax:location.fmax,strand:location.strand,sequence:location.sequence])
 //      Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl where fl.sequence = :sequence and fl.strand = :strand and ((fl.fmin <= :fmin and fl.fmax > :fmin) or (fl.fmin <= :fmax and fl.fmax >= :fmax) or (fl.fmin >= :fmin and fl.fmax <= :fmax))", [fmin: location.fmin, fmax: location.fmax, strand: location.strand, sequence: location.sequence])
 //        return []
-        println "input location ${location as JSON}"
-        println "compare strands ${compareStrands}"
+        log.debug "input location ${location as JSON}"
+        log.debug "compare strands ${compareStrands}"
 
 //        Collection<Feature> features = (Collection<Feature>) Feature.createCriteria().listDistinct {
 //            featureLocation {
@@ -139,27 +139,27 @@ class FeatureService {
 //                }
 //            }
 //        }
-//        println "output overlapping features ${features}"
+//        log.debug "output overlapping features ${features}"
 
         Organism organism = location.to.organism
-        println "organism ${organism}"
-        println "organism JSON ${organism as JSON}"
+        log.debug "organism ${organism}"
+        log.debug "organism JSON ${organism as JSON}"
 
         String neo4jFeatureString = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)\n" +
             "WHERE (o.commonName='${organism.commonName}' or o.id = ${organism.id})" +
             (compareStrands ? " AND fl.strand = ${location.strand} " : "") +
             " AND ( (fl.fmin <= ${location.fmin} AND fl.fmax > ${location.fmax}) OR ( fl.fmin <= ${location.fmax} AND fl.fmax >=${location.fmax} ) OR ( fl.fmin >=${location.fmax} AND fl.fmax <= ${location.fmax} ) )" +
             "RETURN f"
-        println "neo4j String ${neo4jFeatureString}"
+        log.debug "neo4j String ${neo4jFeatureString}"
         return Feature.executeQuery(neo4jFeatureString)
-//        println "neo4j output features ${neo4jFeatures}"
+//        log.debug "neo4j output features ${neo4jFeatures}"
 //
 //        List<Feature> features = new ArrayList<>()
 //        neo4jFeatures.each {
 //            features.add( it as Feature)
 //        }
 ////        neo4jFeatures as List<Feature>
-//        println "output features  ${features}"
+//        log.debug "output features  ${features}"
 //
 //        return features
 //    } else {
@@ -180,8 +180,8 @@ class FeatureService {
 //      //Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl where fl.sequence = :sequence and fl.strand = :strand and ((fl.fmin <= :fmin and fl.fmax > :fmin) or (fl.fmin <= :fmax and fl.fmax >= :fmax ))",[fmin:location.fmin,fmax:location.fmax,strand:location.strand,sequence:location.sequence])
 //      Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl where fl.sequence = :sequence and fl.strand = :strand and ((fl.fmin <= :fmin and fl.fmax > :fmin) or (fl.fmin <= :fmax and fl.fmax >= :fmax) or (fl.fmin >= :fmin and fl.fmax <= :fmax))", [fmin: location.fmin, fmax: location.fmax, strand: location.strand, sequence: location.sequence])
 //        return []
-        println "input location ${location as JSON}"
-        println "compare strands ${compareStrands}"
+        log.debug "input location ${location as JSON}"
+        log.debug "compare strands ${compareStrands}"
 
 //        Collection<Feature> features = (Collection<Feature>) Feature.createCriteria().listDistinct {
 //            featureLocation {
@@ -205,27 +205,27 @@ class FeatureService {
 //                }
 //            }
 //        }
-//        println "output overlapping features ${features}"
+//        log.debug "output overlapping features ${features}"
 
         Organism organism = location.to.organism
-        println "organism ${organism}"
-        println "organism JSON ${organism as JSON}"
+        log.debug "organism ${organism}"
+        log.debug "organism JSON ${organism as JSON}"
 
         String neo4jFeatureString = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)\n" +
             "WHERE (o.commonName='${organism.commonName}' or o.id = ${organism.id})" +
             (compareStrands ? " AND fl.strand = ${location.strand} " : "") +
             " AND ( (fl.fmin <= ${location.fmin} AND fl.fmax > ${location.fmax}) OR ( fl.fmin <= ${location.fmax} AND fl.fmax >=${location.fmax} ) OR ( fl.fmin >=${location.fmax} AND fl.fmax <= ${location.fmax} ) )" +
             "RETURN f"
-        println "neo4j String ${neo4jFeatureString}"
+        log.debug "neo4j String ${neo4jFeatureString}"
         def neo4jFeatures = Feature.executeQuery(neo4jFeatureString)
-        println "neo4j output features ${neo4jFeatures}"
+        log.debug "neo4j output features ${neo4jFeatures}"
 
         List<Feature> features = new ArrayList<>()
         neo4jFeatures.each {
             features.add(it as Feature)
         }
 //        neo4jFeatures as List<Feature>
-        println "output features  ${features}"
+        log.debug "output features  ${features}"
 
         return features
 //    } else {
@@ -334,20 +334,20 @@ class FeatureService {
             setOwner(transcript, owner);
 
             CDS cds = transcriptService.getCDS(transcript)
-            println "had a CDS ${cds}"
+            log.debug "had a CDS ${cds}"
             if (cds) {
                 readThroughStopCodon = cdsService.getStopCodonReadThrough(cds) ? true : false
             }
 
             if (!useCDS || cds == null) {
-                println "generating CDS ${cds}"
+                log.debug "generating CDS ${cds}"
                 calculateCDS(transcript, readThroughStopCodon)
                 cds = transcriptService.getCDS(transcript)
-                println "generatED CDS ${cds}"
-                println "generatED CDS locaiton ${cds.featureLocation as JSON}"
+                log.debug "generatED CDS ${cds}"
+                log.debug "generatED CDS locaiton ${cds.featureLocation as JSON}"
             } else {
-                println "not generated a CDS for some reason "
-                println "inferred CDS locaiton ${cds.featureLocation as JSON}"
+                log.debug "not generated a CDS for some reason "
+                log.debug "inferred CDS locaiton ${cds.featureLocation as JSON}"
                 // if there are any sequence alterations that overlaps this transcript then
                 // recalculate the CDS to account for these changes
                 def sequenceAlterations = getSequenceAlterationsForFeature(transcript)
@@ -379,24 +379,24 @@ class FeatureService {
                 }
             }
 
-            println "creating genes from JSON ${createGeneFromJSON}"
+            log.debug "creating genes from JSON ${createGeneFromJSON}"
 
             if (!createGeneFromJSON) {
-                println "Gene from parent_id doesn't exist; trying to find overlapping isoform"
+                log.debug "Gene from parent_id doesn't exist; trying to find overlapping isoform"
                 // Scenario II - find an overlapping isoform and if present, add current transcript to its gene
                 FeatureLocation featureLocation = convertJSONToFeatureLocation(jsonTranscript.getJSONObject(FeatureStringEnum.LOCATION.value), sequence, null)
 //                Collection<Feature> overlappingFeatures = getOverlappingFeatures(featureLocation).findAll() {
                 Collection<InternalNode> overlappingFeatures = getOverlappingNeo4jFeatures(featureLocation).findAll() {
-                    println "it as ${it}"
+                    log.debug "it as ${it}"
                     String type = getCvTermFromNeo4jFeature(it)
-                    println "type = ${type}"
+                    log.debug "type = ${type}"
 //                    it = Feature.get(it.id)
 //                    it instanceof Gene
                     return type == 'gene'
                 }
 
-                println "number of overlapping genes ${overlappingFeatures?.size()}"
-                println "overlapping genes: ${overlappingFeatures.name}"
+                log.debug "number of overlapping genes ${overlappingFeatures?.size()}"
+                log.debug "overlapping genes: ${overlappingFeatures.name}"
                 List<Feature> overlappingFeaturesToCheck = new ArrayList<Feature>()
                 overlappingFeatures.each {
                     Feature feature = it as Feature
@@ -405,19 +405,19 @@ class FeatureService {
                     }
                 }
 
-                println "overlapping features to check: ${overlappingFeaturesToCheck?.size()} -> ${overlappingFeaturesToCheck}"
+                log.debug "overlapping features to check: ${overlappingFeaturesToCheck?.size()} -> ${overlappingFeaturesToCheck}"
 
                 for (Feature eachFeature : overlappingFeaturesToCheck) {
                     // get the proper object instead of its proxy, due to lazy loading
                     Feature feature = Feature.get(eachFeature.id)
-                    println "evaluating overlap of feature ${feature.name} of class ${feature.class.name}"
+                    log.debug "evaluating overlap of feature ${feature.name} of class ${feature.class.name}"
 
 //                    if (!gene && feature instanceof Gene && !(feature instanceof Pseudogene)) {
                     // TODO: note that instanteof casts it to a Non-Canonical prime, etc., should use type instead
 //                    if (!gene) {
                     if (!gene && feature.instanceOf(Gene.class) && !feature.instanceOf(Pseudogene.class)) {
                         Gene tmpGene = (Gene) feature;
-                        println "found an overlapping gene ${tmpGene} . . and type ${tmpGene.class.name}"
+                        log.debug "found an overlapping gene ${tmpGene} . . and type ${tmpGene.class.name}"
                         // removing name from transcript JSON since its naming will be based off of the overlapping gene
                         Transcript tmpTranscript
                         if (jsonTranscript.has(FeatureStringEnum.NAME.value)) {
@@ -440,14 +440,14 @@ class FeatureService {
 
                         CDS cds = transcriptService.getCDS(tmpTranscript)
                         if (cds) {
-                            println "HAS A CDS: ${cds}"
+                            log.debug "HAS A CDS: ${cds}"
                             readThroughStopCodon = cdsService.getStopCodonReadThrough(cds) ? true : false
                         }
 
                         if (!useCDS || cds == null) {
-                            println "CDS is null: ${cds} or useCDS is false ${useCDS}"
+                            log.debug "CDS is null: ${cds} or useCDS is false ${useCDS}"
                             calculateCDS(tmpTranscript, readThroughStopCodon)
-                            println "CDS is CALCULATED: ${cds} "
+                            log.debug "CDS is CALCULATED: ${cds} "
                         } else {
                             // if there are any sequence alterations that overlaps this transcript then
                             // recalculate the CDS to account for these changes
@@ -457,10 +457,10 @@ class FeatureService {
                             }
                         }
 
-//                        println "output CDS: ${tmpTranscript.childFeatureRelationships}"
+//                        log.debug "output CDS: ${tmpTranscript.childFeatureRelationships}"
                         CDS foundCDS = transcriptService.getCDS(tmpTranscript)
-                        println "final found CDS ${foundCDS}"
-                        println "final found CDS location ${foundCDS.featureLocation}"
+                        log.debug "final found CDS ${foundCDS}"
+                        log.debug "final found CDS location ${foundCDS.featureLocation}"
 
                         if (!suppressHistory) {
                             tmpTranscript.name = nameService.generateUniqueName(tmpTranscript, tmpGene?.name)
@@ -472,7 +472,7 @@ class FeatureService {
                         }
 
                         if (tmpTranscript && tmpGene && overlapperService.overlaps(tmpTranscript, tmpGene)) {
-                            println "There is an overlap, adding to an existing gene"
+                            log.debug "There is an overlap, adding to an existing gene"
                             transcript = tmpTranscript;
                             gene = tmpGene;
                             addTranscriptToGene(gene, transcript)
@@ -533,7 +533,7 @@ class FeatureService {
                             break;
                         } else {
                             featureRelationshipService.deleteFeatureAndChildren(tmpTranscript)
-                            println "There is no overlap, we are going to return a NULL gene and a NULL transcript "
+                            log.debug "There is no overlap, we are going to return a NULL gene and a NULL transcript "
                         }
                     } else {
                         log.error "Feature is not an instance of a gene or is a pseudogene"
@@ -542,7 +542,7 @@ class FeatureService {
             }
         }
         if (gene == null) {
-            println "gene is null"
+            log.debug "gene is null"
             // Scenario III - create a de-novo gene
             JSONObject jsonGene = new JSONObject();
             if (jsonTranscript.has(FeatureStringEnum.PARENT.value)) {
@@ -590,11 +590,11 @@ class FeatureService {
             }
 
             if (!useCDS || cds == null) {
-                println "no gene, CALCULATING CDS"
+                log.debug "no gene, CALCULATING CDS"
                 calculateCDS(transcript, readThroughStopCodon)
                 CDS calculatedCDS = transcriptService.getCDS(transcript)
-                println "final CDS ${calculatedCDS}"
-                println "final CDS location ${calculatedCDS.featureLocation as JSON}"
+                log.debug "final CDS ${calculatedCDS}"
+                log.debug "final CDS location ${calculatedCDS.featureLocation as JSON}"
                 calculatedCDS.save(flush: true)
                 calculatedCDS.featureLocation.save(flush: true)
             } else {
@@ -617,12 +617,6 @@ class FeatureService {
             nonCanonicalSplitSiteService.findNonCanonicalAcceptorDonorSpliceSites(transcript);
             gene.save(flush: true)
             transcript.save(flush: true)
-
-            println "FEATURES SHOULD BE SAVED"
-            def featureLocationResults = Feature.executeQuery("MATCH (o:Organism)--(s:Sequence)--(g:Gene)--(t:Transcript)--(cds:CDS)-[fl:FEATURELOCATION]-(s)  RETURN o.commonName,fl.fmin,fl.fmax ")
-            for(r in featureLocationResults){
-                println "input r: ${r}"
-            }
 
             // doesn't work well for testing
             setOwner(gene, owner);
@@ -797,11 +791,11 @@ class FeatureService {
 
     @Transactional
     def calculateCDS(Transcript transcript, boolean readThroughStopCodon) {
-        println "calculating CDS"
+        log.debug "calculating CDS"
         CDS cds = transcriptService.getCDS(transcript);
-        println "got CDS ${cds} from transcript ${transcript}"
+        log.debug "got CDS ${cds} from transcript ${transcript}"
         if (cds == null) {
-            println "cds is not null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
+            log.debug "cds is not null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
             setLongestORF(transcript, readThroughStopCodon);
             return;
         }
@@ -1391,9 +1385,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         TranslationTable translationTable = organismService.getTranslationTable(organism)
         String mrna = getResiduesWithAlterationsAndFrameshifts(transcript)
 
-        println "set longest ORF ${organism}, ${translationTable} ${mrna?.size()} -> ${mrna}"
+        log.debug "set longest ORF ${organism}, ${translationTable} ${mrna?.size()} -> ${mrna}"
         if (!mrna) {
-            println "mrna not found,m so returning nothing"
+            log.debug "mrna not found,m so returning nothing"
             return
         }
         String longestPeptide = ""
@@ -1444,27 +1438,27 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             bestStopIndex = stopIndex
         }
 
-        println "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop}"
+        log.debug "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop}"
 
         if (transcript.instanceOf(MRNA)) {
-            println "is an MRNA"
+            log.debug "is an MRNA"
             CDS cds = transcriptService.getCDS(transcript)
-            println "cds ${cds}"
+            log.debug "cds ${cds}"
             if (cds == null) {
-                println "creating CDS "
+                log.debug "creating CDS "
                 cds = transcriptService.createCDS(transcript);
-                println "created a CDS ${cds}"
-                println "created a CDS per location ${cds.featureLocation as JSON}"
+                log.debug "created a CDS ${cds}"
+                log.debug "created a CDS per location ${cds.featureLocation as JSON}"
                 transcriptService.setCDS(transcript, cds);
-                println "set CDS ${cds} on transcript ${transcript}"
+                log.debug "set CDS ${cds} on transcript ${transcript}"
             }
 
             int fmin = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStartIndex)
-            println "best fmin ${fmin}"
+            log.debug "best fmin ${fmin}"
 
             int fmax = -1
             if (bestStopIndex >= 0) {
-                println "bestStopIndex >= 0"
+                log.debug "bestStopIndex >= 0"
                 fmax = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStopIndex)
                 if (cds.strand == Strand.NEGATIVE.value) {
                     int tmp = fmin
@@ -1473,9 +1467,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 }
                 setFmin(cds, fmin)
                 setFmax(cds, fmax)
-                println "bestStopIndex >=0 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cds.strand}"
+                log.debug "bestStopIndex >=0 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cds.strand}"
             } else {
-                println "bestStopIndex < 0"
+                log.debug "bestStopIndex < 0"
                 fmax = transcript.strand == Strand.NEGATIVE.value ? transcript.fmin : transcript.fmax
                 if (cds.strand == Strand.NEGATIVE.value) {
                     int tmp = fmin
@@ -1484,13 +1478,13 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 }
                 setFmin(cds, fmin)
                 setFmax(cds, fmax)
-                println "bestStopIndex < 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cds.strand}"
+                log.debug "bestStopIndex < 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cds.strand}"
             }
-            println "looking at strands for ${cds}"
+            log.debug "looking at strands for ${cds}"
 
 
-            println "cds ${cds}"
-            println "result CDS locatin is ${cds.featureLocation as JSON}"
+            log.debug "cds ${cds}"
+            log.debug "result CDS locatin is ${cds.featureLocation as JSON}"
 
             Boolean fminPartial
             Boolean fmaxPartial
@@ -1511,16 +1505,16 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
             String inputQuery = "MATCH (t:Transcript)--(cds:CDS)-[fl:FEATURELOCATION]-(s) where t.uniqueName='${transcript.uniqueName}' and cds.uniqueName='${cds.uniqueName}' " +
                 " set fl.fmin=${fmin},fl.fmax=${fmax},fl.isMaxPartial=${fmaxPartial},fl.isMinPartial=${fminPartial} RETURN cds,fl "
-            println "input query"
-            println inputQuery
+            log.debug "input query"
+            log.debug inputQuery
             def returnValue = FeatureLocation.executeUpdate(inputQuery)
-            println "${returnValue}"
+            log.debug "${returnValue}"
 
             // re-query CDS
             // reload?
             cds = CDS.findByUniqueName(cds.uniqueName)
 
-            println "Final CDS fmin: ${cds.fmin} fmax: ${cds.fmax} for ${cds}"
+            log.debug "Final CDS fmin: ${cds.fmin} fmax: ${cds.fmax} for ${cds}"
 
             if (readThroughStopCodon) {
                 cdsService.deleteStopCodonReadThrough(cds)
@@ -4385,10 +4379,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 //            log.debug "as JSON ${sequence as JSON}"
             Feature feature = convertJSONToFeature(jsonFeature, sequence)
             feature.save(flush: true)
-            println "feature ${feature} -> name: ${feature.name}"
+            log.debug "feature ${feature} -> name: ${feature.name}"
             if (!suppressHistory) {
                 String name = nameService.generateUniqueName(feature, feature.name)
-                println "not suppressing history withi uqniue name ${name} -> name: ${feature}"
+                log.debug "not suppressing history withi uqniue name ${name} -> name: ${feature}"
                 feature.name = name
             }
             setSequenceForChildFeatures(feature, sequence)

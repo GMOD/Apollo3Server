@@ -202,13 +202,7 @@ class IOServiceController extends AbstractApolloController {
 //                println "neo4j with single nodes ${neo4jFeatureNodes as JSON}"
                 features = neo4jFeatureNodes
 
-                println "IOService query: ${System.currentTimeMillis() - st}ms"
-
-
-                def featureLocationResults = Feature.executeQuery("MATCH (o:Organism)--(s:Sequence)--(g:Gene)--(t:Transcript)--(cds:CDS)-[fl:FEATURELOCATION]-(s)  RETURN o.commonName,fl.fmin,fl.fmax ")
-                for(r in featureLocationResults){
-                    println "r: ${r}"
-                }
+                log.debug "IOService query: ${System.currentTimeMillis() - st}ms"
 
             }
 
