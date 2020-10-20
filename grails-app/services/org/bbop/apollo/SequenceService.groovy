@@ -695,13 +695,12 @@ class SequenceService {
             gbolFeature = featureService.getTopLevelFeature(gbolFeature)
             featuresToWrite.add(gbolFeature);
 
-            int fmin = gbolFeature.fmin
-            int fmax = gbolFeature.fmax
-
-            Sequence sequence = gbolFeature.featureLocation.to
 
             // TODO: does strand and alteration length matter here?
             // TODO: fix query
+//            int fmin = gbolFeature.fmin
+//            int fmax = gbolFeature.fmax
+//            Sequence sequence = gbolFeature.featureLocation.to
 //            List<Feature> listOfSequenceAlterations = Feature.executeQuery("select distinct f from Feature f join f.featureLocations fl join fl.sequence s where s = :sequence and f.class in :sequenceTypes and fl.fmin >= :fmin and fl.fmax <= :fmax ", [sequence: sequence, sequenceTypes: requestHandlingService.viewableAlterations, fmin: fmin, fmax: fmax])
 //            featuresToWrite += listOfSequenceAlterations
         }

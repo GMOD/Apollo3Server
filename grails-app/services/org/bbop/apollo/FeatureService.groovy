@@ -334,17 +334,20 @@ class FeatureService {
             setOwner(transcript, owner);
 
             CDS cds = transcriptService.getCDS(transcript)
-            log.debug "had a CDS ${cds}"
+            println "had a CDS ${cds}"
             if (cds) {
                 readThroughStopCodon = cdsService.getStopCodonReadThrough(cds) ? true : false
             }
 
             if (!useCDS || cds == null) {
-                log.debug "generating CDS ${cds}"
+                println "generating CDS ${cds}"
                 calculateCDS(transcript, readThroughStopCodon)
-                log.debug "generatED CDS ${cds}"
+                cds = transcriptService.getCDS(transcript)
+                println "generatED CDS ${cds}"
+                println "generatED CDS locaiton ${cds.featureLocation as JSON}"
             } else {
-                log.debug "not generated a CDS for some reason "
+                println "not generated a CDS for some reason "
+                println "inferred CDS locaiton ${cds.featureLocation as JSON}"
                 // if there are any sequence alterations that overlaps this transcript then
                 // recalculate the CDS to account for these changes
                 def sequenceAlterations = getSequenceAlterationsForFeature(transcript)
@@ -414,7 +417,7 @@ class FeatureService {
 //                    if (!gene) {
                     if (!gene && feature.instanceOf(Gene.class) && !feature.instanceOf(Pseudogene.class)) {
                         Gene tmpGene = (Gene) feature;
-//                        println "found an overlapping gene ${tmpGene} . . and type ${tmpGene.class.name}"
+                        println "found an overlapping gene ${tmpGene} . . and type ${tmpGene.class.name}"
                         // removing name from transcript JSON since its naming will be based off of the overlapping gene
                         Transcript tmpTranscript
                         if (jsonTranscript.has(FeatureStringEnum.NAME.value)) {
@@ -444,6 +447,7 @@ class FeatureService {
                         if (!useCDS || cds == null) {
                             println "CDS is null: ${cds} or useCDS is false ${useCDS}"
                             calculateCDS(tmpTranscript, readThroughStopCodon)
+                            println "CDS is CALCULATED: ${cds} "
                         } else {
                             // if there are any sequence alterations that overlaps this transcript then
                             // recalculate the CDS to account for these changes
@@ -452,6 +456,11 @@ class FeatureService {
                                 calculateCDS(tmpTranscript)
                             }
                         }
+
+//                        println "output CDS: ${tmpTranscript.childFeatureRelationships}"
+                        CDS foundCDS = transcriptService.getCDS(tmpTranscript)
+                        println "final found CDS ${foundCDS}"
+                        println "final found CDS location ${foundCDS.featureLocation}"
 
                         if (!suppressHistory) {
                             tmpTranscript.name = nameService.generateUniqueName(tmpTranscript, tmpGene?.name)
@@ -533,7 +542,7 @@ class FeatureService {
             }
         }
         if (gene == null) {
-            log.debug "gene is null"
+            println "gene is null"
             // Scenario III - create a de-novo gene
             JSONObject jsonGene = new JSONObject();
             if (jsonTranscript.has(FeatureStringEnum.PARENT.value)) {
@@ -581,7 +590,13 @@ class FeatureService {
             }
 
             if (!useCDS || cds == null) {
+                println "no gene, CALCULATING CDS"
                 calculateCDS(transcript, readThroughStopCodon)
+                CDS calculatedCDS = transcriptService.getCDS(transcript)
+                println "final CDS ${calculatedCDS}"
+                println "final CDS location ${calculatedCDS.featureLocation as JSON}"
+                calculatedCDS.save(flush: true)
+                calculatedCDS.featureLocation.save(flush: true)
             } else {
                 // if there are any sequence alterations that overlaps this transcript then
                 // recalculate the CDS to account for these changes
@@ -602,6 +617,12 @@ class FeatureService {
             nonCanonicalSplitSiteService.findNonCanonicalAcceptorDonorSpliceSites(transcript);
             gene.save(flush: true)
             transcript.save(flush: true)
+
+            println "FEATURES SHOULD BE SAVED"
+            def featureLocationResults = Feature.executeQuery("MATCH (o:Organism)--(s:Sequence)--(g:Gene)--(t:Transcript)--(cds:CDS)-[fl:FEATURELOCATION]-(s)  RETURN o.commonName,fl.fmin,fl.fmax ")
+            for(r in featureLocationResults){
+                println "input r: ${r}"
+            }
 
             // doesn't work well for testing
             setOwner(gene, owner);
@@ -1433,11 +1454,13 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 println "creating CDS "
                 cds = transcriptService.createCDS(transcript);
                 println "created a CDS ${cds}"
+                println "created a CDS per location ${cds.featureLocation as JSON}"
                 transcriptService.setCDS(transcript, cds);
                 println "set CDS ${cds} on transcript ${transcript}"
             }
 
             int fmin = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStartIndex)
+            println "best fmin ${fmin}"
 
             if (bestStopIndex >= 0) {
                 println "bestStopIndex >= 0"
@@ -1449,6 +1472,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 }
                 setFmin(cds, fmin)
                 setFmax(cds, fmax)
+                println "bestStopIndex >=0 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cds.strand}"
             } else {
                 println "bestStopIndex < 0"
                 int fmax = transcript.strand == Strand.NEGATIVE.value ? transcript.fmin : transcript.fmax
@@ -1459,10 +1483,14 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 }
                 setFmin(cds, fmin)
                 setFmax(cds, fmax)
+                println "bestStopIndex < 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cds.strand}"
             }
             println "looking at strands for ${cds}"
 
+
             println "cds ${cds}"
+            println "result CDS locatin is ${cds.featureLocation as JSON}"
+
             if (cds.featureLocation.strand == Strand.NEGATIVE.value) {
                 cds.featureLocation.setIsFminPartial(partialStop)
                 cds.featureLocation.setIsFmaxPartial(partialStart)
@@ -1471,7 +1499,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 cds.featureLocation.setIsFmaxPartial(partialStop)
             }
 
-            println "Final CDS fmin: ${cds.fmin} fmax: ${cds.fmax}"
+            cds.featureLocation.save(flush: true, failonError: true)
+
+            println "Final CDS fmin: ${cds.fmin} fmax: ${cds.fmax} for ${cds}"
 
             if (readThroughStopCodon) {
                 cdsService.deleteStopCodonReadThrough(cds)

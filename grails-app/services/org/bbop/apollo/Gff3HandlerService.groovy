@@ -354,6 +354,7 @@ class Gff3HandlerService {
 
 
         if (type == "CDS") {
+            println "start ${start} and end ${end} for the CDS "
             // TODO: (1) get sorted exons 
             // TODO: (2) get CDS
             String exonQuery = "MATCH (n:CDS)--(t:Transcript)--(e:Exon)-[el]-(s:Sequence) where (n.uniqueName='${childFeature.uniqueName}' or n.id=${childFeature.id}) RETURN el "
@@ -468,7 +469,7 @@ class Gff3HandlerService {
         def children = result.children
         if (children) {
             for (def childNode : children) {
-                FeatureLocation childFeatureLocation = childNode.location as FeatureLocation
+//                FeatureLocation childFeatureLocation = childNode.location as FeatureLocation
                 calculateChildGFF3Entry(writeObject,childNode,result,source,seqId,gffEntries,owners)
 //                }
             }

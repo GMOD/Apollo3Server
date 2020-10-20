@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
+import org.bbop.apollo.location.FeatureLocation
 import org.bbop.apollo.organism.Organism
 import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.DownloadFile
@@ -201,7 +202,14 @@ class IOServiceController extends AbstractApolloController {
 //                println "neo4j with single nodes ${neo4jFeatureNodes as JSON}"
                 features = neo4jFeatureNodes
 
-                log.debug "IOService query: ${System.currentTimeMillis() - st}ms"
+                println "IOService query: ${System.currentTimeMillis() - st}ms"
+
+
+                def featureLocationResults = Feature.executeQuery("MATCH (o:Organism)--(s:Sequence)--(g:Gene)--(t:Transcript)--(cds:CDS)-[fl:FEATURELOCATION]-(s)  RETURN o.commonName,fl.fmin,fl.fmax ")
+                for(r in featureLocationResults){
+                    println "r: ${r}"
+                }
+
             }
 
             def sequenceList = Sequence.createCriteria().list() {
