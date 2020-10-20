@@ -979,6 +979,8 @@ class RequestHandlingService {
             Gene gene = transcriptService.getGene(transcript)
             inputObject.put(FeatureStringEnum.NAME.value, gene.name)
 
+            CDS generatedCDS = transcriptService.getCDS(transcript)
+
             if (!suppressHistory) {
                 featureService.addOwnersByString(inputObject.username, gene, transcript)
                 def json = featureService.convertFeatureToJSON(transcript)

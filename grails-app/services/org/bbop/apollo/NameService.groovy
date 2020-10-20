@@ -26,7 +26,9 @@ class NameService {
     }
 
     String generateUniqueName(Feature thisFeature, String principalName = null ) {
-        Organism organism = thisFeature?.featureLocation?.sequence?.organism
+//        Organism organism = thisFeature?.featureLocation?.to?.organism
+        Organism organism = Organism.executeQuery("MATCH (o:Organism)--(s)--(f:Feature) where f.uniqueName =${thisFeature.uniqueName} return o")?.first() as Organism
+        println "found organism ${organism} for feature unique name ${thisFeature}"
         if(thisFeature.name) {
             if (thisFeature.instanceOf(Transcript)) {
                 if(!principalName){
@@ -90,18 +92,22 @@ class NameService {
 //            return true
 //        }
 //        List results = (Feature.executeQuery("select count(f) from Feature f join f.featureLocations fl join fl.sequence s where s.organism = :org and f.name = :name ",[org:organism,name:name]))
-        Integer numberResults = Feature.findAllByName(name).findAll(){
-            it.featureLocation.to.organism == organism
-        }.size()
+//        Integer numberResults = Feature.findAllByName(name).findAll(){
+//            it.featureLocation.to.organism == organism
+//        }.size()
+        Integer numberResults = Feature.executeQuery("MATCH (o:Organism)--(s)--(f:Feature) where f.name =${name} and (o.id = ${organism.id} OR o.commonName = ${organism.commonName}) return count(f)").first() as Integer
         return 0 == numberResults
     }
 
     String makeUniqueTranscriptName(Organism organism,String principalName){
         String name
         name = principalName + leftPaddingStrategy.pad(0)
-        def queryResults =  Transcript.executeQuery("MATCH (t:Transcript) where t.name='bob' RETURN count(t)").first()
-        int tCount = Transcript.executeQuery("MATCH (t:Transcript) where t.name='bob' RETURN count(t)").first()
+        def queryResult =  Transcript.executeQuery("MATCH (t:Transcript) where t.name='${name}' RETURN count(t)").first()
+        println "query results ${queryResult}"
+        int tCount = Transcript.executeQuery("MATCH (t:Transcript) where t.name='${name}' RETURN count(t)").first()
+        println "tCount ${tCount}"
         if(tCount==0){
+            println "returning because tCount is 0"
             return name
         }
 
@@ -109,8 +115,9 @@ class NameService {
         // See https://github.com/GMOD/Apollo/issues/1276
         // only does sort over found results
         List<String> results= Feature.findAllByNameLike(principalName+"%").findAll(){
-            it.featureLocation?.sequence?.organism == organism
+            it.featureLocation?.to?.organism == organism
         }.name
+        println "handling other results"
 
         name = principalName + leftPaddingStrategy.pad(results.size())
         int count = results.size()
