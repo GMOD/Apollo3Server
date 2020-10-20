@@ -1462,9 +1462,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             int fmin = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStartIndex)
             println "best fmin ${fmin}"
 
+            int fmax = -1
             if (bestStopIndex >= 0) {
                 println "bestStopIndex >= 0"
-                int fmax = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStopIndex)
+                fmax = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStopIndex)
                 if (cds.strand == Strand.NEGATIVE.value) {
                     int tmp = fmin
                     fmin = fmax + 1
@@ -1475,7 +1476,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 println "bestStopIndex >=0 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cds.strand}"
             } else {
                 println "bestStopIndex < 0"
-                int fmax = transcript.strand == Strand.NEGATIVE.value ? transcript.fmin : transcript.fmax
+                fmax = transcript.strand == Strand.NEGATIVE.value ? transcript.fmin : transcript.fmax
                 if (cds.strand == Strand.NEGATIVE.value) {
                     int tmp = fmin
                     fmin = fmax
@@ -1491,15 +1492,33 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             println "cds ${cds}"
             println "result CDS locatin is ${cds.featureLocation as JSON}"
 
+            Boolean fminPartial
+            Boolean fmaxPartial
             if (cds.featureLocation.strand == Strand.NEGATIVE.value) {
                 cds.featureLocation.setIsFminPartial(partialStop)
                 cds.featureLocation.setIsFmaxPartial(partialStart)
+                fminPartial = partialStop
+                fmaxPartial = partialStart
             } else {
                 cds.featureLocation.setIsFminPartial(partialStart)
                 cds.featureLocation.setIsFmaxPartial(partialStop)
+                fminPartial = partialStart
+                fmaxPartial = partialStop
             }
+//
+//            cds.featureLocation.save(flush: true, failonError: true)
 
-            cds.featureLocation.save(flush: true, failonError: true)
+
+            String inputQuery = "MATCH (t:Transcript)--(cds:CDS)-[fl:FEATURELOCATION]-(s) where t.uniqueName='${transcript.uniqueName}' and cds.uniqueName='${cds.uniqueName}' " +
+                " set fl.fmin=${fmin},fl.fmax=${fmax},fl.isMaxPartial=${fmaxPartial},fl.isMinPartial=${fminPartial} RETURN cds,fl "
+            println "input query"
+            println inputQuery
+            def returnValue = FeatureLocation.executeUpdate(inputQuery)
+            println "${returnValue}"
+
+            // re-query CDS
+            // reload?
+            cds = CDS.findByUniqueName(cds.uniqueName)
 
             println "Final CDS fmin: ${cds.fmin} fmax: ${cds.fmax} for ${cds}"
 
@@ -4366,8 +4385,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 //            log.debug "as JSON ${sequence as JSON}"
             Feature feature = convertJSONToFeature(jsonFeature, sequence)
             feature.save(flush: true)
+            println "feature ${feature} -> name: ${feature.name}"
             if (!suppressHistory) {
                 String name = nameService.generateUniqueName(feature, feature.name)
+                println "not suppressing history withi uqniue name ${name} -> name: ${feature}"
                 feature.name = name
             }
             setSequenceForChildFeatures(feature, sequence)
