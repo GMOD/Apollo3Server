@@ -99,9 +99,12 @@ class NameService {
     String makeUniqueTranscriptName(Organism organism,String principalName){
         String name
         name = principalName + leftPaddingStrategy.pad(0)
-        def queryResults =  Transcript.executeQuery("MATCH (t:Transcript) where t.name='bob' RETURN count(t)").first()
-        int tCount = Transcript.executeQuery("MATCH (t:Transcript) where t.name='bob' RETURN count(t)").first()
+        def queryResult =  Transcript.executeQuery("MATCH (t:Transcript) where t.name='${name}' RETURN count(t)").first()
+        println "query results ${queryResult}"
+        int tCount = Transcript.executeQuery("MATCH (t:Transcript) where t.name='${name}' RETURN count(t)").first()
+        println "tCount ${tCount}"
         if(tCount==0){
+            println "returning because tCount is 0"
             return name
         }
 
@@ -109,8 +112,9 @@ class NameService {
         // See https://github.com/GMOD/Apollo/issues/1276
         // only does sort over found results
         List<String> results= Feature.findAllByNameLike(principalName+"%").findAll(){
-            it.featureLocation?.sequence?.organism == organism
+            it.featureLocation?.to?.organism == organism
         }.name
+        prinltn "handling other results"
 
         name = principalName + leftPaddingStrategy.pad(results.size())
         int count = results.size()

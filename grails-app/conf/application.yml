@@ -9,6 +9,7 @@ grails:
             # Whether to translate GORM events into Reactor events
             # Disabled by default for performance reasons
             events: false
+        failOnError: true
     config:
         locations:
             - file:./apollo.groovy
