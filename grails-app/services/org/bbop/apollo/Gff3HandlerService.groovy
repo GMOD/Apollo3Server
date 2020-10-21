@@ -148,7 +148,7 @@ class Gff3HandlerService {
             for (def result : entry.getValue()) {
                 writeNeo4jFeature(writeObject, result, source,geneIds)
                 writeFeatureGroupEnd(writeObject.out)
-                println "result ${result}"
+                log.debug "result ${result}"
             }
         }
     }
@@ -337,7 +337,7 @@ class Gff3HandlerService {
     private void calculateChildGFF3Entry(WriteObject writeObject, def childNeo4jEntry,def parentNeo4jEntry,String source,String seqId,Collection<GFF3Entry> gffEntries,def owners){
         Feature childFeature = childNeo4jEntry.feature as Feature
         FeatureLocation featureLocation = childNeo4jEntry.location as FeatureLocation
-        println "incoming feature location ${featureLocation as JSON}"
+        log.debug "incoming feature location ${featureLocation as JSON}"
         int start = featureLocation.getFmin()
         int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
         String score = "."
@@ -350,7 +350,7 @@ class Gff3HandlerService {
             strand = "."
         }
         String type = featureService.getCvTermFromNeo4jFeature(childNeo4jEntry.feature)
-        println "type: ${type}"
+        log.debug "type: ${type}"
 
 
         if (type == "CDS") {

@@ -28,7 +28,7 @@ class FeaturePropertyService {
         }
 
         Collections.sort(comments, new Comparator<Comment>() {
-            public int compare(Comment comment1, Comment comment2) {
+            int compare(Comment comment1, Comment comment2) {
                 if (comment1.getType().equals(comment2.getType())) {
                     return new Integer(comment1.getRank()).compareTo(comment2.getRank());
                 }

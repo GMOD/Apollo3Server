@@ -36,6 +36,7 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
 }
 
 //logger("org.grails.datastore.gorm.neo4j.engine", DEBUG)
+//logger("org.bbop.apollo.service.FeatureService", DEBUG)
 //org.grails.datastore.gorm.neo4j
 root(ERROR, ['STDOUT'])
 //root(INFO, ['STDOUT'])

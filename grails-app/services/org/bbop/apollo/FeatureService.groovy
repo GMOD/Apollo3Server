@@ -397,26 +397,31 @@ class FeatureService {
 
                 log.debug "number of overlapping genes ${overlappingFeatures?.size()}"
                 log.debug "overlapping genes: ${overlappingFeatures.name}"
-                List<Feature> overlappingFeaturesToCheck = new ArrayList<Feature>()
-                overlappingFeatures.each {
-                    Feature feature = it as Feature
-                    if (!checkForComment(feature, MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE) && !checkForComment(feature, MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE)) {
-                        overlappingFeaturesToCheck.add(feature)
+                List<Gene> overlappingFeaturesToCheck = new ArrayList<Gene>()
+                try {
+                    overlappingFeatures.each {
+                        Gene eachGene = it as Gene
+                        if (!checkForComment(eachGene, MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE) && !checkForComment(eachGene, MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE)) {
+                            overlappingFeaturesToCheck.add(eachGene)
+                        }
                     }
+                } catch (e) {
+                    log.error e
                 }
 
-                log.debug "overlapping features to check: ${overlappingFeaturesToCheck?.size()} -> ${overlappingFeaturesToCheck}"
+//                println "overlapping features to check: ${overlappingFeaturesToCheck?.size()} -> ${overlappingFeaturesToCheck}"
 
-                for (Feature eachFeature : overlappingFeaturesToCheck) {
+                for (Gene eachFeature : overlappingFeaturesToCheck) {
                     // get the proper object instead of its proxy, due to lazy loading
-                    Feature feature = Feature.get(eachFeature.id)
-                    log.debug "evaluating overlap of feature ${feature.name} of class ${feature.class.name}"
+//                    Feature feature = eachFeature
+                    log.debug "evaluating overlap of feature ${eachFeature.name} of class ${eachFeature.class.name} and gene: ${gene}"
 
 //                    if (!gene && feature instanceof Gene && !(feature instanceof Pseudogene)) {
                     // TODO: note that instanteof casts it to a Non-Canonical prime, etc., should use type instead
 //                    if (!gene) {
-                    if (!gene && feature.instanceOf(Gene.class) && !feature.instanceOf(Pseudogene.class)) {
-                        Gene tmpGene = (Gene) feature;
+//                    if (!gene && feature.instanceOf(Gene.class) && !feature.instanceOf(Pseudogene.class)) {
+                    if (!gene) {
+                        Gene tmpGene = (Gene) Gene.findById(eachFeature.id);
                         log.debug "found an overlapping gene ${tmpGene} . . and type ${tmpGene.class.name}"
                         // removing name from transcript JSON since its naming will be based off of the overlapping gene
                         Transcript tmpTranscript
@@ -4437,14 +4442,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         feature.save()
     }
 
-    def checkForComment(Feature feature, String value) {
-        def comments = featurePropertyService.getComments(feature)
-        for (FeatureProperty comment : comments) {
-            if (comment.value == value) {
-                return true
-            }
-        }
-
-        return false
+    Boolean checkForComment(Feature feature, String value) {
+        return (FeatureProperty.executeQuery("MATCH (f:Feature)--(c:Comment) where f.uniqueName=${feature.uniqueName} and c.value = ${value} return count(c)").first() as Integer) > 0
     }
 }
