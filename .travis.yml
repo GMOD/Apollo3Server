@@ -5,7 +5,7 @@ language: groovy
 
 jdk:
   - openjdk8
-#  - openjdk11
+  - openjdk11
 
 python:
   - "3.8.5"
