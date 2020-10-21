@@ -349,6 +349,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
             }
         }
         catch (Exception e) {
+            log.error("Error",e)
             def error = [error: e.message]
             render error as JSON
         }
@@ -459,6 +460,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
             permissionService.checkPermissions(returnObject, PermissionEnum.READ)
             render requestHandlingService.getFeatures(returnObject)
         } catch (e) {
+            log.error("Error",e)
             def error = [error: 'problem getting features: ' + e.fillInStackTrace()]
             render error as JSON
             log.error(error.error)
@@ -703,10 +705,10 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
             info.put("time_accessioned", gbolFeature.lastUpdated)
             info.put("owner", gbolFeature.owner ? gbolFeature.owner.username : "N/A")
             info.put("location", gbolFeature.featureLocation.fmin)
-            if(gbolFeature.instanceOf(SequenceAlterationArtifact)){
+            if(gbolFeature.instanceOf(SequenceAlterationArtifact.class)){
                 info.put("length", gbolFeature.offset)
             }
-            if(gbolFeature.instanceOf(SequenceAlteration) && gbolFeature.alterationResidue){
+            if(gbolFeature.instanceOf(SequenceAlteration.class) && gbolFeature.alterationResidue){
                 info.put("length", gbolFeature?.alterationResidue?.size())
             }
             String parentIds = "";
@@ -1043,6 +1045,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
             render featureContainer
         }
         catch (AnnotationException ae) {
+            log.error("Error",e)
             def error = [error: ae.message]
             render error as JSON
         }
@@ -1175,6 +1178,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
             render sequenceSearchService.searchSequence(inputObject, organism.getBlatdb())
         }
         catch (AnnotationException ae) {
+            log.error("Error",e)
             def error = [error: ae.message]
             render error as JSON
         }
@@ -1202,10 +1206,12 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
 
         }
         catch (AnnotationException ae) {
+            log.error("Error",ae)
             def error = [error: ae.message]
             render error as JSON
         }
         catch (IOException e) {
+            log.error("Error",e)
             log.debug("Cannot create a temp file for 'get GFF3' operation", e)
             e.printStackTrace()
         }

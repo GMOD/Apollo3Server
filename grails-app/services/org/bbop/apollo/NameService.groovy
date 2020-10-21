@@ -30,7 +30,7 @@ class NameService {
         Organism organism = Organism.executeQuery("MATCH (o:Organism)--(s)--(f:Feature) where f.uniqueName =${thisFeature.uniqueName} return o")?.first() as Organism
         log.debug "found organism ${organism} for feature unique name ${thisFeature}"
         if(thisFeature.name) {
-            if (thisFeature.instanceOf(Transcript)) {
+            if (thisFeature.instanceOf(Transcript.class)) {
                 if(!principalName){
                     Gene gene = transcriptService.getGene((Transcript) thisFeature)
                     if(!gene){
@@ -51,7 +51,7 @@ class NameService {
                 }
                 return makeUniqueTranscriptName(organism,principalName.trim()+"-")
             } else
-            if (thisFeature.instanceOf(Gene)) {
+            if (thisFeature.instanceOf(Gene.class)) {
                 if(!principalName){
                     principalName = ((Gene) thisFeature).name
                 }
@@ -60,7 +60,7 @@ class NameService {
                 }
                   return makeUniqueGeneName(organism,principalName.trim())
             }
-            if (thisFeature.instanceOf(Exon) || thisFeature.instanceOf(NonCanonicalFivePrimeSpliceSite) || thisFeature.instanceOf(NonCanonicalThreePrimeSpliceSite) || thisFeature.instanceOf(CDS)) {
+            if (thisFeature.instanceOf(Exon.class) || thisFeature.instanceOf(NonCanonicalFivePrimeSpliceSite) || thisFeature.instanceOf(NonCanonicalThreePrimeSpliceSite) || thisFeature.instanceOf(CDS.class)) {
                 return generateUniqueName()
             }
             else{

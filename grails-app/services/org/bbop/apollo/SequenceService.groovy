@@ -116,11 +116,11 @@ class SequenceService {
                 // alteration is within the generic feature
                 sa.fmin = alterationFmin
                 sa.fmax = alterationFmax
-                if (sequenceAlteration.instanceOf(InsertionArtifact)) {
+                if (sequenceAlteration.instanceOf(InsertionArtifact.class)) {
                     sa.instanceOf = InsertionArtifact.canonicalName
-                } else if (sequenceAlteration.instanceOf(DeletionArtifact)) {
+                } else if (sequenceAlteration.instanceOf(DeletionArtifact.class)) {
                     sa.instanceOf = DeletionArtifact.canonicalName
-                } else if (sequenceAlteration.instanceOf(SubstitutionArtifact)) {
+                } else if (sequenceAlteration.instanceOf(SubstitutionArtifact.class)) {
                     sa.instanceOf = SubstitutionArtifact.canonicalName
                 }
                 sa.type = 'within'
@@ -135,11 +135,11 @@ class SequenceService {
                 int difference = alterationFmax - fmax
                 sa.fmin = alterationFmin
                 sa.fmax = Math.min(fmax, alterationFmax)
-                if (sequenceAlteration.instanceOf(InsertionArtifact)) {
+                if (sequenceAlteration.instanceOf(InsertionArtifact.class)) {
                     sa.instanceOf = InsertionArtifact.canonicalName
-                } else if (sequenceAlteration.instanceOf(DeletionArtifact)) {
+                } else if (sequenceAlteration.instanceOf(DeletionArtifact.class)) {
                     sa.instanceOf = DeletionArtifact.canonicalName
-                } else if (sequenceAlteration.instanceOf(SubstitutionArtifact)) {
+                } else if (sequenceAlteration.instanceOf(SubstitutionArtifact.class)) {
                     sa.instanceOf = SubstitutionArtifact.canonicalName
                 }
                 sa.type = 'exon-to-intron'
@@ -154,11 +154,11 @@ class SequenceService {
                 int difference = fmin - alterationFmin
                 sa.fmin = Math.max(fmin, alterationFmin)
                 sa.fmax = alterationFmax
-                if (sequenceAlteration.instanceOf(InsertionArtifact)) {
+                if (sequenceAlteration.instanceOf(InsertionArtifact.class)) {
                     sa.instanceOf = InsertionArtifact.canonicalName
-                } else if (sequenceAlteration.instanceOf(DeletionArtifact)) {
+                } else if (sequenceAlteration.instanceOf(DeletionArtifact.class)) {
                     sa.instanceOf = DeletionArtifact.canonicalName
-                } else if (sequenceAlteration.instanceOf(SubstitutionArtifact)) {
+                } else if (sequenceAlteration.instanceOf(SubstitutionArtifact.class)) {
                     sa.instanceOf = SubstitutionArtifact.canonicalName
                 }
                 sa.type = 'intron-to-exon'
@@ -540,7 +540,7 @@ class SequenceService {
         TranslationTable translationTable = organismService.getTranslationTable(organism)
 
         if (type.equals(FeatureStringEnum.TYPE_PEPTIDE.value)) {
-            if (gbolFeature.instanceOf(Transcript) && transcriptService.isProteinCoding((Transcript) gbolFeature)) {
+            if (gbolFeature.instanceOf(Transcript.class) && transcriptService.isProteinCoding((Transcript) gbolFeature)) {
                 CDS cds = transcriptService.getCDS((Transcript) gbolFeature)
                 Boolean readThroughStop = false
                 if (cdsService.getStopCodonReadThrough(cds).size() > 0) {
@@ -559,7 +559,7 @@ class SequenceService {
                         featureResidues = featureResidues.replace(StandardTranslationTable.STOP, aa)
                     }
                 }
-            } else if (gbolFeature.instanceOf(Exon) && transcriptService.isProteinCoding(exonService.getTranscript((Exon) gbolFeature))) {
+            } else if (gbolFeature.instanceOf(Exon.class) && transcriptService.isProteinCoding(exonService.getTranscript((Exon) gbolFeature))) {
                 log.debug "Fetching peptide sequence for selected exon: ${gbolFeature}"
                 String rawSequence = exonService.getCodingSequenceInPhase((Exon) gbolFeature, true)
                 Boolean readThroughStop = false
@@ -582,7 +582,7 @@ class SequenceService {
                 featureResidues = ""
             }
         } else if (type.equals(FeatureStringEnum.TYPE_CDS.value)) {
-            if (gbolFeature.instanceOf(Transcript) && transcriptService.isProteinCoding((Transcript) gbolFeature)) {
+            if (gbolFeature.instanceOf(Transcript.class) && transcriptService.isProteinCoding((Transcript) gbolFeature)) {
                 featureResidues = featureService.getResiduesWithAlterationsAndFrameshifts(transcriptService.getCDS((Transcript) gbolFeature))
                 boolean hasStopCodonReadThrough = false
                 if (cdsService.getStopCodonReadThrough(transcriptService.getCDS((Transcript) gbolFeature)).size() > 0) {
@@ -590,7 +590,7 @@ class SequenceService {
                 }
                 String verifiedResidues = checkForInFrameStopCodon(featureResidues, 0, hasStopCodonReadThrough, translationTable)
                 featureResidues = verifiedResidues
-            } else if (gbolFeature.instanceOf(Exon) && transcriptService.isProteinCoding(exonService.getTranscript((Exon) gbolFeature))) {
+            } else if (gbolFeature.instanceOf(Exon.class) && transcriptService.isProteinCoding(exonService.getTranscript((Exon) gbolFeature))) {
                 log.debug "Fetching CDS sequence for selected exon: ${gbolFeature}"
                 featureResidues = exonService.getCodingSequenceInPhase((Exon) gbolFeature, false)
                 boolean hasStopCodonReadThrough = false
@@ -608,7 +608,7 @@ class SequenceService {
             }
 
         } else if (type.equals(FeatureStringEnum.TYPE_CDNA.value)) {
-            if (gbolFeature.instanceOf(Transcript) || gbolFeature.instanceOf(Exon)) {
+            if (gbolFeature.instanceOf(Transcript.class) || gbolFeature.instanceOf(Exon.class)) {
                 featureResidues = featureService.getResiduesWithAlterationsAndFrameshifts(gbolFeature)
             } else {
                 featureResidues = ""
