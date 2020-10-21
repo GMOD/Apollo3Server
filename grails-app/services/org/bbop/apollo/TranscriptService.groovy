@@ -233,10 +233,6 @@ class TranscriptService {
         ).save(insert: true, failOnError: true)
 
 
-        println "fr: ${fr}"
-        println "feature: ${feature}"
-        println "cds: ${cds}"
-        println "location data: ${cds.featureLocation as JSON}"
         feature.addToParentFeatureRelationships(fr)
         cds.addToChildFeatureRelationships(fr)
 

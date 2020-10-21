@@ -28,7 +28,7 @@ class NameService {
     String generateUniqueName(Feature thisFeature, String principalName = null ) {
 //        Organism organism = thisFeature?.featureLocation?.to?.organism
         Organism organism = Organism.executeQuery("MATCH (o:Organism)--(s)--(f:Feature) where f.uniqueName =${thisFeature.uniqueName} return o")?.first() as Organism
-        println "found organism ${organism} for feature unique name ${thisFeature}"
+        log.debug "found organism ${organism} for feature unique name ${thisFeature}"
         if(thisFeature.name) {
             if (thisFeature.instanceOf(Transcript)) {
                 if(!principalName){
@@ -102,12 +102,10 @@ class NameService {
     String makeUniqueTranscriptName(Organism organism,String principalName){
         String name
         name = principalName + leftPaddingStrategy.pad(0)
-        def queryResult =  Transcript.executeQuery("MATCH (t:Transcript) where t.name='${name}' RETURN count(t)").first()
-        println "query results ${queryResult}"
+//        def queryResult =  Transcript.executeQuery("MATCH (t:Transcript) where t.name='${name}' RETURN count(t)").first()
         int tCount = Transcript.executeQuery("MATCH (t:Transcript) where t.name='${name}' RETURN count(t)").first()
-        println "tCount ${tCount}"
         if(tCount==0){
-            println "returning because tCount is 0"
+            log.debug "returning because tCount is 0"
             return name
         }
 
@@ -117,7 +115,6 @@ class NameService {
         List<String> results= Feature.findAllByNameLike(principalName+"%").findAll(){
             it.featureLocation?.to?.organism == organism
         }.name
-        println "handling other results"
 
         name = principalName + leftPaddingStrategy.pad(results.size())
         int count = results.size()

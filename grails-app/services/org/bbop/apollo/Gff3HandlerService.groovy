@@ -45,7 +45,7 @@ class Gff3HandlerService {
         writeObject.file = new File(path)
         writeObject.format = Format.TEXT
 
-        println "Writing neo4j features to GFF3 text"
+        log.debug "Writing neo4j features to GFF3 text"
 
         // TODO: use specified metadata?
         writeObject.attributesToExport.add(FeatureStringEnum.NAME.value)
@@ -354,19 +354,18 @@ class Gff3HandlerService {
 
 
         if (type == "CDS") {
-            println "start ${start} and end ${end} for the CDS "
+            log.debug "start ${start} and end ${end} for the CDS "
             // TODO: (1) get sorted exons 
             // TODO: (2) get CDS
             String exonQuery = "MATCH (n:CDS)--(t:Transcript)--(e:Exon)-[el]-(s:Sequence) where (n.uniqueName='${childFeature.uniqueName}' or n.id=${childFeature.id}) RETURN el "
-            println "output exon query: ${exonQuery}"
-            println "start / end ${start} / ${end}"
+            log.debug "output exon query: ${exonQuery}"
+            log.debug "start / end ${start} / ${end}"
             def locationNodes = Feature.executeQuery(exonQuery)
             List<FeatureLocation> sortedFeatureLocationList = new ArrayList<>()
-            println "location nodes ${locationNodes}"
             locationNodes.each {
                 sortedFeatureLocationList.add(it as FeatureLocation)
             }
-            println "output feature locations ${sortedFeatureLocationList} "
+            log.debug "output feature locations ${sortedFeatureLocationList} "
             sortedFeatureLocationList.sort(new Comparator<FeatureLocation>() {
                 @Override
                 int compare(FeatureLocation featureLocation1, FeatureLocation featureLocation2) {
@@ -397,16 +396,16 @@ class Gff3HandlerService {
                 }
             })
             int length = 0
-            println "sorted feature location list ${sortedFeatureLocationList as JSON} "
+            log.debug "sorted feature location list ${sortedFeatureLocationList as JSON} "
             for (FeatureLocation exonLocation : sortedFeatureLocationList) {
-                println "exon location ${exonLocation as JSON} overlaps ${start}, ${end}"
+                log.debug "exon location ${exonLocation as JSON} overlaps ${start}, ${end}"
                 if (!overlapperService.overlaps(exonLocation.fmin, exonLocation.fmax,start,  end)) {
-                    println "not overlapping ${exonLocation.fmin}, ${exonLocation.fmax}, ${start}, ${end}} ignoreing"
+                    log.debug "not overlapping ${exonLocation.fmin}, ${exonLocation.fmax}, ${start}, ${end}} ignoreing"
                     continue;
                 }
                 int fmin = exonLocation.fmin < start ? start : exonLocation.fmin
                 int fmax = exonLocation.fmax > end ? end : exonLocation.fmax
-                println "does overlap so calculating ${fmin},${fmax}, ${exonLocation.strand}"
+                log.debug "does overlap so calculating ${fmin},${fmax}, ${exonLocation.strand}"
                 String phase;
                 if (length % 3 == 0) {
                     phase = "0";
@@ -416,7 +415,7 @@ class Gff3HandlerService {
                     phase = "1";
                 }
                 length += fmax - fmin;
-                println "adding for type: ${type}"
+                log.debug "adding for type: ${type}"
                 GFF3Entry entry = new GFF3Entry(seqId, source, type, fmin+1 , fmax, score, strand, phase);
                 entry.setAttributes(extractNeo4jAttributes(writeObject,childNeo4jEntry.feature,parentNeo4jEntry.feature,owners))
                 gffEntries.add(entry);
@@ -443,12 +442,12 @@ class Gff3HandlerService {
 
             // get the ID of the parent to see if we've already written it
             String parentUniqueName = result.parent.feature.uniqueName
-            println "parent unique name ${parentUniqueName}"
+//            log.debug "parent unique name ${parentUniqueName}"
             if(!writtenGeneIds.contains(parentUniqueName)){
                 gffEntries.add(calculateParentGFF3Entry(writeObject,result.parent,source,seqId,owners))
                 writtenGeneIds.add(parentUniqueName)
             }
-            println "output unqiue names ${writtenGeneIds.each { println it }}"
+//            log.debug "output unqiue names ${writtenGeneIds.each { log.debug it }}"
         }
 
         String type = featureService.getCvTermFromNeo4jFeature(result.feature)

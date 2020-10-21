@@ -10,7 +10,7 @@ if [[ $TEST_SUITE == "apollo" ]]; then
   ./grailsw test-app -unit  || EXIT_STATUS=$? #
 fi
 if [[ $TEST_SUITE == "python-apollo" ]]; then
-  echo "Runing python-apollo tests"
+  echo "Running python-apollo tests"
   set -ex
 #  cp src/integration-test/groovy/resources/travis/python-apollo.travis apollo-config.groovy
   ps -ef | grep neo4j
