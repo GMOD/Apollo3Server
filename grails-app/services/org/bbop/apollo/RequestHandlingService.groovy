@@ -309,7 +309,7 @@ class RequestHandlingService {
     private JSONObject wrapFeature(JSONObject jsonObject, Feature feature) {
 
         // only pass in transcript
-        if (feature.instanceOf(Gene)) {
+        if (feature.instanceOf(Gene.class)) {
             feature.parentFeatureRelationships.to.each { childFeature ->
                 jsonObject.getJSONArray(FeatureStringEnum.FEATURES.value).put(featureService.convertFeatureToJSON(childFeature))
             }
@@ -979,7 +979,7 @@ class RequestHandlingService {
             Gene gene = transcriptService.getGene(transcript)
             inputObject.put(FeatureStringEnum.NAME.value, gene.name)
 
-            CDS generatedCDS = transcriptService.getCDS(transcript)
+//            CDS generatedCDS = transcriptService.getCDS(transcript)
 
             if (!suppressHistory) {
                 featureService.addOwnersByString(inputObject.username, gene, transcript)
@@ -1430,7 +1430,7 @@ class RequestHandlingService {
                 throw new AnnotationException("Feature cannot have negative coordinates");
             }
             Feature feature = Feature.findByUniqueName(oldJsonFeature.getString(FeatureStringEnum.UNIQUENAME.value))
-            if (feature.instanceOf(SequenceAlteration)) {
+            if (feature.instanceOf(SequenceAlteration.class)) {
                 continue
             }
 //            editor.setBoundaries(feature, fmin, fmax);
@@ -1514,7 +1514,7 @@ class RequestHandlingService {
             sequenceAlteration.delete(flush: true)
 
             for (Feature feature : featureService.getOverlappingFeatures(sequenceAlterationFeatureLocation, false)) {
-                if (feature.instanceOf(Gene)) {
+                if (feature.instanceOf(Gene.class)) {
                     for (Transcript transcript : transcriptService.getTranscripts((Gene) feature)) {
                         CDS cds = transcriptService.getCDS(transcript)
                         featureService.setLongestORF(transcript, cdsService.hasStopCodonReadThrough(cds))
@@ -1600,7 +1600,7 @@ class RequestHandlingService {
 
 
             for (Feature feature : featureService.getOverlappingFeatures(sequenceAlteration.getFeatureLocation(), false)) {
-                if (feature.instanceOf(Gene)) {
+                if (feature.instanceOf(Gene.class)) {
                     for (Transcript transcript : transcriptService.getTranscripts((Gene) feature)) {
                         CDS cds = transcriptService.getCDS(transcript)
                         featureService.setLongestORF(transcript, cdsService.hasStopCodonReadThrough(cds))
@@ -1833,7 +1833,7 @@ class RequestHandlingService {
             JSONObject jsonFeature = features.getJSONObject(i)
             Feature feature = Feature.findByUniqueName(jsonFeature.getString(FeatureStringEnum.UNIQUENAME.value))
 
-            if (feature.instanceOf(Transcript) && transcriptService.isProteinCoding((Transcript) feature)) {
+            if (feature.instanceOf(Transcript.class) && transcriptService.isProteinCoding((Transcript) feature)) {
                 feature = transcriptService.removeCDS((Transcript) feature)
                 def transcriptsToUpdate = featureService.handleDynamicIsoformOverlap(feature)
                 featureService.addOwnersByString(inputObject.username, feature)
@@ -1878,7 +1878,7 @@ class RequestHandlingService {
             JSONObject jsonFeature = features.getJSONObject(i)
             Feature feature = Feature.findByUniqueName(jsonFeature.getString(FeatureStringEnum.UNIQUENAME.value))
 
-            if (feature.instanceOf(Transcript)) {
+            if (feature.instanceOf(Transcript.class)) {
                 feature = transcriptService.flipTranscriptStrand((Transcript) feature)
                 featureService.setLongestORF((Transcript) feature)
                 nonCanonicalSplitSiteService.findNonCanonicalAcceptorDonorSpliceSites((Transcript) feature)
@@ -2191,7 +2191,7 @@ class RequestHandlingService {
 
             log.debug "feature found to delete ${feature?.name}"
             if (feature) {
-                if (feature.instanceOf(Exon)) {
+                if (feature.instanceOf(Exon.class)) {
                     Transcript transcript = exonService.getTranscript((Exon) feature)
                     // if its the same transcript, we don't want to overwrite it
                     if (!oldFeatureMap.containsKey(transcript.uniqueName)) {
@@ -2230,7 +2230,7 @@ class RequestHandlingService {
                 log.debug "is not update operation "
                 // when the line below is used, the client gives an error saying TypeError: Cannot read property 'fmin' of undefined(…)
                 featureContainer.getJSONArray(FeatureStringEnum.FEATURES.value).put(featureService.convertFeatureToJSON(feature))
-                if (feature.instanceOf(Transcript)) {
+                if (feature.instanceOf(Transcript.class)) {
                     Transcript transcript = (Transcript) feature;
                     Gene gene = transcriptService.getGene(transcript)
                     if (!gene) {
@@ -2315,7 +2315,7 @@ class RequestHandlingService {
                 String featureName
                 log.debug "IS update operation "
                 FeatureOperation featureOperation
-                if (feature.instanceOf(Transcript)) {
+                if (feature.instanceOf(Transcript.class)) {
                     Transcript transcript = (Transcript) feature;
                     featureService.calculateCDS(transcript)
                     nonCanonicalSplitSiteService.findNonCanonicalAcceptorDonorSpliceSites(transcript)
@@ -2978,7 +2978,7 @@ class RequestHandlingService {
                     sequenceAlteration.delete(flush: true)
 
                     for (Feature feature : featureService.getOverlappingFeatures(sequenceAlterationFeatureLocation, false)) {
-                        if (feature.instanceOf(Gene)) {
+                        if (feature.instanceOf(Gene.class)) {
                             for (Transcript transcript : transcriptService.getTranscripts((Gene) feature)) {
                                 CDS cds = transcriptService.getCDS(transcript)
                                 featureService.setLongestORF(transcript, cdsService.hasStopCodonReadThrough(cds))
@@ -3014,7 +3014,7 @@ class RequestHandlingService {
                     FeatureLocation.deleteAll(sequenceAlteration.featureLocation)
                     sequenceAlteration.delete(flush: true)
                     for (Feature feature : featureService.getOverlappingFeatures(sequenceAlterationFeatureLocation, false)) {
-                        if (feature.instanceOf(Gene)) {
+                        if (feature.instanceOf(Gene.class)) {
                             for (Transcript transcript : transcriptService.getTranscripts((Gene) feature)) {
                                 CDS cds = transcriptService.getCDS(transcript)
                                 featureService.setLongestORF(transcript, cdsService.hasStopCodonReadThrough(cds))

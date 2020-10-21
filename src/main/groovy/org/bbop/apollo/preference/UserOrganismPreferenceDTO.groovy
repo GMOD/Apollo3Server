@@ -19,7 +19,7 @@ class UserOrganismPreferenceDTO {
 
     boolean equals(o) {
         if (this.is(o)) return true
-        if (!(o.instanceOf(UserOrganismPreferenceDTO))) return false
+        if (!(o instanceof  UserOrganismPreferenceDTO)) return false
 
         UserOrganismPreferenceDTO that = (UserOrganismPreferenceDTO) o
 

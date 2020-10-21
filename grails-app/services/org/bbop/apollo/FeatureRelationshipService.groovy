@@ -201,6 +201,13 @@ class FeatureRelationshipService {
     @Transactional
     def deleteFeatureAndChildren(Feature feature) {
 
+        if(feature.instanceOf(Transcript.class)){
+
+        }
+        else{
+
+        }
+
         // if grandchildren then delete those
         for (FeatureRelationship featureRelationship in feature.parentFeatureRelationships) {
             if (featureRelationship.childFeature?.parentFeatureRelationships) {
