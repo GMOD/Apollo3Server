@@ -796,14 +796,13 @@ class FeatureService {
 
 
     @Transactional
-    def calculateCDS(Transcript transcript, boolean readThroughStopCodon) {
+    CDS calculateCDS(Transcript transcript, boolean readThroughStopCodon) {
         println "calculating CDS"
         CDS cds = transcriptService.getCDS(transcript);
         println "got CDS ${cds} from transcript ${transcript}"
         if (cds == null) {
-            println "cds is not null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
-            setLongestORF(transcript, readThroughStopCodon);
-            return;
+            println "cds IS null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
+            return setLongestORF(transcript, readThroughStopCodon);
         }
         boolean manuallySetStart = cdsService.isManuallySetTranslationStart(cds);
         boolean manuallySetEnd = cdsService.isManuallySetTranslationEnd(cds);
@@ -817,6 +816,7 @@ class FeatureService {
         } else {
             setTranslationEnd(transcript, cds.getFeatureLocation().getStrand().equals(-1) ? cds.getFmin() : cds.getFmax() - 1, true);
         }
+        return cds
     }
 
 /**
@@ -1125,8 +1125,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     void setTranslationEnd(Transcript transcript, int translationEnd, boolean setTranslationStart, TranslationTable translationTable) throws AnnotationException {
         CDS cds = transcriptService.getCDS(transcript);
         if (cds == null) {
-            cds = transcriptService.createCDS(transcript);
-            transcriptService.setCDS(transcript, cds);
+            cds = transcriptService.createCDS(transcript)
+            transcriptService.setCDS(transcript, cds)
         }
         // if the start is set, then we make sure we are going to set a legal coordinate
         if (cdsService.isManuallySetTranslationStart(cds)) {
@@ -1394,7 +1394,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         println "set longest ORF ${organism}, ${translationTable} ${mrna?.size()} -> ${mrna}"
         if (!mrna) {
             println "mrna not found,m so returning nothing"
-            return
+            return null
         }
         String longestPeptide = ""
         int bestStartIndex = -1

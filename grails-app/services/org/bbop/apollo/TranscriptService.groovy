@@ -216,28 +216,41 @@ class TranscriptService {
      * @param cds - CDS to be set to this transcript
      */
     @Transactional
-    void setCDS(Feature feature, CDS cds, boolean replace = true) {
-        if (replace) {
-            log.debug "replacing CDS on feature"
-            if (featureRelationshipService.setChildForType(feature, cds)) {
-                log.debug "returning "
-                return
-            }
-        }
+    CDS setCDS(Transcript transcript, CDS cds) {
 
-        FeatureRelationship fr = new FeatureRelationship(
-//                type:partOfCvTerm
-            from: feature
-            , to: cds
-            , rank: 0
-        ).save(insert: true, failOnError: true)
+        // if a transcript has a CDS, then remove and delete the old CDS
+        int updated = Transcript.executeUpdate("MATCH (n:MRNA {uniqueName:'${transcript.uniqueName}' })-[fr:FEATURERELATIONSHIP]-(cds:CDS) delete fr,cds RETURN cds")
+        println "removed existing ${updated}"
 
+        // add a CDS to the transcript
+        updated = Transcript.executeUpdate("MATCH (n:MRNA {uniqueName:'${transcript.uniqueName}' }),(cds:CDS {uniqueName: '${cds.uniqueName}'}) " +
+            "create (n)-[fr:FEATURERELATIONSHIP]->(cds) return n,cds")
+        println "added CDS ${updated}"
 
-        feature.addToParentFeatureRelationships(fr)
-        cds.addToChildFeatureRelationships(fr)
+        return cds
 
-        cds.save()
-        feature.save(flush: true)
+//        if (replace) {
+//            println "replacing CDS on feature"
+//            if (featureRelationshipService.setChildForType(transcript, cds)) {
+//                println "returning "
+//                return
+//            }
+//        }
+//
+//        println "creating a feature relationship"
+//        FeatureRelationship fr = new FeatureRelationship(
+////                type:partOfCvTerm
+//            from: transcript
+//            , to: cds
+//            , rank: 0
+//        ).save(insert: true, failOnError: true)
+//
+//
+//        transcript.addToParentFeatureRelationships(fr)
+//        cds.addToChildFeatureRelationships(fr)
+//
+//        cds.save()
+//        transcript.save(flush: true)
     }
 
     @Transactional
