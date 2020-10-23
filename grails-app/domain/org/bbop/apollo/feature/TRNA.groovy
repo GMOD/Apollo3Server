@@ -2,6 +2,10 @@ package org.bbop.apollo.feature
 
 class TRNA extends NcRNA{
 
+    static mapping = {
+        labels "TRNA", "NcRNA", "Transcript", "Feature"
+    }
+
     static constraints = {
     }
 

@@ -1,8 +1,10 @@
 package org.bbop.apollo.feature
 
-import org.bbop.apollo.feature.NcRNA
-
 class GuideRNA extends NcRNA{
+
+    static mapping = {
+        labels "GuideRNA", "NcRNA", "Transcript", "Feature"
+    }
 
     static constraints = {
     }

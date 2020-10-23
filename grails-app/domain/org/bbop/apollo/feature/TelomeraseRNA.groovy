@@ -2,6 +2,10 @@ package org.bbop.apollo.feature
 
 class TelomeraseRNA extends NcRNA{
 
+    static mapping = {
+        labels "TelomeraseRNA", "NcRNA", "Transcript", "Feature"
+    }
+
     static constraints = {
     }
 

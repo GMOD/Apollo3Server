@@ -386,6 +386,8 @@ class FeatureService {
                 // Scenario II - find an overlapping isoform and if present, add current transcript to its gene
                 FeatureLocation featureLocation = convertJSONToFeatureLocation(jsonTranscript.getJSONObject(FeatureStringEnum.LOCATION.value), sequence, null)
 //                Collection<Feature> overlappingFeatures = getOverlappingFeatures(featureLocation).findAll() {
+                println "input JSON ${jsonTranscript as JSON}"
+                println "input JSON location ${featureLocation as JSON}"
                 Collection<InternalNode> overlappingFeatures = getOverlappingNeo4jFeatures(featureLocation).findAll() {
                     log.debug "it as ${it}"
                     String type = getCvTermFromNeo4jFeature(it)

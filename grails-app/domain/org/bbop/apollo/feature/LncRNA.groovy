@@ -4,6 +4,10 @@ import org.bbop.apollo.feature.NcRNA
 
 class LncRNA extends NcRNA{
 
+    static mapping = {
+        labels "LncRNA", "NcRNA", "Transcript", "Feature"
+    }
+
     static constraints = {
     }
 

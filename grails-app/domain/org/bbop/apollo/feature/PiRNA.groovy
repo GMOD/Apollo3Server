@@ -4,6 +4,10 @@ import org.bbop.apollo.feature.NcRNA
 
 class PiRNA extends NcRNA{
 
+    static mapping = {
+        labels "PiRNA", "NcRNA", "Transcript", "Feature"
+    }
+
     static constraints = {
     }
 
