@@ -1,8 +1,6 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
-import org.bbop.apollo.attributes.FeatureProperty
-import org.bbop.apollo.attributes.Frameshift
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.relationship.FeatureRelationship
@@ -139,15 +137,15 @@ class FeatureRelationshipService {
             criteria {
                 eq("from", parent)
             }
-            .findAll() {
-                it.to.ontologyId == child.ontologyId
-            }
-            .each {
-                found = true
-                it.to= child
-                it.save()
-                return
-            }
+                .findAll() {
+                    it.to.ontologyId == child.ontologyId
+                }
+                .each {
+                    found = true
+                    it.to = child
+                    it.save()
+                    return
+                }
 
             if (found) {
                 return
@@ -156,10 +154,9 @@ class FeatureRelationshipService {
         }
 
 
-
         FeatureRelationship fr = new FeatureRelationship(
-                from: parent
-                , to: child
+            from: parent
+            , to: child
         ).save(flush: true);
         parent.addToParentFeatureRelationships(fr)
         child.addToChildFeatureRelationships(fr)
@@ -201,39 +198,54 @@ class FeatureRelationshipService {
     @Transactional
     def deleteFeatureAndChildren(Feature feature) {
 
-        if(feature.instanceOf(Transcript.class)){
+        if (feature.instanceOf(Transcript.class)) {
+            int updated = Feature.executeUpdate("MATCH (t:Transcript)-[prop]-(),(t)-[fr:FEATURERELATIONSHIP]->(child:Feature)" +
+                ",(child)-[fl:FEATURELOCATION]->(s:Sequence),(t)<-[parentrel:FEATURERELATIONSHIP]-(g:Gene)  " +
+                " where t.uniqueName = '${feature.uniqueName}' delete t,prop, fr,child,fl,parentrel return t")
+            // TODO: expand to more feature properties that are not feature feature locatin of relationships
+            println "deleted transcript and children ${updated} and removed gene relationship"
+        } else if (feature.instanceOf(Gene.class)) {
+            int updated = Feature.executeUpdate("MATCH (g:Gene)-[r:FEATURERELATIONSHIP]->(t:Transcript)-[fr:FEATURERELATIONSHIP]->(child:Feature)-[fl:FEATURELOCATION]->(s:Sequence)," +
+                " (g)-[l:FEATURELOCATION]->(s),(t)-[tl:FEATURELOCATION]->(s)  " +
+                // if grandchildren then delete those
+                " where g.uniqueName = '${feature.uniqueName}' delete g,r,t,fr,child,fl,l,tl return g ")
+            // TODO: expand to more feature properties that are not feature feature locatin of relationships
+            println "deleted gene and children ${updated}"
 
-        }
-        else{
-
-        }
-
-        // if grandchildren then delete those
-        for (FeatureRelationship featureRelationship in feature.parentFeatureRelationships) {
-            if (featureRelationship.childFeature?.parentFeatureRelationships) {
-                deleteFeatureAndChildren(featureRelationship.childFeature)
-            }
-        }
-
-        // create a list of relationships to remove (assume we have no grandchildren here)
-        List<FeatureRelationship> relationshipsToRemove = []
-        for (FeatureRelationship featureRelationship in feature.parentFeatureRelationships) {
-            relationshipsToRemove << featureRelationship
-        }
-
-        // actually delete those
-        relationshipsToRemove.each {
-            it.to.delete()
-            feature.removeFromParentFeatureRelationships(it)
-            it.delete()
-        }
-
-        // last, delete self or save updated relationships
-        if (!feature.parentFeatureRelationships && !feature.childFeatureRelationships) {
-            feature.delete(flush: true)
         } else {
-            feature.save(flush: true)
+            int updated = Feature.executeUpdate("MATCH (f:Feature)-[fl:FEATURELOCATION]->(s:Sequence) " +
+                " where f.uniqueName = '${feature.uniqueName}' delete f,fl return f ")
+            // it is a first-level feature, so just delete that
+            // TODO: expand to more feature properties that are not feature feature locatin of relationships
+            println "deleted single level feature ${updated}"
         }
+
+//        // if grandchildren then delete those
+//        for (FeatureRelationship featureRelationship in feature.parentFeatureRelationships) {
+//            if (featureRelationship.to?.parentFeatureRelationships) {
+//                deleteFeatureAndChildren(featureRelationship.from)
+//            }
+//        }
+//
+//        // create a list of relationships to remove (assume we have no grandchildren here)
+//        List<FeatureRelationship> relationshipsToRemove = []
+//        for (FeatureRelationship featureRelationship in feature.parentFeatureRelationships) {
+//            relationshipsToRemove << featureRelationship
+//        }
+//
+//        // actually delete those
+//        relationshipsToRemove.each {
+//            it.to.delete()
+//            feature.removeFromParentFeatureRelationships(it)
+//            it.delete()
+//        }
+//
+//        // last, delete self or save updated relationships
+//        if (!feature.parentFeatureRelationships && !feature.childFeatureRelationships) {
+//            feature.delete(flush: true)
+//        } else {
+//            feature.save(flush: true)
+//        }
 
     }
 }
