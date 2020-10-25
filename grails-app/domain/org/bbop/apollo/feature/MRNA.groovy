@@ -2,6 +2,10 @@ package org.bbop.apollo.feature
 
 class MRNA extends Transcript{
 
+    static mapping = {
+        labels "MRNA", "Transcript", "Feature"
+    }
+
     static constraints = {
     }
 

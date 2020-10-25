@@ -2,6 +2,10 @@ package org.bbop.apollo.feature
 
 class EnzymaticRNA extends Transcript{
 
+    static mapping = {
+        labels "EnzymaticRNA", "Transcript", "Feature"
+    }
+
     static constraints = {
     }
 

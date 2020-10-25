@@ -1,7 +1,5 @@
 package org.bbop.apollo.feature
 
-import org.bbop.apollo.feature.TranscriptRegion
-
 /**
  * NOTE: superclass is NOT region . . .
  */

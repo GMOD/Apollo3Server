@@ -1873,40 +1873,26 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         return returnFeature;
     }
 
-    String findMostSpecificLabel(ArrayList labels) {
+    String findMostSpecificLabel(Collection<String> labels) {
         def filteredLabels = labels.findAll { it != "Feature" && !it.contains("TranscriptRegion") && it != "SpliceSite" }
-        if (filteredLabels.indexOf("Transcript") >= 0) {
-            if (filteredLabels.size() > 1) {
-                return filteredLabels.findAll { it != "Transcript" }.first()
-            } else {
-                return filteredLabels.first()
-            }
-        }
+        if(filteredLabels.contains("MRNA")) return "MRNA"
+        log.debug "filtered labels ${filteredLabels}"
+//        if (filteredLabels.indexOf("Transcript") >= 0) {
+//            if (filteredLabels.size() > 1) {
+//                return filteredLabels.findAll { it != "Transcript" }.first()
+//            } else {
+//                return filteredLabels.last()
+//            }
+//        }
         return filteredLabels.last()
 
     }
 
     String getCvTermFromNeo4jFeature(def feature) {
         log.debug "cv term ${feature}"
-//        def labels = feature.labels()
         String specificType = findMostSpecificLabel(feature.labels())
-//        log.debug "input labels ${labels}"
-//
-//        if(labels.last()!="Feature"){
-//            log.debug "assigning label last ${labels.last()}"
-//            specificType = labels.last()
-//        }
-//        else{
-//            log.debug "assigning label first ${labels.first()}"
-//            specificType = labels.first()
-//        }
         log.debug "specific type ${specificType}"
-//        log.debug "specific type class ${Class.forName("org.bbop.apollo.feature.${specificType}")}"
         return Class.forName("org.bbop.apollo.feature.${specificType}")?.cvTerm
-//        log.debug "specific type ${specificType} ${ontologyId} "
-////        String cvTerm = feature.cvTerm
-////        return cvTerm
-//        return specificType
     }
 
     String getCvTermFromFeature(Feature feature) {

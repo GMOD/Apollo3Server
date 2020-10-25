@@ -7,6 +7,10 @@ package org.bbop.apollo.feature
  */
 class Transcript extends Feature{
 
+    static mapping = {
+        labels "Transcript", "Feature"
+    }
+
     static constraints = {
     }
 

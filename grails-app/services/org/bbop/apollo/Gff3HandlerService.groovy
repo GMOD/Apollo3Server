@@ -447,14 +447,14 @@ class Gff3HandlerService {
                 gffEntries.add(calculateParentGFF3Entry(writeObject,result.parent,source,seqId,owners))
                 writtenGeneIds.add(parentUniqueName)
             }
-//            log.debug "output unqiue names ${writtenGeneIds.each { log.debug it }}"
         }
-
         String type = featureService.getCvTermFromNeo4jFeature(result.feature)
+        log.debug "extracing type for ${result.feature.labels()} and class ${result.feature} , ${type} "
+
         int start = featureLocation.getFmin()
         int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
         String score = "."
-        String strand;
+        String strand
         if (featureLocation.getStrand() == Strand.POSITIVE.getValue()) {
             strand = Strand.POSITIVE.getDisplay()
         } else if (featureLocation.getStrand() == Strand.NEGATIVE.getValue()) {
