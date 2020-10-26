@@ -1,12 +1,11 @@
 package org.bbop.apollo
 
-import grails.converters.JSON
+
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.attributes.*
 import org.bbop.apollo.feature.*
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.location.FeatureLocation
-import org.bbop.apollo.relationship.FeatureRelationship
 
 @Transactional(readOnly = true)
 class TranscriptService {
@@ -32,8 +31,16 @@ class TranscriptService {
      * @return CDS associated with this transcript
      */
     CDS getCDS(Transcript transcript) {
-        return (CDS) featureRelationshipService.getChildForFeature(transcript, CDS.ontologyId)
-
+        println "input ${transcript.uniqueName}"
+        def results = CDS.executeQuery("MATCH (mrna:MRNA {uniqueName:${transcript.uniqueName}})-[:FEATURERELATIONSHIP]-(cds:CDS) RETURN cds")
+        if (results?.size() == 1) {
+            return results.first() as CDS
+        } else if (results?.size() == 0) {
+            println("No results found for ${transcript}")
+        } else if (results?.size() > 1) {
+            log.error("Multiple CDS found for a transcript ${transcript}, returning null: " + results.size())
+        }
+        return null
     }
 
     /** Retrieve all the exons associated with this transcript.  Uses the configuration to determine
@@ -90,25 +97,47 @@ class TranscriptService {
 
     @Transactional
     CDS createCDS(Transcript transcript) {
-        String uniqueName = transcript.getUniqueName() + FeatureStringEnum.CDS_SUFFIX.value;
+//        String uniqueName = transcript.getUniqueName() + FeatureStringEnum.CDS_SUFFIX.value;
+        String uniqueName = UUID.randomUUID().toString()+ FeatureStringEnum.CDS_SUFFIX.value
 
-        CDS cds = new CDS(
-            uniqueName: uniqueName
-            , name: uniqueName
-        ).save(failOnError: true)
+//        CDS cds = new CDS(
+//            uniqueName: uniqueName
+//            , name: uniqueName
+//        ).save(failOnError: true, flush: true)
 
-        FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
+        String inputQuery = "MATCH (mrna:MRNA { uniqueName: '${transcript.uniqueName}'} )-[:FEATURELOCATION]-(s:Sequence) " +
+            " create (cds:CDS {name: '${uniqueName}',uniqueName: '${uniqueName}'} )-[fl:FEATURELOCATION {  fmin: ${transcript.fmin}, fmax: ${transcript.fmax}, strand: ${transcript.strand}, " +
+            " length: ${transcript.length}, isFminPartial: false, isFmaxPArtial: false, phase: 0 } ]->(s) " +
+            " return cds,fl,s "
+//        println "inputQuery "
+        def result = CDS.executeUpdate(inputQuery)
+        println "result 1: ${result}"
+//        CDS actualCDS = result.first()[0] as CDS
+//        println "actual CDS : ${actualCDS}"
+//        "MATCH (cds:CDS {} ) "
+        CDS cds = CDS.findByUniqueName(uniqueName)
+        println "cds 1: ${cds}"
+        result = CDS.executeQuery("MATCH (cds:CDS)-[fl:FEATURELOCATION]-(s:Sequence)  where cds.uniqueName =${uniqueName} return cds, fl,s")
+        println "result 2: ${result}"
+        println "result 2 first: ${result.first().cds}"
+        println "result 2 first as CDS: ${result.first().cds as CDS}"
+        cds = result.first().cds as CDS
+        println "cds 2: ${cds}"
+        return cds
 
-        FeatureLocation featureLocation = new FeatureLocation(
-            strand: transcriptFeatureLocation.strand
-            , fmin: transcriptFeatureLocation.fmin
-            , fmax: transcriptFeatureLocation.fmax
-            , from: cds
-            , to: transcriptFeatureLocation.to
-        ).save(failOnError: true,flush: true)
-        cds.setFeatureLocation(featureLocation);
-        cds.save(flush: true)
-        return cds;
+//
+//        FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
+//
+//        FeatureLocation featureLocation = new FeatureLocation(
+//            strand: transcriptFeatureLocation.strand
+//            , fmin: transcriptFeatureLocation.fmin
+//            , fmax: transcriptFeatureLocation.fmax
+//            , from: cds
+//            , to: transcriptFeatureLocation.to
+//        ).save(failOnError: true,flush: true)
+//        cds.setFeatureLocation(featureLocation)
+//        cds.save(flush: true)
+//        return cds
     }
 
     /** Delete a transcript.  Deletes both the gene -> transcript and transcript -> gene
@@ -216,28 +245,54 @@ class TranscriptService {
      * @param cds - CDS to be set to this transcript
      */
     @Transactional
-    void setCDS(Feature feature, CDS cds, boolean replace = true) {
-        if (replace) {
-            log.debug "replacing CDS on feature"
-            if (featureRelationshipService.setChildForType(feature, cds)) {
-                log.debug "returning "
-                return
-            }
-        }
+    void setCDS(Transcript mrna, CDS cds) {
+//        if (replace) {
+//            log.debug "replacing CDS on feature"
+//            if (featureRelationshipService.setChildForType(feature, cds)) {
+//                log.debug "returning "
+//                return
+//            }
+//        }
+//
+//        FeatureRelationship fr = new FeatureRelationship(
+////                type:partOfCvTerm
+//            from: feature
+//            , to: cds
+//            , rank: 0
+//        ).save(insert: true, failOnError: true)
+//
+//
+//        feature.addToParentFeatureRelationships(fr)
+//        cds.addToChildFeatureRelationships(fr)
+//
+//        cds.save()
+//        feature.save(flush: true)
+        println "input mrna: ${mrna} and input cds: ${cds}"
 
-        FeatureRelationship fr = new FeatureRelationship(
-//                type:partOfCvTerm
-            from: feature
-            , to: cds
-            , rank: 0
-        ).save(insert: true, failOnError: true)
+        def cdss = CDS.executeQuery("MATCH (cds:CDS {uniqueName: ${cds.uniqueName}}) return cds")
+        println "cdss ${cdss}"
+        println "count of CDS with this name: ${CDS.countByUniqueName(cds.uniqueName)}"
+        cdss = CDS.executeQuery("MATCH (cds:CDS) where cds.uniqueName = ${cds.uniqueName} return cds")
+        println "cdss2 ${cdss}"
+        CDS cds2 = cdss.first() as CDS
+        println "fancy CDS as ${cds2}"
+        
+
+        int updated = Transcript.executeUpdate("MATCH (n:MRNA {uniqueName:${mrna.uniqueName} })-[fr:FEATURERELATIONSHIP]-(cds:CDS) delete fr,cds RETURN cds")
+        println "removed existing ${updated}"
 
 
-        feature.addToParentFeatureRelationships(fr)
-        cds.addToChildFeatureRelationships(fr)
+        updated = Transcript.executeUpdate("MATCH (n:MRNA {uniqueName:${mrna.uniqueName} }),(cds:CDS {uniqueName: ${cds.uniqueName}}) " +
+            "create (n)-[fr:FEATURERELATIONSHIP]->(cds) return count(fr) ")
+        println "added CDS ${updated}"
+        assert updated == 1
 
-        cds.save()
-        feature.save(flush: true)
+        // confirm that its there
+//        int count = Transcript.executeUpdate("MATCH (cds:CDS {uniqueName: ${cds.uniqueName}}) " +
+//            " return count(cds)")
+        cdss = CDS.executeQuery("MATCH (cds:CDS) where cds.uniqueName =${cds.uniqueName} return cds")
+        assert cdss.size()==1
+        println "cdss3 ${cdss}"
     }
 
     @Transactional
@@ -260,10 +315,10 @@ class TranscriptService {
         if (gene) {
             FeatureLocation geneFeatureLocation = gene.featureLocation
             if (transcriptFeatureLocation.fmin < geneFeatureLocation.fmin) {
-                geneFeatureLocation.setFmin(transcriptFeatureLocation.fmin);
+                geneFeatureLocation.setFmin(transcriptFeatureLocation.fmin)
             }
             if (transcriptFeatureLocation.fmax > geneFeatureLocation.fmax) {
-                geneFeatureLocation.setFmax(transcriptFeatureLocation.fmax);
+                geneFeatureLocation.setFmax(transcriptFeatureLocation.fmax)
             }
         }
         gene.save()
