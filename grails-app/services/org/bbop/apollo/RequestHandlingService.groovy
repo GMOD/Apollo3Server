@@ -943,13 +943,9 @@ class RequestHandlingService {
     JSONObject addTranscript(JSONObject inputObject) throws Exception {
         JSONArray featuresArray = inputObject.getJSONArray(FeatureStringEnum.FEATURES.value)
         JSONObject returnObject = jsonWebUtilityService.createJSONFeatureContainer()
-        Organism organism = Organism.createCriteria().listDistinct {
-            eq("commonName", inputObject.organism)
-        }.first()
 
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.WRITE)
 
-        boolean useName = false
         boolean useCDS = configWrapperService.useCDS()
         boolean suppressHistory = false
         boolean suppressEvents = false
@@ -969,7 +965,7 @@ class RequestHandlingService {
             if (jsonTranscript.has(FeatureStringEnum.USE_CDS.value)) {
                 useCDS = jsonTranscript.getBoolean(FeatureStringEnum.USE_CDS.value)
             }
-            useName = jsonTranscript.has(FeatureStringEnum.USE_NAME.value) ? jsonTranscript.getBoolean(FeatureStringEnum.USE_NAME.value) : false
+            boolean useName = jsonTranscript.has(FeatureStringEnum.USE_NAME.value) ? jsonTranscript.getBoolean(FeatureStringEnum.USE_NAME.value) : false
             Transcript transcript = featureService.generateTranscript(jsonTranscript, sequence, suppressHistory, useCDS, useName)
 
             // should automatically write to history

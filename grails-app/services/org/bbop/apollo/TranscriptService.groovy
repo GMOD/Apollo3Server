@@ -31,8 +31,9 @@ class TranscriptService {
      *
      * @return CDS associated with this transcript
      */
-    CDS getCDS(Transcript transcript) {
-        return (CDS) featureRelationshipService.getChildForFeature(transcript, CDS.ontologyId)
+    CDS getCDS(MRNA transcript) {
+        return CDS.executeQuery("MATCH (mrna:MRNA)-[:FEATURERELATIONSHIP]-(cds:CDS) where mrna.uniqueName= '${transcript.uniqueName}' return cds")?.first() as CDS
+//        return (CDS) featureRelationshipService.getChildForFeature(transcript, CDS.ontologyId)
 
     }
 
@@ -43,7 +44,8 @@ class TranscriptService {
      * @return Collection of exons associated with this transcript
      */
     Collection<Exon> getExons(Transcript transcript) {
-        return (Collection<Exon>) featureRelationshipService.getChildrenForFeatureAndTypes(transcript, Exon.ontologyId)
+        return Exon.executeQuery("MATCH (mrna:MRNA)-[:FEATURERELATIONSHIP]-(exon:Exon) where mrna.uniqueName= '${transcript.uniqueName}' return exon") as Collection<Exon>
+//        return (Collection<Exon>) featureRelationshipService.getChildrenForFeatureAndTypes(transcript, Exon.ontologyId)
     }
 
     Collection<Exon> getSortedExons(Transcript transcript, boolean sortByStrand) {
@@ -216,7 +218,7 @@ class TranscriptService {
      * @param cds - CDS to be set to this transcript
      */
     @Transactional
-    CDS setCDS(Feature feature, CDS cds) {
+    void setCDS(MRNA mrna, CDS cds) {
 //        if (replace) {
 //            log.debug "replacing CDS on feature"
 //            if (featureRelationshipService.setChildForType(feature, cds)) {
@@ -224,26 +226,32 @@ class TranscriptService {
 //                return
 //            }
 //        }
-        int updated = Transcript.executeUpdate("MATCH (n:MRNA {uniqueName:'${feature.uniqueName}' })-[fr:FEATURERELATIONSHIP]-(cds:CDS) delete fr,cds RETURN cds")
+        int updated = Transcript.executeUpdate("MATCH (n:MRNA {uniqueName:'${mrna.uniqueName}' })-[fr:FEATURERELATIONSHIP]-(cds:CDS) delete fr,cds RETURN cds")
         println "removed existing ${updated}"
 
-        updated = Transcript.executeUpdate("MATCH (n:MRNA {uniqueName:'${feature.uniqueName}' }),(cds:CDS {uniqueName: '${cds.uniqueName}'}) " +
+        updated = Transcript.executeUpdate("MATCH (n:MRNA {uniqueName:'${mrna.uniqueName}' }),(cds:CDS {uniqueName: '${cds.uniqueName}'}) " +
             "create (n)-[fr:FEATURERELATIONSHIP]->(cds) return n,cds")
         println "added CDS ${updated}"
 
-        FeatureRelationship fr = new FeatureRelationship(
-//                type:partOfCvTerm
-            from: feature
-            , to: cds
-            , rank: 0
-        ).save(insert: true, failOnError: true)
+        // confirm that its there
+        int count =  Transcript.executeUpdate("MATCH (n:MRNA {uniqueName:'${mrna.uniqueName}' }),(cds:CDS {uniqueName: '${cds.uniqueName}'}) " +
+            "count(cds)")
+        assert count==1
 
-        feature.addToParentFeatureRelationships(fr)
-        cds.addToChildFeatureRelationships(fr)
 
-        cds.save()
-        feature.save(flush: true)
-        return cds
+//        FeatureRelationship fr = new FeatureRelationship(
+////                type:partOfCvTerm
+//            from: feature
+//            , to: cds
+//            , rank: 0
+//        ).save(insert: true, failOnError: true)
+//
+//        feature.addToParentFeatureRelationships(fr)
+//        cds.addToChildFeatureRelationships(fr)
+//
+//        cds.save()
+//        feature.save(flush: true)
+//        return cds
     }
 
     @Transactional
@@ -449,7 +457,7 @@ class TranscriptService {
             CDS duplicateCDS = (CDS) cds.generateClone()
             duplicateCDS.name = cds.name + "-copy"
             duplicateCDS.uniqueName = nameService.generateUniqueName(duplicateCDS)
-            setCDS(duplicate, cds)
+            setCDS( (MRNA) duplicate, cds)
         }
 
 

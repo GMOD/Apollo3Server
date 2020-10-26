@@ -785,10 +785,10 @@ class FeatureService {
 
 
     @Transactional
-    CDS calculateCDS(Transcript transcript) {
+    void calculateCDS(Transcript transcript) {
         // NOTE: isPseudogene call seemed redundant with isProtenCoding
         CDS cds = transcriptService.getCDS(transcript)
-        return calculateCDS(transcript, cdsService.hasStopCodonReadThrough(cds))
+        calculateCDS(transcript, cdsService.hasStopCodonReadThrough(cds))
 //        if (transcriptService.isProteinCoding(transcript) && (transcriptService.getGene(transcript) == null)) {
 ////            calculateCDS(editor, transcript, transcript.getCDS() != null ? transcript.getCDS().getStopCodonReadThrough() != null : false);
 ////            calculateCDS(transcript, transcript.getCDS() != null ? transcript.getCDS().getStopCodonReadThrough() != null : false);
@@ -798,13 +798,13 @@ class FeatureService {
 
 
     @Transactional
-    CDS calculateCDS(Transcript transcript, boolean readThroughStopCodon) {
+    void calculateCDS(Transcript transcript, boolean readThroughStopCodon) {
         println "calculating CDS"
         CDS cds = transcriptService.getCDS(transcript);
         println "got CDS ${cds} from transcript ${transcript}"
         if (cds == null) {
             println "cds is not null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
-            return setLongestORF(transcript, readThroughStopCodon);
+            setLongestORF(transcript, readThroughStopCodon);
 //            return;
         }
         boolean manuallySetStart = cdsService.isManuallySetTranslationStart(cds);
@@ -819,7 +819,6 @@ class FeatureService {
         } else {
             setTranslationEnd(transcript, cds.getFeatureLocation().getStrand().equals(-1) ? cds.getFmin() : cds.getFmax() - 1, true);
         }
-        return cds
     }
 
 /**
@@ -1125,7 +1124,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
  * @param translationTable - Translation table that defines the codon translation
  */
     @Transactional
-    void setTranslationEnd(Transcript transcript, int translationEnd, boolean setTranslationStart, TranslationTable translationTable) throws AnnotationException {
+    void setTranslationEnd(MRNA transcript, int translationEnd, boolean setTranslationStart, TranslationTable translationTable) throws AnnotationException {
         CDS cds = transcriptService.getCDS(transcript);
         if (cds == null) {
             cds = transcriptService.createCDS(transcript);
@@ -1190,7 +1189,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
     @Transactional
-    void setTranslationFmin(Transcript transcript, int translationFmin) {
+    void setTranslationFmin(MRNA transcript, int translationFmin) {
         CDS cds = transcriptService.getCDS(transcript);
         if (cds == null) {
             cds = transcriptService.createCDS(transcript);
@@ -1202,7 +1201,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
     @Transactional
-    void setTranslationFmax(Transcript transcript, int translationFmax) {
+    void setTranslationFmax(MRNA transcript, int translationFmax) {
         CDS cds = transcriptService.getCDS(transcript);
         if (cds == null) {
             cds = transcriptService.createCDS(transcript);
@@ -1226,7 +1225,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
  * @param manuallySetEnd - whether the end was manually set
  */
     @Transactional
-    void setTranslationEnds(Transcript transcript, int translationStart, int translationEnd, boolean manuallySetStart, boolean manuallySetEnd) {
+    void setTranslationEnds(MRNA transcript, int translationStart, int translationEnd, boolean manuallySetStart, boolean manuallySetEnd) {
         setTranslationFmin(transcript, translationStart);
         setTranslationFmax(transcript, translationEnd);
         cdsService.setManuallySetTranslationStart(transcriptService.getCDS(transcript), manuallySetStart);
@@ -1389,7 +1388,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
 
     @Transactional
-    CDS setLongestORF(Transcript transcript, boolean readThroughStopCodon) {
+    void setLongestORF(MRNA transcript, boolean readThroughStopCodon) {
         Organism organism = transcript.featureLocation.to.organism
         TranslationTable translationTable = organismService.getTranslationTable(organism)
         String mrna = getResiduesWithAlterationsAndFrameshifts(transcript)
@@ -1541,9 +1540,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             }
             cdsService.setManuallySetTranslationStart(cds, false);
             cdsService.setManuallySetTranslationEnd(cds, false);
-            return cds
         }
-        return null
     }
 
 
