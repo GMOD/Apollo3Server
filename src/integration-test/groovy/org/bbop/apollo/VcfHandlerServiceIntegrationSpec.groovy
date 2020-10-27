@@ -68,7 +68,6 @@ class VcfHandlerServiceIntegrationSpec extends AbstractIntegrationSpec {
         return  organism
     }
 
-    @Rollback
     void "Add a handful of variants and export as VCF"() {
 
         given: "3 variants"

@@ -3,6 +3,9 @@ package org.bbop.apollo
 import grails.converters.JSON
 import grails.testing.mixin.integration.Integration
 import grails.gorm.transactions.Rollback
+import org.apache.shiro.crypto.hash.Sha256Hash
+import org.apache.shiro.util.ThreadContext
+import org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 import org.bbop.apollo.attributes.Comment
 import org.bbop.apollo.feature.CDS
 import org.bbop.apollo.feature.Feature
@@ -10,51 +13,164 @@ import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.feature.MRNA
 import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
+import org.bbop.apollo.organism.Organism
 import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.Strand
+import org.bbop.apollo.user.Role
+import org.bbop.apollo.user.User
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
+import spock.lang.Specification
 
 @Integration
 @Rollback
-class FeatureServiceIntegrationSpec extends AbstractIntegrationSpec{
+class FeatureServiceIntegrationSpec extends Specification{
 
     def featureService
     def transcriptService
     def requestHandlingService
     def featureRelationshipService
+    def shiroSecurityManager
+
+    String password = "testPass"
+    String passwordHash = new Sha256Hash(password).toHex()
+
+    String getTestCredentials(String organismCommonName = "sampleAnimal") {
+//        String returnString = "\"${FeatureStringEnum.CLIENT_TOKEN.value}\":\"${clientToken}\",\"${FeatureStringEnum.USERNAME.value}\":\"test@test.com\","
+        String returnString = "\"${FeatureStringEnum.USERNAME.value}\":\"test@test.com\","
+//        if (Organism.count == 1) {
+//            returnString += "\"${FeatureStringEnum.ORGANISM.value}\":\"${Organism.all.first().id}\","
+        returnString += "\"${FeatureStringEnum.ORGANISM.value}\":\"${organismCommonName}\","
+//        }
+        return returnString
+    }
+
+    def setup() {
+        if (User.findByUsername('test@test.com')) {
+            return
+        }
+
+        User testUser = new User(
+            username: 'test@test.com'
+            , firstName: 'Bob'
+            , lastName: 'Test'
+            , passwordHash: passwordHash
+        ).save(insert: true, flush: true)
+        def adminRole = Role.findByName(GlobalPermissionEnum.ADMIN.name())
+        testUser.addToRoles(adminRole)
+        testUser.save()
+
+        shiroSecurityManager.sessionManager = new DefaultWebSessionManager()
+        ThreadContext.bind(shiroSecurityManager)
+//        def authToken = new UsernamePasswordToken(testUser.username,password as String)
+//        Subject subject = SecurityUtils.getSubject();
+//        subject.login(authToken)
+
+        Organism organism = new Organism(
+            directory: "src/integration-test/groovy/resources/sequences/honeybee-Group1.10/"
+            , commonName: "sampleAnimal"
+            , id: 12313
+            , genus: "Sample"
+            , species: "animal"
+        ).save(failOnError: true, flush: true)
+
+        Sequence sequence = new Sequence(
+            length: 1405242
+            , seqChunkSize: 20000
+            , start: 0
+            , end: 1405242
+            , organism: organism
+            , organismId: organism.id
+            , name: "Group1.10"
+        ).save(failOnError: true, flush: true)
 
 
-    void "convert JSON to Features"() {
+        println "organism ${organism} abnd ${organism as JSON}"
+        println "sequence ${sequence} and ${sequence as JSON}"
+        println "sequence organism ${sequence.organism} "
 
-        given: "a set string and existing sequence, when we have a complicated mRNA as JSON"
-        setupDefaultUserOrg()
-        String jsonString = "{${testCredentials}  \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":1216824,\"fmax\":1235616,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40856-RA\",\"children\":[{\"location\":{\"fmin\":1235534,\"fmax\":1235616,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1216824,\"fmax\":1216850,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1224676,\"fmax\":1224823,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1228682,\"fmax\":1228825,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1235237,\"fmax\":1235396,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1235487,\"fmax\":1235616,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1216824,\"fmax\":1235534,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
+//        organism.addToSequences(sequence)
+        println "2 organism ${organism} abnd ${organism as JSON}"
+        println "2 sequence ${sequence} and ${sequence as JSON}"
+        println "2 sequence organism ${sequence.organism} "
+        organism.save(flush: true, failOnError: true)
 
-        when: "we parse it"
-        JSONObject jsonObject = JSON.parse(jsonString) as JSONObject
+        println "added organissm ${Organism.count}"
+        println "added sequence ${Sequence.count}"
+        println "added user ${User.count}"
+        return  organism
+    }
 
-        then: "is is a valid object"
-        assert jsonObject != null
-        JSONArray jsonArray = jsonObject.getJSONArray(FeatureStringEnum.FEATURES.value)
-        assert jsonArray.size() == 1
-        JSONObject mRNAJsonObject = jsonArray.getJSONObject(0)
-        JSONArray childArray = jsonArray.getJSONObject(0).getJSONArray(FeatureStringEnum.CHILDREN.value)
-        assert childArray.size() == 7
+    void "When adding a transcript (on the forward strand) and transcript fragment, all the fragments should be isoforms of the main transcript and have their CDS set as expected"() {
 
-        when: "we convert it to a feature"
-        Feature feature = featureService.convertJSONToFeature(mRNAJsonObject, Sequence.first())
+        given: "a transcript and 3 transcript fragments"
+        setup()
+        String addTranscriptString = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":577493,\"strand\":1,\"fmax\":583605},\"name\":\"GB40819-RA\",\"children\":[{\"location\":{\"fmin\":583280,\"strand\":1,\"fmax\":583605},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":577493,\"strand\":1,\"fmax\":577643},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":582506,\"strand\":1,\"fmax\":582677},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":583187,\"strand\":1,\"fmax\":583605},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":577493,\"strand\":1,\"fmax\":583280},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
+        String addTranscriptFragment1String = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":577493,\"strand\":1,\"fmax\":577643},\"name\":\"GB40819-RA\",\"children\":[{\"location\":{\"fmin\":577493,\"strand\":1,\"fmax\":577643},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
+        String addTranscriptFragment2String = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":582506,\"strand\":1,\"fmax\":582677},\"name\":\"GB40819-RA\",\"children\":[{\"location\":{\"fmin\":582506,\"strand\":1,\"fmax\":582677},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
+        String addTranscriptFragment3String = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":583187,\"strand\":1,\"fmax\":583605},\"name\":\"GB40819-RA\",\"children\":[{\"location\":{\"fmin\":583187,\"strand\":1,\"fmax\":583605},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
 
-        then: "it should convert it to the same feature"
-        assert feature != null
-        feature.ontologyId == MRNA.ontologyId
+        when: "we add transcript GB40819-RA"
+        println "Organism count ${Organism.count}"
+        requestHandlingService.addTranscript(JSON.parse(addTranscriptString) as JSONObject)
 
+        then: "we should see the transcript"
+        assert MRNA.all.size() == 1
+        Gene parentGene = Gene.all.get(0)
+
+        when: "we add transcript fragment 1"
+        JSONObject addTranscriptFragment1ReturnObject = requestHandlingService.addTranscript(JSON.parse(addTranscriptFragment1String) as JSONObject)
+        String transcriptFragment1UniqueName = addTranscriptFragment1ReturnObject.getJSONArray(FeatureStringEnum.FEATURES.value).getJSONObject(0).get(FeatureStringEnum.UNIQUENAME.value)
+
+        then: "we should see the transcript fragment"
+        assert MRNA.all.size() == 2
+        MRNA transcriptFragment1 = MRNA.findByUniqueName(transcriptFragment1UniqueName)
+        CDS transcriptFragment1Cds = transcriptService.getCDS(transcriptFragment1)
+
+        assert transcriptService.getGene(transcriptFragment1) == parentGene
+        assert transcriptFragment1Cds.featureLocation.fmin == 577493
+        assert transcriptFragment1Cds.featureLocation.fmax == 577643
+        assert !transcriptFragment1Cds.featureLocation.isFminPartial
+        assert transcriptFragment1Cds.featureLocation.isFmaxPartial
+
+        when: "we add transcript fragment 2"
+        JSONObject addTranscriptFragment2ReturnObject = requestHandlingService.addTranscript(JSON.parse(addTranscriptFragment2String) as JSONObject)
+        String transcriptFragment2UniqueName = addTranscriptFragment2ReturnObject.getJSONArray(FeatureStringEnum.FEATURES.value).getJSONObject(0).get(FeatureStringEnum.UNIQUENAME.value)
+
+        then: "we should see the transcript fragment"
+        assert MRNA.all.size() == 3
+        MRNA transcriptFragment2 = MRNA.findByUniqueName(transcriptFragment2UniqueName)
+        CDS transcriptFragment2Cds = transcriptService.getCDS(transcriptFragment2)
+
+        assert transcriptService.getGene(transcriptFragment2) == parentGene
+        assert transcriptFragment2Cds.featureLocation.fmin == 582506
+        assert transcriptFragment2Cds.featureLocation.fmax == 582677
+        assert transcriptFragment2Cds.featureLocation.isFminPartial
+        assert transcriptFragment2Cds.featureLocation.isFmaxPartial
+
+        when: "we add transcript fragment 3"
+        JSONObject addTranscriptFragment3ReturnObject = requestHandlingService.addTranscript(JSON.parse(addTranscriptFragment3String) as JSONObject)
+        String transcriptFragment3UniqueName = addTranscriptFragment3ReturnObject.getJSONArray(FeatureStringEnum.FEATURES.value).getJSONObject(0).get(FeatureStringEnum.UNIQUENAME.value)
+
+        then: "we should see the transcript fragment but it shouldn't be an isoform of the main transcript"
+        assert MRNA.all.size() == 4
+        MRNA transcriptFragment3 = MRNA.findByUniqueName(transcriptFragment3UniqueName)
+        CDS transcriptFragment3Cds = transcriptService.getCDS(transcriptFragment3)
+
+        assert transcriptService.getGene(transcriptFragment3) != parentGene
+        assert transcriptFragment3Cds.featureLocation.fmin == 583188
+        assert transcriptFragment3Cds.featureLocation.fmax == 583554
+        assert transcriptFragment3Cds.featureLocation.isFminPartial
+        assert !transcriptFragment3Cds.featureLocation.isFmaxPartial
     }
 
     void "convert Feature to JSON and convert the JSON back to a feature"() {
 
         given: "a transcript GB40744-RA"
-        setupDefaultUserOrg()
+        setup()
+        println "added Organism ${Organism.count}"
+        println "added Sequence ${Sequence.count}"
         String transcriptString = "{${testCredentials}  \"operation\":\"add_feature\",\"features\":[{\"location\":{\"fmin\":761542,\"strand\":-1,\"fmax\":768063},\"children\":[{\"location\":{\"fmin\":761542,\"strand\":-1,\"fmax\":768063},\"children\":[{\"location\":{\"fmin\":767945,\"strand\":-1,\"fmax\":768063},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":761542,\"strand\":-1,\"fmax\":763070},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":761542,\"strand\":-1,\"fmax\":763513},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":765327,\"strand\":-1,\"fmax\":765472},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":765551,\"strand\":-1,\"fmax\":766176},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":766255,\"strand\":-1,\"fmax\":767133},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":767207,\"strand\":-1,\"fmax\":767389},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":767485,\"strand\":-1,\"fmax\":768063},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":763070,\"strand\":-1,\"fmax\":767945},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"transcript\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"pseudogene\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
         String setSymbolString = "{${testCredentials}  \"operation\":\"set_symbol\",\"features\":[{\"symbol\":\"@SYMBOL@\",\"uniquename\":\"@UNIQUENAME@\"}],\"track\":\"Group1.10\"}"
         String setDescriptionString = "{${testCredentials}  \"operation\":\"set_description\",\"features\":[{\"description\":\"@DESCRIPTION@\",\"uniquename\":\"@UNIQUENAME@\"}],\"track\":\"Group1.10\"}"
@@ -63,6 +179,7 @@ class FeatureServiceIntegrationSpec extends AbstractIntegrationSpec{
         String addCommentString = "{${testCredentials}  \"operation\":\"add_comments\",\"features\":[{\"uniquename\":\"@UNIQUENAME@\",\"comments\":[\"@COMMENT@\"]}],\"track\":\"Group1.10\"}"
 
         when: "we add the transcript"
+        println "Organism count ${Organism.count}"
         requestHandlingService.addFeature(JSON.parse(transcriptString) as JSONObject)
 
         then: "we should see the transcript"
@@ -184,13 +301,46 @@ class FeatureServiceIntegrationSpec extends AbstractIntegrationSpec{
         assert expectedDbxrefForTranscript.size() == 0
     }
 
+    void "convert JSON to Features"() {
+
+        given: "a set string and existing sequence, when we have a complicated mRNA as JSON"
+        setup()
+        println "added Organism ${Organism.count}"
+        println "added Sequence ${Sequence.count}"
+        String jsonString = "{${testCredentials}  \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":1216824,\"fmax\":1235616,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40856-RA\",\"children\":[{\"location\":{\"fmin\":1235534,\"fmax\":1235616,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1216824,\"fmax\":1216850,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1224676,\"fmax\":1224823,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1228682,\"fmax\":1228825,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1235237,\"fmax\":1235396,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1235487,\"fmax\":1235616,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":1216824,\"fmax\":1235534,\"strand\":1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
+
+        when: "we parse it"
+        println "Organism count ${Organism.count}"
+        JSONObject jsonObject = JSON.parse(jsonString) as JSONObject
+
+        then: "is is a valid object"
+        assert jsonObject != null
+        JSONArray jsonArray = jsonObject.getJSONArray(FeatureStringEnum.FEATURES.value)
+        assert jsonArray.size() == 1
+        JSONObject mRNAJsonObject = jsonArray.getJSONObject(0)
+        JSONArray childArray = jsonArray.getJSONObject(0).getJSONArray(FeatureStringEnum.CHILDREN.value)
+        assert childArray.size() == 7
+
+        when: "we convert it to a feature"
+        println "# of seueqnces ${Sequence.count}"
+        println "first sequence ${Sequence.first()}"
+        Feature feature = featureService.convertJSONToFeature(mRNAJsonObject, Sequence.first())
+
+        then: "it should convert it to the same feature"
+        assert feature != null
+        feature.ontologyId == MRNA.ontologyId
+
+    }
+
+
     void "If an annotation doesn't have strand information then it should, by default, be set to the sense strand"() {
 
         given: "a transcript with no strand information"
-        setupDefaultUserOrg()
+        setup()
         String featureString = "{${testCredentials} \"operation\":\"add_feature\",\"features\":[{\"location\":{\"fmin\":761542,\"strand\":0,\"fmax\":768063},\"children\":[{\"location\":{\"fmin\":761542,\"strand\":0,\"fmax\":768063},\"children\":[{\"location\":{\"fmin\":767945,\"strand\":0,\"fmax\":768063},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":761542,\"strand\":0,\"fmax\":763070},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":761542,\"strand\":0,\"fmax\":763513},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":765327,\"strand\":0,\"fmax\":765472},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":765551,\"strand\":0,\"fmax\":766176},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":766255,\"strand\":0,\"fmax\":767133},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":767207,\"strand\":0,\"fmax\":767389},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":767485,\"strand\":0,\"fmax\":768063},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":763070,\"strand\":0,\"fmax\":767945},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"transcript\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"pseudogene\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
 
         when: "we add a feature that has its strand as 0"
+        println "Organism count ${Organism.count}"
         requestHandlingService.addFeature(JSON.parse(featureString) as JSONObject)
 
         then: "we should see the feature, and all of its sub-features, placed on the sense strand"
@@ -209,13 +359,14 @@ class FeatureServiceIntegrationSpec extends AbstractIntegrationSpec{
     void "When adding a transcript (on the reverse strand) and transcript fragment, all the fragments should be isoforms of the main transcript and have their CDS set as expected"() {
 
         given: "1 transcript and 3 transcript fragments"
-        setupDefaultUserOrg()
+        setup()
         String addTranscript1String = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":689640,\"strand\":-1,\"fmax\":693859},\"name\":\"GB40750-RA\",\"children\":[{\"location\":{\"fmin\":693543,\"strand\":-1,\"fmax\":693859},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":692451,\"strand\":-1,\"fmax\":692480},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":689640,\"strand\":-1,\"fmax\":690442},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":689640,\"strand\":-1,\"fmax\":690739},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":690844,\"strand\":-1,\"fmax\":691015},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":691158,\"strand\":-1,\"fmax\":691354},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":691436,\"strand\":-1,\"fmax\":691587},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":691674,\"strand\":-1,\"fmax\":691846},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":691974,\"strand\":-1,\"fmax\":692181},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":692310,\"strand\":-1,\"fmax\":692480},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":693543,\"strand\":-1,\"fmax\":693859},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":690442,\"strand\":-1,\"fmax\":692451},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
         String addTranscriptFragment1String = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":689640,\"strand\":-1,\"fmax\":690739},\"name\":\"GB40750-RA\",\"children\":[{\"location\":{\"fmin\":689640,\"strand\":-1,\"fmax\":690739},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
         String addTranscriptFragment2String = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":691158,\"strand\":-1,\"fmax\":691354},\"name\":\"GB40750-RA\",\"children\":[{\"location\":{\"fmin\":691158,\"strand\":-1,\"fmax\":691354},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
         String addTranscriptFragment3String = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":691674,\"strand\":-1,\"fmax\":691846},\"name\":\"GB40750-RA\",\"children\":[{\"location\":{\"fmin\":691674,\"strand\":-1,\"fmax\":691846},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
 
         when: "we add the complete transcript"
+        println "Organism count ${Organism.count}"
         requestHandlingService.addTranscript(JSON.parse(addTranscript1String) as JSONObject)
 
         then: "we should see the transcript"
@@ -268,65 +419,4 @@ class FeatureServiceIntegrationSpec extends AbstractIntegrationSpec{
         assert transcriptFragment3Cds.featureLocation.isFmaxPartial
     }
 
-    void "When adding a transcript (on the forward strand) and transcript fragment, all the fragments should be isoforms of the main transcript and have their CDS set as expected"() {
-
-        given: "a transcript and 3 transcript fragments"
-        setupDefaultUserOrg()
-        String addTranscriptString = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":577493,\"strand\":1,\"fmax\":583605},\"name\":\"GB40819-RA\",\"children\":[{\"location\":{\"fmin\":583280,\"strand\":1,\"fmax\":583605},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":577493,\"strand\":1,\"fmax\":577643},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":582506,\"strand\":1,\"fmax\":582677},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":583187,\"strand\":1,\"fmax\":583605},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":577493,\"strand\":1,\"fmax\":583280},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
-        String addTranscriptFragment1String = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":577493,\"strand\":1,\"fmax\":577643},\"name\":\"GB40819-RA\",\"children\":[{\"location\":{\"fmin\":577493,\"strand\":1,\"fmax\":577643},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
-        String addTranscriptFragment2String = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":582506,\"strand\":1,\"fmax\":582677},\"name\":\"GB40819-RA\",\"children\":[{\"location\":{\"fmin\":582506,\"strand\":1,\"fmax\":582677},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
-        String addTranscriptFragment3String = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":583187,\"strand\":1,\"fmax\":583605},\"name\":\"GB40819-RA\",\"children\":[{\"location\":{\"fmin\":583187,\"strand\":1,\"fmax\":583605},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
-
-        when: "we add transcript GB40819-RA"
-        requestHandlingService.addTranscript(JSON.parse(addTranscriptString) as JSONObject)
-
-        then: "we should see the transcript"
-        assert MRNA.all.size() == 1
-        Gene parentGene = Gene.all.get(0)
-
-        when: "we add transcript fragment 1"
-        JSONObject addTranscriptFragment1ReturnObject = requestHandlingService.addTranscript(JSON.parse(addTranscriptFragment1String) as JSONObject)
-        String transcriptFragment1UniqueName = addTranscriptFragment1ReturnObject.getJSONArray(FeatureStringEnum.FEATURES.value).getJSONObject(0).get(FeatureStringEnum.UNIQUENAME.value)
-
-        then: "we should see the transcript fragment"
-        assert MRNA.all.size() == 2
-        MRNA transcriptFragment1 = MRNA.findByUniqueName(transcriptFragment1UniqueName)
-        CDS transcriptFragment1Cds = transcriptService.getCDS(transcriptFragment1)
-
-        assert transcriptService.getGene(transcriptFragment1) == parentGene
-        assert transcriptFragment1Cds.featureLocation.fmin == 577493
-        assert transcriptFragment1Cds.featureLocation.fmax == 577643
-        assert !transcriptFragment1Cds.featureLocation.isFminPartial
-        assert transcriptFragment1Cds.featureLocation.isFmaxPartial
-
-        when: "we add transcript fragment 2"
-        JSONObject addTranscriptFragment2ReturnObject = requestHandlingService.addTranscript(JSON.parse(addTranscriptFragment2String) as JSONObject)
-        String transcriptFragment2UniqueName = addTranscriptFragment2ReturnObject.getJSONArray(FeatureStringEnum.FEATURES.value).getJSONObject(0).get(FeatureStringEnum.UNIQUENAME.value)
-
-        then: "we should see the transcript fragment"
-        assert MRNA.all.size() == 3
-        MRNA transcriptFragment2 = MRNA.findByUniqueName(transcriptFragment2UniqueName)
-        CDS transcriptFragment2Cds = transcriptService.getCDS(transcriptFragment2)
-
-        assert transcriptService.getGene(transcriptFragment2) == parentGene
-        assert transcriptFragment2Cds.featureLocation.fmin == 582506
-        assert transcriptFragment2Cds.featureLocation.fmax == 582677
-        assert transcriptFragment2Cds.featureLocation.isFminPartial
-        assert transcriptFragment2Cds.featureLocation.isFmaxPartial
-
-        when: "we add transcript fragment 3"
-        JSONObject addTranscriptFragment3ReturnObject = requestHandlingService.addTranscript(JSON.parse(addTranscriptFragment3String) as JSONObject)
-        String transcriptFragment3UniqueName = addTranscriptFragment3ReturnObject.getJSONArray(FeatureStringEnum.FEATURES.value).getJSONObject(0).get(FeatureStringEnum.UNIQUENAME.value)
-
-        then: "we should see the transcript fragment but it shouldn't be an isoform of the main transcript"
-        assert MRNA.all.size() == 4
-        MRNA transcriptFragment3 = MRNA.findByUniqueName(transcriptFragment3UniqueName)
-        CDS transcriptFragment3Cds = transcriptService.getCDS(transcriptFragment3)
-
-        assert transcriptService.getGene(transcriptFragment3) != parentGene
-        assert transcriptFragment3Cds.featureLocation.fmin == 583188
-        assert transcriptFragment3Cds.featureLocation.fmax == 583554
-        assert transcriptFragment3Cds.featureLocation.isFminPartial
-        assert !transcriptFragment3Cds.featureLocation.isFmaxPartial
-    }
 }

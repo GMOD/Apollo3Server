@@ -43,19 +43,28 @@ class TranscriptService {
      * @return Collection of exons associated with this transcript
      */
     Collection<Exon> getExons(Transcript transcript) {
+
+////        Transcript.findByUniqueName(transcript.uniqueName,[fetch: [ sequence: 'featureLocation']])
+//        return transcript.childFeatureRelationships.to.findAll{ it.ontologId == Exon.ontologyId }
         return (Collection<Exon>) featureRelationshipService.getChildrenForFeatureAndTypes(transcript, Exon.ontologyId)
     }
 
     Collection<Exon> getSortedExons(Transcript transcript, boolean sortByStrand) {
-        Collection<Exon> exons = getExons(transcript)
-        List<Exon> sortedExons = new LinkedList<Exon>(exons);
+//        Collection<Exon> exons = getExons(transcript)
+        List<Exon> sortedExons = new LinkedList<Exon>();
 //        sortedExons.each {
 //            println it.featureLocation
 //            println it.featureLocation as JSON
 //        }
-//        def inputQuery ="MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = '${sortedExons.first().uniqueName}' RETURN fl "
-//        def cypherLocations = FeatureLocation.executeQuery(inputQuery)
-//        println "cypher location ${cypherLocations}"
+        def inputQuery ="MATCH (t:Transcript)-[:FEATURERELATIONSHIP]-(e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where t.uniqueName = '${transcript.uniqueName}' RETURN e,fl "
+        def cypherLocations = Exon.executeQuery(inputQuery)
+        println "cypher location ${cypherLocations}"
+        for( def loc in cypherLocations){
+            Exon exon = loc.e as Exon
+            exon.featureLocation = loc.fl as FeatureLocation
+            sortedExons.add(exon)
+        }
+        println "output cypher locations ${cypherLocations}"
 //        def cypherExon = FeatureLocation.executeQuery("MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = ${sortedExons.first().uniqueName} RETURN fl LIMIT 1")?.first() as Exon
 //        println "cypher exon ${cypherExon}"
         Collections.sort(sortedExons, new FeaturePositionComparator<Exon>(sortByStrand))
@@ -117,7 +126,7 @@ class TranscriptService {
      * @param transcript - Transcript to be deleted
      */
     @Transactional
-    public void deleteTranscript(Gene gene, Transcript transcript) {
+    void deleteTranscript(Gene gene, Transcript transcript) {
         featureRelationshipService.removeFeatureRelationship(gene, transcript)
 
         // update bounds

@@ -220,7 +220,7 @@ class RequestHandlingService {
             Feature feature = Feature.findByUniqueName(uniqueName)
             JSONObject originalFeatureJsonObject = featureService.convertFeatureToJSON(feature)
             String symbolString = jsonFeature.getString(FeatureStringEnum.SYMBOL.value)
-            sequence = sequence ?: feature.getFeatureLocation().getSequence()
+            sequence = sequence ?: feature.getFeatureLocation().to
             permissionService.checkPermissions(inputObject, sequence.organism, PermissionEnum.WRITE)
 
             feature.symbol = symbolString

@@ -91,6 +91,8 @@ class ExonService {
      */
     @Transactional
     void deleteExon(Transcript transcript, Exon exon) {
+
+        println "deleting exon with input transcript ${transcript} and exon ${exon}"
         featurePropertyService.deleteAllProperties(exon)
         featureRelationshipService.removeFeatureRelationship(transcript,exon)
 
@@ -136,20 +138,25 @@ class ExonService {
         exon.parentFeatureRelationships?.clear()
         exon.childFeatureRelationships?.clear()
         exon.featureProperties?.clear()
-        List<FeatureRelationship> parentFeatures = FeatureRelationship.findAllByFrom(exon)
-        def childFeatures = FeatureRelationship.findAllByTo(exon)
-        if(parentFeatures){
-            parentFeatures.each { FeatureRelationship it ->
-                FeatureRelationship.executeUpdate("delete from FeatureRelationship fr where fr.id = :frid",[frid:it.id])
-            }
-        }
 
-//        FeatureProperty.executeUpdate("delete from FeatureProperty fp where fp.feature.id = :exonId",[exonId:exon.id])
-//        Exon.executeUpdate("delete from Exon e where e.id = :exonId",[exonId:exon.id])
-        exon.delete(flush: true)
+        Exon.executeUpdate(" MATCH (t:Transcript { uniqueName: ${transcript.uniqueName} })-[fr:FeatureRelationship]-(exon:Exon { uniqueName: ${exon.uniqueName}} )" +
+            " delete fr,exon  ")
+
+//        List<FeatureRelationship> parentFeatures = FeatureRelationship.findAllByFrom(exon)
+//        def childFeatures = FeatureRelationship.findAllByTo(exon)
+//        if(parentFeatures){
+//            parentFeatures.each { FeatureRelationship it ->
+//                FeatureRelationship.executeUpdate("delete from FeatureRelationship fr where fr.id = :frid",[frid:it.id])
+//            }
+//        }
+//
+////        FeatureProperty.executeUpdate("delete from FeatureProperty fp where fp.feature.id = :exonId",[exonId:exon.id])
+////        Exon.executeUpdate("delete from Exon e where e.id = :exonId",[exonId:exon.id])
+//        exon.delete(flush: true)
 //        Exon.deleteAll(exon)
-        transcript.save(flush: true)
+//        transcript.save(flush: true)
 
+        println "output transcript ${transcript}"
 
     }
 
