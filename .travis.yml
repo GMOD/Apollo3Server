@@ -40,7 +40,8 @@ before_install:
 env:
   #  - DB=postgres TEST_SUITE=apollo
   #  - DB=mysql TEST_SUITE=apollo
-  - TEST_SUITE=apollo NEO4J_VERSION=3.5.21
+  - TEST_SUITE=apollo-unit NEO4J_VERSION=3.5.21
+  - TEST_SUITE=apollo-integration NEO4J_VERSION=3.5.21
   - TEST_SUITE=python-apollo NEO4J_VERSION=3.5.21
 #
 #python:
