@@ -27,7 +27,7 @@ if [[ $TEST_SUITE == "python-apollo" ]]; then
 #  service neo4j start
 #  ps -ef | grep neo4j
   ./grailsw run-app &
-  git clone --single-branch --branch fix-all-exons --depth=1 https://github.com/galaxy-genome-annotation/python-apollo
+  git clone --single-branch --branch master --depth=1 https://github.com/GMOD/python-apollo
   cd python-apollo
 #  sed -i 's|8888|8080/apollo|' `pwd`/test-data/local-apollo3-arrow.yml
   ARROW_GLOBAL_CONFIG_PATH=`pwd`/test-data/local-apollo3-arrow.yml
