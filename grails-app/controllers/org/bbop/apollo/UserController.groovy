@@ -366,10 +366,9 @@ class UserController {
         JSONObject dataObject = permissionService.handleInput(request, params)
         println "data object ${dataObject as JSON}"
         User user = User.findByUsername(dataObject.username)
-        if(user){
+        if (user) {
             render user as JSON
-        }
-        else{
+        } else {
             render status: HttpStatus.NOT_FOUND
         }
     }
@@ -388,15 +387,15 @@ class UserController {
     @Transactional
     def createUser() {
         try {
-            println "Creating user"
+            println "Creating user ${params}"
             JSONObject dataObject = permissionService.handleInput(request, params)
             // allow instructor to create user
-            println "A"
-            if (!permissionService.hasGlobalPermissions(dataObject, GlobalPermissionEnum.INSTRUCTOR)) {
-                println "B"
-                render status: HttpStatus.UNAUTHORIZED
-                return
-            }
+            println "A ${dataObject as JSON}"
+//            if (!permissionService.hasGlobalPermissions(dataObject, GlobalPermissionEnum.INSTRUCTOR)) {
+//                println "B"
+//                render status: HttpStatus.UNAUTHORIZED
+//                return
+//            }
             if (User.findByUsername(dataObject.email) != null) {
                 println "C"
                 JSONObject error = new JSONObject()
@@ -578,7 +577,7 @@ class UserController {
     @Transactional
     def deleteUser() {
         try {
-            log.info "Removing user"
+            println "Removing user"
             JSONObject dataObject = permissionService.handleInput(request, params)
             User user = null
             if (dataObject.has('userId')) {
@@ -621,9 +620,12 @@ class UserController {
             String query = "match (u:User)-[r]-() where (u.username = '${dataObject.userToDelete}' or u.id=${dataObject.userId ?: Math.random()}) delete u,r"
             def updates = User.executeUpdate(query)
 
-            log.info "Removed user ${user.username}"
-
-            render new JSONObject() as JSON
+            println "Removed user ${user.username}"
+            if (user) {
+                render user as JSON
+            } else {
+                render status: HttpStatus.NOT_FOUND
+            }
         } catch (e) {
             log.error(e.toString())
             JSONObject jsonObject = new JSONObject()
