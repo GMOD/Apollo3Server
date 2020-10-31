@@ -619,6 +619,7 @@ class UserController {
 
             String query = "match (u:User)-[r]-() where (u.username = '${dataObject.userToDelete}' or u.id=${dataObject.userId ?: Math.random()}) delete u,r"
             def updates = User.executeUpdate(query)
+            println "updates ${updates}"
 
             println "Removed user ${user.username}"
             if (user) {
