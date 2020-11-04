@@ -15,7 +15,8 @@ import org.grails.web.json.JSONObject
 
 import static org.springframework.http.HttpStatus.*
 
-@Api(value = "Canned Comments Services: Methods for managing canned comments")
+//@Api(value = "Canned Comments Services: Methods for managing canned comments")
+@Api(value = "/cannedComment")
 @Transactional(readOnly = true)
 class CannedCommentController {
 
@@ -160,7 +161,7 @@ class CannedCommentController {
         }
     }
 
-    @ApiOperation(value = "Create canned comment", nickname = "/cannedComment/createComment", httpMethod = "POST")
+    @ApiOperation(value = "Create canned comment", nickname = "/createComment", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -201,7 +202,7 @@ class CannedCommentController {
         }
     }
 
-    @ApiOperation(value = "Update canned comment", nickname = "/cannedComment/updateComment", httpMethod = "POST")
+    @ApiOperation(value = "Update canned comment", nickname = "/updateComment", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -251,7 +252,7 @@ class CannedCommentController {
         }
     }
 
-    @ApiOperation(value = "Remove a canned comment", nickname = "/cannedComment/deleteComment", httpMethod = "POST")
+    @ApiOperation(value = "Remove a canned comment", nickname = "/deleteComment", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -291,7 +292,7 @@ class CannedCommentController {
         }
     }
 
-    @ApiOperation(value = "Returns a JSON array of all canned comments, or optionally, gets information about a specific canned comment", nickname = "/cannedComment/showComment", httpMethod = "POST")
+    @ApiOperation(value = "Returns a JSON array of all canned comments, or optionally, gets information about a specific canned comment", nickname = "/showComment", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
