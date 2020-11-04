@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 
-@Api(value = "Sequence Services: Methods for retrieving sequence data")
+@Api(value = "/sequence" , tags = "Sequence Services: Methods for retrieving sequence data")
 @Transactional(readOnly = true)
 class SequenceController {
 
@@ -253,7 +253,7 @@ class SequenceController {
         render view: "report", model: [sequenceInstanceList: sequenceInstanceList, organisms: organisms, organism: organism, sequenceInstanceCount: sequenceInstanceCount]
     }
 
-    @ApiOperation(value = "Get sequence data within a range", nickname = "/sequence/<organism name>/<sequence name>:<fmin>..<fmax>?ignoreCache=<ignoreCache>", httpMethod = "get")
+    @ApiOperation(value = "Get sequence data within a range", nickname = "/<organism name>/<sequence name>:<fmin>..<fmax>?ignoreCache=<ignoreCache>", httpMethod = "get")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "organismString", type = "string", paramType = "query", example = "Organism common name or ID(required)")
             , @ApiImplicitParam(name = "sequenceName", type = "string", paramType = "query", example = "Sequence name(required)")
@@ -285,7 +285,7 @@ class SequenceController {
 
     }
 
-    @ApiOperation(value = "Get sequence data as for a selected name", nickname = "/sequence/<organism name>/<sequence name>/<feature name>.<type>?ignoreCache=<ignoreCache>", httpMethod = "get")
+    @ApiOperation(value = "Get sequence data as for a selected name", nickname = "/<organism name>/<sequence name>/<feature name>.<type>?ignoreCache=<ignoreCache>", httpMethod = "get")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "organismString", type = "string", paramType = "query", example = "Organism common name or ID (required)")
             , @ApiImplicitParam(name = "sequenceName", type = "string", paramType = "query", example = "Sequence name (required)")
@@ -336,7 +336,7 @@ class SequenceController {
         response.status = 404
     }
 
-    @ApiOperation(value = "Remove sequence cache for an organism and sequence", nickname = "/sequence/cache/clear/<organism name>/<sequence name>", httpMethod = "get")
+    @ApiOperation(value = "Remove sequence cache for an organism and sequence", nickname = "/cache/clear/<organism name>/<sequence name>", httpMethod = "get")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "organismName", type = "string", paramType = "query", example = "Organism common name (required)")
             , @ApiImplicitParam(name = "sequenceName", type = "string", paramType = "query", example = "Sequence name (required)")
@@ -349,7 +349,7 @@ class SequenceController {
         render new JSONObject(removed: removed) as JSON
     }
 
-    @ApiOperation(value = "Remove sequence cache for an organism", nickname = "/sequence/cache/clear/<organism name>", httpMethod = "get")
+    @ApiOperation(value = "Remove sequence cache for an organism", nickname = "/cache/clear/<organism name>", httpMethod = "get")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "organismName", type = "string", paramType = "query", example = "Organism common name (required) or 'ALL' if admin")
     ])

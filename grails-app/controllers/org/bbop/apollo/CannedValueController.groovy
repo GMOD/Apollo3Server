@@ -15,7 +15,7 @@ import org.grails.web.json.JSONObject
 
 import static org.springframework.http.HttpStatus.*
 
-@Api(value = "Canned Values Services: Methods for managing canned values")
+@Api(tags ="/cannedValue", value = "Canned Values Services: Methods for managing canned values")
 @Transactional(readOnly = true)
 class CannedValueController {
 

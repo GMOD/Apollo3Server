@@ -4,7 +4,7 @@ os: linux
 language: groovy
 
 jdk:
-  - openjdk8
+#  - openjdk8
   - openjdk11
 
 python:

@@ -41,7 +41,7 @@ import static grails.async.Promises.task
  *
  * This code primarily provides integration with genomic editing functionality visible in the JBrowse window.
  */
-@Api(value = "Annotation Services: Methods for running the annotation engine")
+@Api(value = "/annotationEditor", tags = "Annotation Services: Methods for running the annotation engine")
 class AnnotationEditorController extends AbstractApolloController implements AnnotationListener {
 
 
@@ -52,7 +52,6 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     def featurePropertyService
     def requestHandlingService
     def permissionService
-//    def preferenceService
     def sequenceSearchService
     def featureEventService
     def annotationEditorService
@@ -130,7 +129,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render jre as JSON
     }
 
-    @ApiOperation(value = "Gets history for features", nickname = "/annotationEditor/getHistoryForFeatures", httpMethod = "POST")
+    @ApiOperation(value = "Gets history for features", nickname = "/getHistoryForFeatures", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -155,7 +154,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-    @ApiOperation(value = "Returns a translation table as JSON", nickname = "/annotationEditor/getTranslationTable", httpMethod = "POST")
+    @ApiOperation(value = "Returns a translation table as JSON", nickname = "/getTranslationTable", httpMethod = "POST")
     @ApiImplicitParams([])
     def getTranslationTable() {
         log.debug "getTranslationTable"
@@ -189,7 +188,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-    @ApiOperation(value = "Add non-coding genomic feature", nickname = "/annotationEditor/addFeature", httpMethod = "POST")
+    @ApiOperation(value = "Add non-coding genomic feature", nickname = "/addFeature", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -208,7 +207,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Set exon feature boundaries", nickname = "/annotationEditor/setExonBoundaries", httpMethod = "POST")
+    @ApiOperation(value = "Set exon feature boundaries", nickname = "/setExonBoundaries", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -229,7 +228,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-    @ApiOperation(value = "Add an exon", nickname = "/annotationEditor/addExon", httpMethod = "POST"
+    @ApiOperation(value = "Add an exon", nickname = "/addExon", httpMethod = "POST"
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
@@ -251,7 +250,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-    @ApiOperation(value = "Add comments", nickname = "/annotationEditor/addComments", httpMethod = "POST"
+    @ApiOperation(value = "Add comments", nickname = "/addComments", httpMethod = "POST"
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
@@ -270,7 +269,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Delete comments", nickname = "/annotationEditor/deleteComments", httpMethod = "POST"
+    @ApiOperation(value = "Delete comments", nickname = "/deleteComments", httpMethod = "POST"
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
@@ -290,7 +289,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-    @ApiOperation(value = "Update comments", nickname = "/annotationEditor/updateComments", httpMethod = "POST"
+    @ApiOperation(value = "Update comments", nickname = "/updateComments", httpMethod = "POST"
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
@@ -310,7 +309,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-    @ApiOperation(value = "Get comments", nickname = "/annotationEditor/getComments", httpMethod = "POST"
+    @ApiOperation(value = "Get comments", nickname = "/getComments", httpMethod = "POST"
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
@@ -329,7 +328,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Add transcript", nickname = "/annotationEditor/addTranscript", httpMethod = "POST")
+    @ApiOperation(value = "Add transcript", nickname = "/addTranscript", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -355,7 +354,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Duplicate transcript", nickname = "/annotationEditor/duplicateTranscript", httpMethod = "POST")
+    @ApiOperation(value = "Duplicate transcript", nickname = "/duplicateTranscript", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -375,7 +374,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Set translation start", nickname = "/annotationEditor/setTranslationStart", httpMethod = "POST")
+    @ApiOperation(value = "Set translation start", nickname = "/setTranslationStart", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -393,7 +392,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Set translation end", nickname = "/annotationEditor/setTranslationEnd", httpMethod = "POST")
+    @ApiOperation(value = "Set translation end", nickname = "/setTranslationEnd", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -411,7 +410,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Set longest ORF", nickname = "/annotationEditor/setLongestOrf", httpMethod = "POST")
+    @ApiOperation(value = "Set longest ORF", nickname = "/setLongestOrf", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -429,7 +428,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Set boundaries of genomic feature", nickname = "/annotationEditor/setBoundaries", httpMethod = "POST")
+    @ApiOperation(value = "Set boundaries of genomic feature", nickname = "/setBoundaries", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -447,7 +446,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Get all annotated features for a sequence", nickname = "/annotationEditor/getFeatures", httpMethod = "POST")
+    @ApiOperation(value = "Get all annotated features for a sequence", nickname = "/getFeatures", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -468,7 +467,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-    @ApiOperation(value = "Get sequence alterations for a given sequence", nickname = "/annotationEditor/getSequenceAlterations", httpMethod = "POST")
+    @ApiOperation(value = "Get sequence alterations for a given sequence", nickname = "/getSequenceAlterations", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -511,7 +510,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render annotationInfoEditorConfigContainer
     }
 
-    @ApiOperation(value = "Set name of a feature", nickname = "/annotationEditor/setName", httpMethod = "POST")
+    @ApiOperation(value = "Set name of a feature", nickname = "/setName", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -528,7 +527,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Set description for a feature", nickname = "/annotationEditor/setDescription", httpMethod = "POST")
+    @ApiOperation(value = "Set description for a feature", nickname = "/setDescription", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -545,7 +544,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Set symbol of a feature", nickname = "/annotationEditor/setSymbol", httpMethod = "POST")
+    @ApiOperation(value = "Set symbol of a feature", nickname = "/setSymbol", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -562,7 +561,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Set status of a feature", nickname = "/annotationEditor/setStatus", httpMethod = "POST")
+    @ApiOperation(value = "Set status of a feature", nickname = "/setStatus", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -579,7 +578,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Add attribute (key,value pair) to feature", nickname = "/annotationEditor/addAttribute", httpMethod = "POST")
+    @ApiOperation(value = "Add attribute (key,value pair) to feature", nickname = "/addAttribute", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -596,7 +595,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Delete attribute (key,value pair) for feature", nickname = "/annotationEditor/deleteAttribute", httpMethod = "POST")
+    @ApiOperation(value = "Delete attribute (key,value pair) for feature", nickname = "/deleteAttribute", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -613,7 +612,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Update attribute (key,value pair) for feature", nickname = "/annotationEditor/updateAttribute", httpMethod = "POST")
+    @ApiOperation(value = "Update attribute (key,value pair) for feature", nickname = "/updateAttribute", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -630,7 +629,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Add dbxref (db,id pair) to feature", nickname = "/annotationEditor/addDbxref", httpMethod = "POST")
+    @ApiOperation(value = "Add dbxref (db,id pair) to feature", nickname = "/addDbxref", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -647,7 +646,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Update dbxrefs (db,id pairs) for a feature", nickname = "/annotationEditor/updateDbxref", httpMethod = "POST")
+    @ApiOperation(value = "Update dbxrefs (db,id pairs) for a feature", nickname = "/updateDbxref", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -664,7 +663,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Delete dbxrefs (db,id pairs) for a feature", nickname = "/annotationEditor/deleteDbxref", httpMethod = "POST")
+    @ApiOperation(value = "Delete dbxrefs (db,id pairs) for a feature", nickname = "/deleteDbxref", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -681,7 +680,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Get information about a sequence alteration object e.g,. features[{'uniquename':'someunqiuenamestring'}],", nickname = "/annotationEditor/getInformation", httpMethod = "POST")
+    @ApiOperation(value = "Get information about a sequence alteration object e.g,. features[{'uniquename':'someunqiuenamestring'}],", nickname = "/getInformation", httpMethod = "POST")
     @ApiImplicitParams([
       @ApiImplicitParam(name = "username", type = "email", paramType = "query")
       , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -731,7 +730,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render featureContainer
     }
 
-    @ApiOperation(value = "Get attribute (key/value) pairs for a feature", nickname = "/annotationEditor/getAttributes", httpMethod = "POST")
+    @ApiOperation(value = "Get attribute (key/value) pairs for a feature", nickname = "/getAttributes", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -761,7 +760,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Get dbxrefs (db,id pairs) for a feature", nickname = "/annotationEditor/getDbxrefs", httpMethod = "POST")
+    @ApiOperation(value = "Get dbxrefs (db,id pairs) for a feature", nickname = "/getDbxrefs", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -790,7 +789,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Set readthrough stop codon", nickname = "/annotationEditor/setReadthroughStopCodon", httpMethod = "POST")
+    @ApiOperation(value = "Set readthrough stop codon", nickname = "/setReadthroughStopCodon", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -807,7 +806,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Add sequence alteration", nickname = "/annotationEditor/addSequenceAlteration", httpMethod = "POST")
+    @ApiOperation(value = "Add sequence alteration", nickname = "/addSequenceAlteration", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -824,7 +823,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Delete sequence alteration", nickname = "/annotationEditor/deleteSequenceAlteration", httpMethod = "POST")
+    @ApiOperation(value = "Delete sequence alteration", nickname = "/deleteSequenceAlteration", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -841,7 +840,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Flip strand", nickname = "/annotationEditor/flipStrand", httpMethod = "POST")
+    @ApiOperation(value = "Flip strand", nickname = "/flipStrand", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -858,7 +857,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Merge exons", nickname = "/annotationEditor/mergeExons", httpMethod = "POST")
+    @ApiOperation(value = "Merge exons", nickname = "/mergeExons", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -875,7 +874,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Split exons", nickname = "/annotationEditor/splitExon", httpMethod = "POST")
+    @ApiOperation(value = "Split exons", nickname = "/splitExon", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -893,7 +892,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-    @ApiOperation(value = "Delete feature", nickname = "/annotationEditor/deleteFeature", httpMethod = "POST")
+    @ApiOperation(value = "Delete feature", nickname = "/deleteFeature", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -911,7 +910,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-    @ApiOperation(value = "Delete variant effects for sequences", nickname = "/annotationEditor/deleteVariantEffectsForSequences", httpMethod = "POST")
+    @ApiOperation(value = "Delete variant effects for sequences", nickname = "/deleteVariantEffectsForSequences", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -928,7 +927,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Delete features for sequences", nickname = "/annotationEditor/deleteFeaturesForSequences", httpMethod = "POST")
+    @ApiOperation(value = "Delete features for sequences", nickname = "/deleteFeaturesForSequences", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -958,7 +957,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Delete exons", nickname = "/annotationEditor/deleteExon", httpMethod = "POST")
+    @ApiOperation(value = "Delete exons", nickname = "/deleteExon", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -975,7 +974,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Make intron", nickname = "/annotationEditor/makeIntron", httpMethod = "POST")
+    @ApiOperation(value = "Make intron", nickname = "/makeIntron", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -992,7 +991,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Split transcript", nickname = "/annotationEditor/splitTranscript", httpMethod = "POST")
+    @ApiOperation(value = "Split transcript", nickname = "/splitTranscript", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1009,7 +1008,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Merge transcripts", nickname = "/annotationEditor/mergeTranscripts", httpMethod = "POST")
+    @ApiOperation(value = "Merge transcripts", nickname = "/mergeTranscripts", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1026,7 +1025,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Get sequence for feature", nickname = "/annotationEditor/getSequence", httpMethod = "POST")
+    @ApiOperation(value = "Get sequence for feature", nickname = "/getSequence", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1051,7 +1050,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Get sequences search tools", nickname = "/annotationEditor/getSequenceSearchTools")
+    @ApiOperation(value = "Get sequences search tools", nickname = "/getSequenceSearchTools")
     def getSequenceSearchTools() {
         log.debug "getSequenceSearchTools ${params.data}"
         def set = configWrapperService.getSequenceSearchTools()
@@ -1081,7 +1080,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         return FeatureType.findAllByOntologyId(ontologyId)
     }
 
-    @ApiOperation(value = "Get canned comments", nickname = "/annotationEditor/getCannedComments", httpMethod = "POST")
+    @ApiOperation(value = "Get canned comments", nickname = "/getCannedComments", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1100,7 +1099,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render cannedCommentService.getCannedComments(organism, featureTypeList) as JSON
     }
 
-    @ApiOperation(value = "Get canned keys", nickname = "/annotationEditor/getCannedKeys", httpMethod = "POST")
+    @ApiOperation(value = "Get canned keys", nickname = "/getCannedKeys", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1119,7 +1118,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render cannedAttributeService.getCannedKeys(organism, featureTypeList) as JSON
     }
 
-    @ApiOperation(value = "Get canned values", nickname = "/annotationEditor/getCannedValues", httpMethod = "POST")
+    @ApiOperation(value = "Get canned values", nickname = "/getCannedValues", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1138,7 +1137,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render cannedAttributeService.getCannedValues(organism, featureTypeList) as JSON
     }
 
-    @ApiOperation(value = "Get available statuses", nickname = "/annotationEditor/getAvailableStatuses", httpMethod = "POST")
+    @ApiOperation(value = "Get available statuses", nickname = "/getAvailableStatuses", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1163,7 +1162,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render availableStatusService.getAvailableStatuses(organism, featureTypeList) as JSON
     }
 
-    @ApiOperation(value = "Search sequences", nickname = "/annotationEditor/searchSequences", httpMethod = "POST")
+    @ApiOperation(value = "Search sequences", nickname = "/searchSequences", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "search", type = "JSONObject", paramType = "query", example = "{'key':'blat_prot','residues':'ATACTAGAGATAC':'database_id':'abc123'}")
     ])
@@ -1185,7 +1184,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
-    @ApiOperation(value = "Get gff3", nickname = "/annotationEditor/getGff3", httpMethod = "POST")
+    @ApiOperation(value = "Get gff3", nickname = "/getGff3", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1217,7 +1216,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         }
     }
 
-    @ApiOperation(value = "Get genes created or updated in the past, Returns JSON hash gene_name:organism", nickname = "/annotationEditor/getRecentAnnotations", httpMethod = "POST")
+    @ApiOperation(value = "Get genes created or updated in the past, Returns JSON hash gene_name:organism", nickname = "/getRecentAnnotations", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")

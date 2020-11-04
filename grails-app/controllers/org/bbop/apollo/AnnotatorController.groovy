@@ -33,7 +33,7 @@ import org.springframework.http.HttpStatus
 /**
  * This is server-side code supporting the high-level functionality of the GWT AnnotatorPanel class.
  */
-@Api(value = "Annotator Engine Services", description = "Methods for running the annotation engine")
+@Api(value = "/annotator", tags = "Annotator Engine Services")
 class AnnotatorController {
 
     def featureService
@@ -195,7 +195,7 @@ class AnnotatorController {
  * updates shallow properties of gene / feature
  * @return
  */
-    @ApiOperation(value = "Update shallow feature properties", nickname = "/annotator/updateFeature", httpMethod = "POST")
+    @ApiOperation(value = "Update shallow feature properties", nickname = "/updateFeature", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -314,7 +314,7 @@ class AnnotatorController {
     }
 
 
-    @ApiOperation(value = "Update exon boundaries", nickname = "/annotator/setExonBoundaries", httpMethod = "POST")
+    @ApiOperation(value = "Update exon boundaries", nickname = "/setExonBoundaries", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")

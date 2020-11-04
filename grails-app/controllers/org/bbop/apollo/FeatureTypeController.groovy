@@ -1,23 +1,17 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
+import io.swagger.annotations.Api
 import org.bbop.apollo.attributes.FeatureType
 
 import static org.springframework.http.HttpStatus.*
 
+@Api(value ="/featureType",tags = "Manage feature types for canned values and statuses")
 @Transactional(readOnly = true)
 class FeatureTypeController {
 
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
-    def permissionService
-
-//    def beforeInterceptor = {
-//        if(!permissionService.checkPermissions(PermissionEnum.ADMINISTRATE)){
-//            forward action: "notAuthorized" ,controller: "annotator"
-//            return
-//        }
-//    }
 
     def index(Integer max) {
         params.max = Math.min(max ?: 30, 200)

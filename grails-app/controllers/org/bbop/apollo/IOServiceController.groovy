@@ -21,14 +21,13 @@ import org.springframework.http.HttpStatus
 
 import java.util.zip.GZIPOutputStream
 
-@Api(value = "IO Services: Methods for bulk importing and exporting sequence data")
+@Api(value = "/IOService", tags= "IO Services: Methods for bulk importing and exporting sequence data")
 class IOServiceController extends AbstractApolloController {
 
     def sequenceService
     def gff3HandlerService
     def fastaHandlerService
     def chadoHandlerService
-//    def preferenceService
     def permissionService
     def configWrapperService
     def requestHandlingService
@@ -37,7 +36,6 @@ class IOServiceController extends AbstractApolloController {
     def fileService
     def gpad2HandlerService
     def gpiHandlerService
-    def featureService
 
     // fileMap of uuid / filename
     // see #464
@@ -54,7 +52,7 @@ class IOServiceController extends AbstractApolloController {
     }
 
     @ApiOperation(value = "Write out genomic data.  An example script is used in the https://github.com/GMOD/Apollo/blob/master/docs/web_services/examples/groovy/get_gff3.groovy"
-        , nickname = "/IOService/write", httpMethod = "POST"
+        , nickname = "/write", httpMethod = "POST"
     )
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
@@ -337,7 +335,7 @@ class IOServiceController extends AbstractApolloController {
     }
 
     @ApiOperation(value = "This is used to retrieve the a download link once the write operation was initialized using output: file."
-        , nickname = "/IOService/download", httpMethod = "POST"
+        , nickname = "/download", httpMethod = "POST"
     )
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")

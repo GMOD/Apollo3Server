@@ -21,6 +21,10 @@ import java.text.SimpleDateFormat
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 
+/**
+ *
+ @Deprecated These shoiuld largely fall away
+ */
 class JbrowseController {
 
     private static final int DEFAULT_BUFFER_SIZE = 10240; // ..bytes = 10KB.
@@ -28,7 +32,6 @@ class JbrowseController {
     GrailsApplication grailsApplication
     def sequenceService
     def permissionService
-//    def preferenceService
     def jbrowseService
     ServletContext servletContext
     def trackService

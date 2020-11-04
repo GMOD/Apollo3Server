@@ -17,13 +17,13 @@ import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 import org.springframework.http.HttpStatus
 
-@Api(value = "Group Services: Methods for managing groups")
+@Api(value = "/group",tags = "Group Services: Methods for managing groups")
 class GroupController {
 
     def permissionService
     def groupService
 
-    @ApiOperation(value = "Get organism permissions for group", nickname = "/group/getOrganismPermissionsForGroup", httpMethod = "POST")
+    @ApiOperation(value = "Get organism permissions for group", nickname = "/getOrganismPermissionsForGroup", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -67,7 +67,7 @@ class GroupController {
         }
     }
 
-    @ApiOperation(value = "Load all groups", nickname = "/group/loadGroups", httpMethod = "POST")
+    @ApiOperation(value = "Load all groups", nickname = "/loadGroups", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -210,7 +210,7 @@ class GroupController {
 //        return jsonObject
 //    }
 
-    @ApiOperation(value = "Create group", nickname = "/group/createGroup", httpMethod = "POST")
+    @ApiOperation(value = "Create group", nickname = "/createGroup", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -265,7 +265,7 @@ class GroupController {
         }
     }
 
-    @ApiOperation(value = "Delete a group", nickname = "/group/deleteGroup", httpMethod = "POST")
+    @ApiOperation(value = "Delete a group", nickname = "/deleteGroup", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -307,7 +307,7 @@ class GroupController {
         render new JSONObject() as JSON
     }
 
-    @ApiOperation(value = "Update group", nickname = "/group/updateGroup", httpMethod = "POST")
+    @ApiOperation(value = "Update group", nickname = "/updateGroup", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -350,7 +350,7 @@ class GroupController {
      * Only changing one of the boolean permissions
      * @return
      */
-    @ApiOperation(value = "Update organism permission", nickname = "/group/updateOrganismPermission", httpMethod = "POST")
+    @ApiOperation(value = "Update organism permission", nickname = "/updateOrganismPermission", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -468,7 +468,7 @@ class GroupController {
 
     }
 
-    @ApiOperation(value = "Update group membership", nickname = "/group/updateMembership", httpMethod = "POST")
+    @ApiOperation(value = "Update group membership", nickname = "/updateMembership", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -496,7 +496,7 @@ class GroupController {
         loadGroups()
     }
 
-    @ApiOperation(value = "Update group admin", nickname = "/group/updateGroupAdmin", httpMethod = "POST")
+    @ApiOperation(value = "Update group admin", nickname = "/updateGroupAdmin", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -548,7 +548,7 @@ class GroupController {
         loadGroups()
     }
 
-    @ApiOperation(value = "Get group admins, returns group admins as JSONArray", nickname = "/group/getGroupAdmin", httpMethod = "POST")
+    @ApiOperation(value = "Get group admins, returns group admins as JSONArray", nickname = "/getGroupAdmin", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -607,7 +607,7 @@ class GroupController {
 
     }
 
-    @ApiOperation(value = "Get creator metadata for group, returns userId as JSONObject", nickname = "/group/getGroupCreator", httpMethod = "POST")
+    @ApiOperation(value = "Get creator metadata for group, returns userId as JSONObject", nickname = "/getGroupCreator", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
