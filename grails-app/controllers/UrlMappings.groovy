@@ -92,9 +92,9 @@ class UrlMappings {
         "/IOService/download"(controller:"IOService",action: "download", params:params)
         "/${clientToken}/IOService/download"(controller:"IOService",action: "download", params:params)
 
-//        "/jbrowse/web_services/api"(controller:"annotationEditor",action: "web_services", params:params)
-//        "/jbrowse/web_services/api"(controller:"webServices",action: "index", params:params)
-//        "/${clientToken}/jbrowse/web_services/api"(controller:"webServices",action: "index", params:params)
+        "/jbrowse/web_services/api"(controller:"annotationEditor",action: "web_services", params:params)
+        "/jbrowse/web_services/api"(controller:"webServices",action: "index", params:params)
+        "/${clientToken}/jbrowse/web_services/api"(controller:"webServices",action: "index", params:params)
 
         // if all else fails
         // TODO: pass all of these into the same function and remap from there
