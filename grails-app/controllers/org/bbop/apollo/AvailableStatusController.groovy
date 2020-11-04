@@ -13,7 +13,7 @@ import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
 import org.bbop.apollo.organism.Organism
 import org.grails.web.json.JSONObject
 
-@Api(value = "Available Status Services: Methods for managing available statuses")
+@Api(value= "/availableStatus",tags= "Available Status Services: Methods for managing available statuses")
 @Transactional(readOnly = true)
 class AvailableStatusController {
 

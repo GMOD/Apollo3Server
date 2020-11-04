@@ -15,7 +15,7 @@ import org.grails.web.json.JSONObject
 
 import static org.springframework.http.HttpStatus.*
 
-@Api(value = "Canned Keys Services: Methods for managing canned keys")
+@Api(value="/cannedKey",tags = "Canned Keys Services: Methods for managing canned keys")
 @Transactional(readOnly = true)
 class CannedKeyController {
 

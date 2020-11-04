@@ -15,8 +15,7 @@ import org.grails.web.json.JSONObject
 
 import static org.springframework.http.HttpStatus.*
 
-//@Api(value = "Canned Comments Services: Methods for managing canned comments")
-@Api(value = "/cannedComment")
+@Api(value = "/cannedComment", tags = "Canned Comments Services: Methods for managing default comments")
 @Transactional(readOnly = true)
 class CannedCommentController {
 

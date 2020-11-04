@@ -12,7 +12,7 @@ import org.bbop.apollo.organism.Organism
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
-@Api(value = "VCF Services: Methods for retrieving VCF track data as JSON")
+@Api(value = "/vcf",tags = "VCF Services: Methods for retrieving VCF track data as JSON")
 @Transactional
 class VcfController {
 

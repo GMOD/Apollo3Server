@@ -20,7 +20,7 @@ import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 import org.springframework.http.HttpStatus
 
-@Api(value = "User Services: Methods for managing users")
+@Api(value = "/user",tags = "User Services: Methods for managing users")
 @Transactional(readOnly = true)
 class UserController {
 
@@ -30,7 +30,7 @@ class UserController {
     def trackService
 
 
-    @ApiOperation(value = "Load all users and their permissions", nickname = "/user/loadUsers", httpMethod = "POST")
+    @ApiOperation(value = "Load all users and their permissions", nickname = "/loadUsers", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -306,7 +306,7 @@ class UserController {
     }
 
 
-    @ApiOperation(value = "Add user to group", nickname = "/user/addUserToGroup", httpMethod = "POST")
+    @ApiOperation(value = "Add user to group", nickname = "/addUserToGroup", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -331,7 +331,7 @@ class UserController {
         render new JSONObject() as JSON
     }
 
-    @ApiOperation(value = "Remove user from group", nickname = "/user/removeUserFromGroup", httpMethod = "POST")
+    @ApiOperation(value = "Remove user from group", nickname = "/removeUserFromGroup", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -356,7 +356,7 @@ class UserController {
         render new JSONObject() as JSON
     }
 
-    @ApiOperation(value = "Get user", nickname = "/user/getUser", httpMethod = "POST")
+    @ApiOperation(value = "Get user", nickname = "/getUser", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query", example = "Email of the user to add")
     ])
@@ -373,7 +373,7 @@ class UserController {
         }
     }
 
-    @ApiOperation(value = "Create user", nickname = "/user/createUser", httpMethod = "POST")
+    @ApiOperation(value = "Create user", nickname = "/createUser", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -452,7 +452,7 @@ class UserController {
 
     }
 
-    @ApiOperation(value = "Inactivate user, removing all permsissions and setting flag", nickname = "/user/inactivateUser", httpMethod = "POST")
+    @ApiOperation(value = "Inactivate user, removing all permsissions and setting flag", nickname = "/inactivateUser", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -513,7 +513,7 @@ class UserController {
         }
     }
 
-    @ApiOperation(value = "Activate user", nickname = "/user/activateUser", httpMethod = "POST")
+    @ApiOperation(value = "Activate user", nickname = "/activateUser", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -567,7 +567,7 @@ class UserController {
         }
     }
 
-    @ApiOperation(value = "Delete user", nickname = "/user/deleteUser", httpMethod = "POST")
+    @ApiOperation(value = "Delete user", nickname = "/deleteUser", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -635,7 +635,7 @@ class UserController {
         }
     }
 
-    @ApiOperation(value = "Update user", nickname = "/user/updateUser", httpMethod = "POST")
+    @ApiOperation(value = "Update user", nickname = "/updateUser", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -717,7 +717,7 @@ class UserController {
 
     }
 
-    @ApiOperation(value = "Get organism permissions for user, returns an array of permission objects", nickname = "/user/getOrganismPermissionsForUser", httpMethod = "POST")
+    @ApiOperation(value = "Get organism permissions for user, returns an array of permission objects", nickname = "/getOrganismPermissionsForUser", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -736,7 +736,7 @@ class UserController {
      * Only changing one of the boolean permissions
      * @return
      */
-    @ApiOperation(value = "Update organism permissions", nickname = "/user/updateOrganismPermission", httpMethod = "POST")
+    @ApiOperation(value = "Update organism permissions", nickname = "/updateOrganismPermission", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -817,7 +817,7 @@ class UserController {
 
     }
 
-    @ApiOperation(value = "Get creator metadata for user, returns creator userId as JSONObject", nickname = "/user/getUserCreator", httpMethod = "POST")
+    @ApiOperation(value = "Get creator metadata for user, returns creator userId as JSONObject", nickname = "/getUserCreator", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")

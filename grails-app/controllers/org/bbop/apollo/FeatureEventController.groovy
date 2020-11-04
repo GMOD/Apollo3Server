@@ -14,7 +14,7 @@ import org.bbop.apollo.history.FeatureEvent
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
-@Api(value = "History Services: Methods for querying history")
+@Api(value ="/featureEvent",tags = "History Services: Methods for querying history")
 @Transactional(readOnly = true)
 class FeatureEventController {
 

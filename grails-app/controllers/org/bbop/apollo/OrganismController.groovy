@@ -31,7 +31,7 @@ import java.nio.file.Path
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 
-@Api(value = "Organism Services: Methods for managing organisms")
+@Api(value = "/organism", tags = "Organism Services: Methods for managing organisms")
 @Transactional(readOnly = true)
 class OrganismController {
 
@@ -46,7 +46,7 @@ class OrganismController {
     def fileService
 
 
-    @ApiOperation(value = "Remove an organism", nickname = "/organism/deleteOrganism", httpMethod = "POST")
+    @ApiOperation(value = "Remove an organism", nickname = "/deleteOrganism", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -109,7 +109,7 @@ class OrganismController {
         }
     }
 
-    @ApiOperation(value = "Delete an organism along with its data directory and returns a JSON object containing properties of the deleted organism", nickname = "/organism/deleteOrganismWithSequence", httpMethod = "POST")
+    @ApiOperation(value = "Delete an organism along with its data directory and returns a JSON object containing properties of the deleted organism", nickname = "/deleteOrganismWithSequence", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -180,7 +180,7 @@ class OrganismController {
         render responseObject as JSON
     }
 
-    @ApiOperation(value = "Remove features from an organism", nickname = "/organism/deleteOrganismFeatures", httpMethod = "POST")
+    @ApiOperation(value = "Remove features from an organism", nickname = "/deleteOrganismFeatures", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -236,7 +236,7 @@ class OrganismController {
     }
 
 
-    @ApiOperation(value = "Adds an organism returning a JSON array of all organisms", nickname = "/organism/addOrganismWithSequence", httpMethod = "POST")
+    @ApiOperation(value = "Adds an organism returning a JSON array of all organisms", nickname = "/addOrganismWithSequence", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -436,7 +436,7 @@ class OrganismController {
         render returnObject as JSON
     }
 
-    @ApiOperation(value = "Removes an added track from an existing organism returning a JSON object containing all tracks for the current organism.", nickname = "/organism/removeTrackFromOrganism", httpMethod = "POST")
+    @ApiOperation(value = "Removes an added track from an existing organism returning a JSON object containing all tracks for the current organism.", nickname = "/removeTrackFromOrganism", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -519,7 +519,7 @@ class OrganismController {
     }
 
 
-    @ApiOperation(value = "Adds a track to an existing organism returning a JSON object containing all tracks for the current organism.", nickname = "/organism/addTrackToOrganism", httpMethod = "POST")
+    @ApiOperation(value = "Adds a track to an existing organism returning a JSON object containing all tracks for the current organism.", nickname = "/addTrackToOrganism", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -817,7 +817,7 @@ class OrganismController {
         render returnObject as JSON
     }
 
-    @ApiOperation(value = "Deletes a track from an existing organism and returns a JSON object of the deleted track's configuration", nickname = "/organism/deleteTrackFromOrganism", httpMethod = "POST")
+    @ApiOperation(value = "Deletes a track from an existing organism and returns a JSON object of the deleted track's configuration", nickname = "/deleteTrackFromOrganism", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -941,7 +941,7 @@ class OrganismController {
         render returnObject as JSON
     }
 
-    @ApiOperation(value = "Update a track in an existing organism returning a JSON object containing old and new track configurations", nickname = "/organism/updateTrackForOrganism", httpMethod = "POST")
+    @ApiOperation(value = "Update a track in an existing organism returning a JSON object containing old and new track configurations", nickname = "/updateTrackForOrganism", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1076,7 +1076,7 @@ class OrganismController {
         render returnObject as JSON
     }
 
-    @ApiOperation(value = "Adds an organism returning a JSON array of all organisms", nickname = "/organism/addOrganism", httpMethod = "POST")
+    @ApiOperation(value = "Adds an organism returning a JSON array of all organisms", nickname = "/addOrganism", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1176,7 +1176,7 @@ class OrganismController {
         }
     }
 
-    @ApiOperation(value = "Finds sequences for a given organism and returns a JSON object including the username, organism and a JSONArray of sequences", nickname = "/organism/getSequencesForOrganism", httpMethod = "POST")
+    @ApiOperation(value = "Finds sequences for a given organism and returns a JSON object including the username, organism and a JSONArray of sequences", nickname = "/getSequencesForOrganism", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1261,7 +1261,7 @@ class OrganismController {
     }
 
 
-    @ApiOperation(value = "Adds an organism returning a JSON array of all organisms", nickname = "/organism/updateOrganismInfo", httpMethod = "POST")
+    @ApiOperation(value = "Adds an organism returning a JSON array of all organisms", nickname = "/updateOrganismInfo", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1356,7 +1356,7 @@ class OrganismController {
         }
     }
 
-    @ApiOperation(value = "Set official gene set track name", nickname = "/organism/setOfficialGeneSetTrack", httpMethod = "POST")
+    @ApiOperation(value = "Set official gene set track name", nickname = "/setOfficialGeneSetTrack", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1409,7 +1409,7 @@ class OrganismController {
         }
     }
 
-    @ApiOperation(value = "Update organism metadata", nickname = "/organism/updateOrganismMetadata", httpMethod = "POST")
+    @ApiOperation(value = "Update organism metadata", nickname = "/updateOrganismMetadata", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1439,7 +1439,7 @@ class OrganismController {
         }
     }
 
-    @ApiOperation(value = "Get creator metadata for organism, returns userId as String", nickname = "/organism/getOrganismCreator", httpMethod = "POST")
+    @ApiOperation(value = "Get creator metadata for organism, returns userId as String", nickname = "/getOrganismCreator", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1466,7 +1466,7 @@ class OrganismController {
 
     }
 
-    @ApiOperation(value = "Returns a JSON array of all organisms, or optionally, gets information about a specific organism", nickname = "/organism/findAllOrganisms", httpMethod = "POST")
+    @ApiOperation(value = "Returns a JSON array of all organisms, or optionally, gets information about a specific organism", nickname = "/findAllOrganisms", httpMethod = "POST")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")

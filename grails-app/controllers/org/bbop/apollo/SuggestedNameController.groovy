@@ -16,7 +16,7 @@ import org.grails.web.json.JSONObject
 
 import static org.springframework.http.HttpStatus.*
 
-@Api(value = "Suggested Names Services: Methods for managing suggested names")
+@Api(value = "/suggestedName",tags= "Suggested Names Services: Methods for managing suggested names")
 @Transactional(readOnly = true)
 class SuggestedNameController {
 
@@ -161,7 +161,7 @@ class SuggestedNameController {
         }
     }
 
-    @ApiOperation(value = "Create suggested name", nickname = "/suggestedName/createName", httpMethod = "POST")
+    @ApiOperation(value = "Create suggested name", nickname = "/createName", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -203,7 +203,7 @@ class SuggestedNameController {
     }
 
 
-    @ApiOperation(value = "Update suggested name", nickname = "/suggestedName/updateName", httpMethod = "POST")
+    @ApiOperation(value = "Update suggested name", nickname = "/updateName", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -253,7 +253,7 @@ class SuggestedNameController {
         }
     }
 
-    @ApiOperation(value = "Remove a suggested name", nickname = "/suggestedName/deleteName", httpMethod = "POST")
+    @ApiOperation(value = "Remove a suggested name", nickname = "/deleteName", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -293,7 +293,7 @@ class SuggestedNameController {
         }
     }
 
-    @ApiOperation(value = "Returns a JSON array of all suggested names, or optionally, gets information about a specific suggested name", nickname = "/suggestedName/search", httpMethod = "get")
+    @ApiOperation(value = "Returns a JSON array of all suggested names, or optionally, gets information about a specific suggested name", nickname = "/search", httpMethod = "get")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "featureType", type = "string", paramType = "query", example = "Feature type")
             , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "Organism name")
@@ -353,7 +353,7 @@ class SuggestedNameController {
         }
     }
 
-    @ApiOperation(value = "Returns a JSON array of all suggested names, or optionally, gets information about a specific suggested name", nickname = "/suggestedName/showName", httpMethod = "POST")
+    @ApiOperation(value = "Returns a JSON array of all suggested names, or optionally, gets information about a specific suggested name", nickname = "/showName", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -396,7 +396,7 @@ class SuggestedNameController {
         }
     }
 
-    @ApiOperation(value = "A comma-delimited list of names", nickname = "/suggestedName/addNames", httpMethod = "POST")
+    @ApiOperation(value = "A comma-delimited list of names", nickname = "/addNames", httpMethod = "POST")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")

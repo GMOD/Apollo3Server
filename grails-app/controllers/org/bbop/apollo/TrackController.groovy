@@ -12,7 +12,7 @@ import org.bbop.apollo.sequence.SequenceDTO
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
-@Api(value = "Track Services: Methods for retrieving track data")
+@Api(value = "/track", tags = "Track Services: Methods for retrieving track data")
 @Transactional(readOnly = true)
 class TrackController {
 
@@ -43,7 +43,7 @@ class TrackController {
         render jsonObject as JSON
     }
 
-    @ApiOperation(value = "Remove track cache for an organism and track", nickname = "/track/cache/clear/<organism name>/<track name>", httpMethod = "get")
+    @ApiOperation(value = "Remove track cache for an organism and track", nickname = "/cache/clear/<organism name>/<track name>", httpMethod = "get")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "organismName", type = "string", paramType = "query", example = "Organism common name (required)")
             , @ApiImplicitParam(name = "trackName", type = "string", paramType = "query", example = "Track name (required)")
@@ -55,7 +55,7 @@ class TrackController {
         render new JSONObject(removed: removed) as JSON
     }
 
-    @ApiOperation(value = "Remove track cache for an organism", nickname = "/track/cache/clear/<organism name>", httpMethod = "get")
+    @ApiOperation(value = "Remove track cache for an organism", nickname = "/cache/clear/<organism name>", httpMethod = "get")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "organismName", type = "string", paramType = "query", example = "Organism common name (required) or 'ALL' if admin")
     ])
@@ -80,7 +80,7 @@ class TrackController {
 
     }
 
-    @ApiOperation(value = "List all tracks for an organism", nickname = "/track/list/<organism name>", httpMethod = "get")
+    @ApiOperation(value = "List all tracks for an organism", nickname = "/list/<organism name>", httpMethod = "get")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "organismName", type = "string", paramType = "query", example = "Organism common name (required)")
     ])
@@ -91,7 +91,7 @@ class TrackController {
     }
 
 
-    @ApiOperation(value = "Get track data as an JSON within but only for the selected name", nickname = "/track/<organism name>/<track name>/<sequence name>/<feature name>.<type>?ignoreCache=<ignoreCache>", httpMethod = "get")
+    @ApiOperation(value = "Get track data as an JSON within but only for the selected name", nickname = "/<organism name>/<track name>/<sequence name>/<feature name>.<type>?ignoreCache=<ignoreCache>", httpMethod = "get")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "organismString", type = "string", paramType = "query", example = "Organism common name or ID(required)")
             , @ApiImplicitParam(name = "trackName", type = "string", paramType = "query", example = "Track name(required)")
@@ -183,7 +183,7 @@ class TrackController {
         return nameSet
     }
 
-    @ApiOperation(value = "Get track data as an JSON within an range", nickname = "/track/<organism name>/<track name>/<sequence name>:<fmin>..<fmax>.<type>?name=<name>&onlySelected=<onlySelected>&ignoreCache=<ignoreCache>", httpMethod = "get")
+    @ApiOperation(value = "Get track data as an JSON within an range", nickname = "/<organism name>/<track name>/<sequence name>:<fmin>..<fmax>.<type>?name=<name>&onlySelected=<onlySelected>&ignoreCache=<ignoreCache>", httpMethod = "get")
     @ApiImplicitParams([
             @ApiImplicitParam(name = "organismString", type = "string", paramType = "query", example = "Organism common name or ID(required)")
             , @ApiImplicitParam(name = "trackName", type = "string", paramType = "query", example = "Track name(required)")
