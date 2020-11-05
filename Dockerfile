@@ -8,13 +8,13 @@ ENV CATALINA_HOME /usr/share/tomcat9
 # where webapps are deployed
 ENV CATALINA_BASE /var/lib/tomcat9
 ENV CONTEXT_PATH ROOT
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
 
 RUN apt-get -qq update --fix-missing && \
 	apt-get --no-install-recommends -y install \
 	git build-essential libpq-dev wget python3-pip net-tools less \
 	lsb-release gnupg2 wget xmlstarlet netcat libpng-dev  \
-	zlib1g-dev libexpat1-dev curl ssl-cert zip unzip openjdk-8-jdk-headless
+	zlib1g-dev libexpat1-dev curl ssl-cert zip unzip openjdk-11-jdk-headless
 
 RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add -
 RUN echo 'deb https://debian.neo4j.com stable 3.5' | tee -a /etc/apt/sources.list.d/neo4j.list
