@@ -20,14 +20,17 @@ import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 import org.springframework.http.HttpStatus
 
-@Api(value = "/user",tags = "User Services: Methods for managing users")
+@Api(value = "/user", tags = "User Services: Methods for managing users")
 @Transactional(readOnly = true)
 class UserController {
 
     def permissionService
-//    def preferenceService
     def userService
     def trackService
+
+    def beforeInterceptor = {
+        response.setHeader("Access-Control-Allow-Origin", "*")
+    }
 
 
     @ApiOperation(value = "Load all users and their permissions", nickname = "/loadUsers", httpMethod = "POST")
