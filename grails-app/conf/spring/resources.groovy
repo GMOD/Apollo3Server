@@ -5,8 +5,8 @@ import io.swagger.models.auth.In
 
 // Place your Spring DSL code here
 beans = {
-//    swagger(Swagger) {
-//        securityDefinitions = ["apiKey": new ApiKeyAuthDefinition("apiKey", In.HEADER)]
-//        security = [new SecurityRequirement().requirement("apiKey")]
-//    }
+    swagger(Swagger) {
+        securityDefinitions = ["apiKey": new ApiKeyAuthDefinition("apiKey", In.HEADER)]
+        security = [new SecurityRequirement().requirement("apiKey")]
+    }
 }
