@@ -1504,11 +1504,12 @@ class OrganismController {
                 }
             }
 
-            if (!organismList) {
-                def error = [error: 'Not authorized for any organisms']
-                render error as JSON
-                return
-            }
+            // this error should show be handled by the client
+//            if (!organismList) {
+//                def error = [error: 'Not authorized for any organisms']
+//                render error as JSON
+//                return
+//            }
 
 //      UserOrganismPreference userOrganismPreference = UserOrganismPreference.findByUserAndCurrentOrganism(permissionService.getCurrentUser(requestObject), true, [max: 1, sort: "lastUpdated", order: "desc"])
 //      Long defaultOrganismId = userOrganismPreference ? userOrganismPreference.organism.id : null
