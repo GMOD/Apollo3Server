@@ -1466,7 +1466,7 @@ class OrganismController {
 
     }
 
-    @ApiOperation(value = "Returns a JSON array of all organisms, or optionally, gets information about a specific organism", nickname = "/findAllOrganisms", httpMethod = "POST")
+    @ApiOperation(value = "Returns a JSON array of all organisms, or optionally, gets information about a specific organism", nickname = "/findAllOrganisms", httpMethod = "GET")
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
@@ -1574,6 +1574,7 @@ class OrganismController {
  * Permissions handled upstream
  * @return
  */
+    @ApiOperation(value = "Returns a JSON report of annotations on all organisms, or optionally, gets information about a specific organism", nickname = "/report", httpMethod = "GET")
     def report() {
         Map<Organism, OrganismSummary> organismSummaryListInstance = new TreeMap<>(new Comparator<Organism>() {
             @Override
