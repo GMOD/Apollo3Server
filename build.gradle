@@ -40,7 +40,7 @@ repositories {
 
     }
     maven { url "https://oss.jfrog.org/repo/" }
-    maven { url "https://dl.bintray.com/steamcleaner/plugins/"}
+//    maven { url "https://dl.bintray.com/steamcleaner/plugins/"}
 
 }
 
@@ -65,7 +65,7 @@ dependencies {
 //    runtime 'org.postgresql:postgresql:9.4.1212'
 //    compile "org.grails.plugins:swagger-grails:0.4.0"
 //    compile "io.springfox.grails:springfox-grails:1.0.1-SNAPSHOT" //(1)
-    compile "org.grails.plugins:swagger-grails:0.4.0"
+//    compile "org.grails.plugins:swagger-grails:0.4.0"
 
 
 //    annotationProcessor "io.micronaut.configuration:micronaut-openapi:1.4.0"
