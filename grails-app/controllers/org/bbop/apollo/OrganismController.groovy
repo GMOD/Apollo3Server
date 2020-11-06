@@ -1471,6 +1471,7 @@ class OrganismController {
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
         , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "(optional) ID or commonName that can be used to uniquely identify an organism")
+        , @ApiImplicitParam(name = "showObsolete", type = "boolean", paramType = "query", example = "Default false.  Show obsolete if true")
     ])
     def findAllOrganisms() {
         try {
