@@ -491,6 +491,9 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
     }
 
 
+    @ApiOperation(value = "Get annotation editor info configuration", nickname = "/getAnnotationInfoEditorConfiguration", httpMethod = "GET")
+    @ApiImplicitParams([
+    ])
     def getAnnotationInfoEditorConfiguration() {
         JSONObject annotationInfoEditorConfigContainer = new JSONObject();
         JSONArray annotationInfoEditorConfigs = new JSONArray();
