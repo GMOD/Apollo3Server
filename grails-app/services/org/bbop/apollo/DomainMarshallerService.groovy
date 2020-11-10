@@ -33,6 +33,9 @@ class DomainMarshallerService {
             returnArray['directory'] = it.directory
             returnArray['metadata'] = it?.metadata
             returnArray['officialGeneSetTrack'] = it?.officialGeneSetTrack
+            returnArray['genomeFasta'] = it?.genomeFasta
+            returnArray['genomeFastaIndex'] = it?.genomeFastaIndex
+            returnArray['nonDefaultTranslationTable'] = it?.nonDefaultTranslationTable
           return returnArray
         }
 

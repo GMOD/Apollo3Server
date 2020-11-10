@@ -352,7 +352,7 @@ class OrganismController {
                             File rawDirectory = new File(directory.absolutePath + "/seq")
                             assert rawDirectory.mkdir()
                             assert rawDirectory.setWritable(true)
-                            File archiveFile = new File(rawDirectory.absolutePath + File.separator + organismName + "." + sequenceTypeEnum.suffix)
+                            File archiveFile = new File(rawDirectory.absolutePath + File.separator + organismName + ".fa"  )
                             sequenceDataFile.transferTo(archiveFile)
                             organism.directory = directory.absolutePath
 
@@ -1538,6 +1538,8 @@ class OrganismController {
                     id                        : organism.id,
                     commonName                : organism.commonName,
                     blatdb                    : organism.blatdb,
+                    genomeFasta               : organism.genomeFasta,
+                    genomeFastaIndex          : organism.genomeFastaIndex,
                     directory                 : organism.directory,
                     annotationCount           : annotationCount,
                     sequences                 : sequenceCount,
