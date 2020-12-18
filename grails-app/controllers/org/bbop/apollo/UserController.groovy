@@ -39,6 +39,7 @@ class UserController {
         try {
             JSONObject dataObject = permissionService.handleInput(request, params)
             JSONArray returnArray = new JSONArray()
+          println "A"
             // allow instructor see all the users
             if (!permissionService.hasGlobalPermissions(dataObject, GlobalPermissionEnum.USER)) {
                 render status: HttpStatus.UNAUTHORIZED
@@ -47,6 +48,7 @@ class UserController {
             // to support webservice, get current user from session or input object
             def currentUser = permissionService.getCurrentUser(dataObject)
             def allowableOrganisms = permissionService.getOrganisms(currentUser)
+          println "B"
 
             List<String> allUserGroups = UserGroup.all
 
@@ -76,6 +78,7 @@ class UserController {
             def sortAscending = dataObject.sortAscending ?: true
             def showInactiveUsers = dataObject.showInactiveUsers ?: false
             def omitEmptyOrganisms = dataObject.omitEmptyOrganisms != null ? dataObject.omitEmptyOrganisms : false
+          println "C"
 
             def users = c.list(max: maxResults, offset: offset) {
                 if (dataObject.userId && dataObject.userId in Integer) {
@@ -108,6 +111,7 @@ class UserController {
             }.unique { a, b ->
                 a.id <=> b.id
             }
+          println "D"
 
             int userCount = User.withCriteria {
                 if (dataObject.userId && dataObject.userId in Integer) {
@@ -130,9 +134,12 @@ class UserController {
             }.unique { a, b ->
                 a.id <=> b.id
             }.size()
+          println "E-asdfasdfzzzzz"
 
             users.each {
                 def userObject = new JSONObject()
+              println "E.1"
+              println "E.1.a"
 
                 userObject.userId = it.id
                 userObject.username = it.username
@@ -161,6 +168,7 @@ class UserController {
                 }
                 userObject.groups = groupsArray
 
+              println "E.2"
 
                 JSONArray availableGroupsArray = new JSONArray()
                 List<String> availableGroups = allUserGroupsName - groupsForUser
@@ -189,6 +197,8 @@ class UserController {
                     }
                 }
 
+
+              println "E.3"
                 // if an organism has permissions
                 Set<Organism> organismList = allowableOrganisms.findAll() {
                     !organismsWithPermissions.contains(it.id)
@@ -211,16 +221,18 @@ class UserController {
                 // could probably be done in a separate object
                 userObject.userCount = userCount
                 userObject.searchName = searchName
+              println "E.4"
 
                 returnArray.put(userObject)
             }
+          println "F"
 
             render returnArray as JSON
         }
         catch (Exception e) {
             response.status = HttpStatus.INTERNAL_SERVER_ERROR.value()
             def error = [error: e.message]
-            log.error error
+            log.error(error.toString())
             render error as JSON
         }
     }

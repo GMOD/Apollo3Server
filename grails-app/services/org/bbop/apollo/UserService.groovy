@@ -13,7 +13,7 @@ class UserService {
 
     // return admin role or user role
     Role getHighestRole(User user){
-        for(Role role in user.roles.sort(){ a,b -> b.name<=>a.name }){
+        for(Role role in user?.roles?.sort(){ a,b -> b.name<=>a.name }){
             return role
         }
     }
@@ -93,7 +93,7 @@ class UserService {
     def registerAdmin(JSONObject jsonObj) {
         registerAdmin(jsonObj.username,jsonObj.password,jsonObj.firstName,jsonObj.lastName)
     }
-    
+
     User registerAdmin(String username,String password,String firstName,String lastName) {
         if(User.countByUsername(username)>0){
             log.warn("User exists ${username} and can not be added again.")

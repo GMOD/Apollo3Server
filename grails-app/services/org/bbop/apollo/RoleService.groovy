@@ -8,18 +8,20 @@ import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
 class RoleService {
 
     def initRoles() {
+      println "initial role count ${Role.count}"
         if (Role.count == 0) {
-            def userRole = new Role(name: GlobalPermissionEnum.USER.name(), rank: GlobalPermissionEnum.USER.rank).save()
+          println "adding ${Role.count}"
+            def userRole = new Role(name: GlobalPermissionEnum.USER.name(), rank: GlobalPermissionEnum.USER.rank).save(flush: true)
             userRole.addToPermissions("*:*")
             userRole.removeFromPermissions("cannedComments:*")
             userRole.removeFromPermissions("availableStatus:*")
             userRole.removeFromPermissions("featureType:*")
-            def instructorRole = new Role(name: GlobalPermissionEnum.INSTRUCTOR.name(), rank: GlobalPermissionEnum.INSTRUCTOR.rank).save()
+            def instructorRole = new Role(name: GlobalPermissionEnum.INSTRUCTOR.name(), rank: GlobalPermissionEnum.INSTRUCTOR.rank).save(flush: true)
             instructorRole.addToPermissions("*:*")
             instructorRole.removeFromPermissions("cannedComments:*")
             instructorRole.removeFromPermissions("availableStatus:*")
             instructorRole.removeFromPermissions("featureType:*")
-            def adminRole = new Role(name: GlobalPermissionEnum.ADMIN.name(), rank: GlobalPermissionEnum.ADMIN.rank).save()
+            def adminRole = new Role(name: GlobalPermissionEnum.ADMIN.name(), rank: GlobalPermissionEnum.ADMIN.rank).save(flush: true,failOnError: true)
             adminRole.addToPermissions("*:*")
         }
 
@@ -30,7 +32,7 @@ class RoleService {
         }
         def instructorRole = Role.findByName(GlobalPermissionEnum.INSTRUCTOR.name())
         if (!instructorRole) {
-            instructorRole = new Role(name: GlobalPermissionEnum.INSTRUCTOR.name(), rank: GlobalPermissionEnum.INSTRUCTOR.rank).save()
+            instructorRole = new Role(name: GlobalPermissionEnum.INSTRUCTOR.name(), rank: GlobalPermissionEnum.INSTRUCTOR.rank).save(flush: true)
             instructorRole.addToPermissions("*:*")
             instructorRole.removeFromPermissions("cannedComments:*")
             instructorRole.removeFromPermissions("availableStatus:*")

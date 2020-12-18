@@ -392,6 +392,11 @@ apollo {
     native_track_selector_default_on = false
 }
 
+grails.mongodb.default.mapping = {
+  version false
+  '*'(reference:true)
+}
+
 //
 //grails.plugin.databasemigration.updateOnStart = true
 //grails.plugin.databasemigration.updateOnStartFileNames = ['changelog.groovy']
