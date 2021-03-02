@@ -1611,5 +1611,32 @@ class OrganismController {
         }
     }
 
+    @ApiOperation(value ="Get common track directory")
+    def getCommonTrackDirectory() {
+        // admin only operation
+        String commonDirectory = trackService.commonDataDirectory
+        JSONObject returnObject = new JSONObject(["path":null])
+        println "return obje"
+        println returnObject.toString()
+        if(commonDirectory.startsWith("/")){
+            returnObject.path = commonDirectory
+        }
+        else{
+            String dotPath = servletContext.getRealPath("/")
+            if(dotPath.contains("src/main/webapp")){
+                File file = new File(dotPath).parentFile.parentFile.parentFile
+                dotPath = file.absolutePath
+            }
+            println "dot path"
+            println dotPath
+            returnObject.path = dotPath  + File.separator +  commonDirectory
+        }
+        if(!(new File(returnObject.path).exists())){
+            String errorString = "path does not exist for ${commonDirectory} with resolved path ${returnObject.path}"
+            log.error(errorString)
+            returnObject.path = errorString
+        }
+        render returnObject as JSON
+    }
 
 }
