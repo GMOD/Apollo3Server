@@ -1611,6 +1611,10 @@ class OrganismController {
         }
     }
 
+    /**
+     * TODO: admin access
+     * @return
+     */
     @ApiOperation(value ="Get common track directory")
     def getCommonTrackDirectory() {
         // admin only operation
@@ -1639,4 +1643,64 @@ class OrganismController {
         render returnObject as JSON
     }
 
+    /**
+     * TODO: admin access
+     * @return
+     */
+    @ApiOperation(value ="Removes empty common tracks")
+    def removeEmptyCommonTracks() {
+        // admin only operation
+        String commonDirectory = trackService.commonDataDirectory
+        int count = 0
+        String fullPath
+        if(commonDirectory.startsWith("/")){
+            fullPath = commonDirectory
+        }
+        else{
+            String dotPath = servletContext.getRealPath("/")
+            if(dotPath.contains("src/main/webapp")){
+                File file = new File(dotPath).parentFile.parentFile.parentFile
+                dotPath = file.absolutePath
+            }
+            println "dot path"
+            println dotPath
+            fullPath = dotPath  + File.separator +  commonDirectory
+        }
+
+        JSONObject returnObject = new JSONObject(["message":null])
+        println "return obje"
+        println returnObject.toString()
+        def commonFilePath = new File(fullPath)
+
+        if(!commonFilePath.exists()){
+            String errorString = "path does not exist for ${commonDirectory} with resolved path ${returnObject.path}"
+            log.error(errorString)
+            returnObject.error = errorString
+            response.status = 500
+        }
+        else{
+            // for each directory i
+            List<String> pathsToDelete =[]
+            commonFilePath.listFiles().each { File file ->
+                if(file.isDirectory()){
+                    pathsToDelete.add(file.absolutePath)
+                }
+            }
+            def organismsToSave = Organism.findAllByDirectoryInList(pathsToDelete)
+            println "organisms to save"
+            organismsToSave.each { Organism organism ->
+                log.warn("Not deleting ${organism.commonName} ${organism.id} with ${organism.directory} because it is still in use")
+                pathsToDelete.remove(organism.directory)
+            }
+
+            pathsToDelete.each {String it ->
+                assert new File(it).deleteDir()
+                ++count
+            }
+        }
+
+        returnObject.message = "${count} directories removed"
+        println returnObject.toString()
+        render returnObject as JSON
+    }
 }
