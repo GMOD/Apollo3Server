@@ -41,7 +41,6 @@ class FeatureService {
     def permissionService
     def overlapperService
     def organismService
-    def sessionFactory
     def goAnnotationService
     def geneProductService
     def provenanceService

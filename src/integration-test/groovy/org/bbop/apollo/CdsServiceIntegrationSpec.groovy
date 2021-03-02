@@ -27,7 +27,7 @@ import org.grails.web.json.JSONObject
 class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
     
     def sequenceService
-    def requestHandlingService
+    def requestHandlingService = new RequestHandlingService()
     def transcriptService
 
     def setup() {

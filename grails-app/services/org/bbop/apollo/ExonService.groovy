@@ -131,11 +131,19 @@ class ExonService {
 
 //        FeatureLocation.deleteAll(exon.featureLocations)
         exon.save(flush: true)
+        transcript.save(flush: true)
         exon.featureLocation.delete()
         exon.featureLocation = null
         exon.parentFeatureRelationships?.clear()
         exon.childFeatureRelationships?.clear()
         exon.featureProperties?.clear()
+
+//        FeatureLocation.executeUpdate("MATCH (e:Exon {uniqueName : '${exon.uniqueName}'} )-[r]-(parent) delete e,r")
+
+//        exon = null
+//        exon.refresh()
+//        transcript = Transcript.findById(transcript.id)
+
         List<FeatureRelationship> parentFeatures = FeatureRelationship.findAllByFrom(exon)
         def childFeatures = FeatureRelationship.findAllByTo(exon)
         if(parentFeatures){
