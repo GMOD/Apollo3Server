@@ -43,11 +43,19 @@ class TranscriptService {
      * @return Collection of exons associated with this transcript
      */
     Collection<Exon> getExons(Transcript transcript) {
-        return (Collection<Exon>) featureRelationshipService.getChildrenForFeatureAndTypes(transcript, Exon.ontologyId)
+//        return (Collection<Exon>) featureRelationshipService.getChildrenForFeatureAndTypes(transcript, Exon.ontologyId)
+//        return (Collection<Exon>) Exon.executeQuery("MATCH (t:Transcript)-[]->(e:Exon) where t.uniqueName = ${transcript.uniqueName} return e")
+        def exonsList =  Exon.executeQuery("MATCH (t:Transcript)-[]->(e:Exon) where t.uniqueName = ${transcript.uniqueName} return e")
+        def returnExonList = []
+        exonsList.each {
+            returnExonList.add(it as Exon)
+        }
+        return returnExonList
     }
 
     Collection<Exon> getSortedExons(Transcript transcript, boolean sortByStrand) {
         Collection<Exon> exons = getExons(transcript)
+        println "# of exons ${exons.size()}"
         List<Exon> sortedExons = new LinkedList<Exon>(exons);
 //        sortedExons.each {
 //            println it.featureLocation
@@ -117,7 +125,7 @@ class TranscriptService {
      * @param transcript - Transcript to be deleted
      */
     @Transactional
-    public void deleteTranscript(Gene gene, Transcript transcript) {
+    void deleteTranscript(Gene gene, Transcript transcript) {
         featureRelationshipService.removeFeatureRelationship(gene, transcript)
 
         // update bounds
@@ -155,6 +163,9 @@ class TranscriptService {
 
     @Transactional
     void setFmin(Transcript transcript, Integer fmin) {
+
+
+
         transcript.getFeatureLocation().setFmin(fmin);
         Gene gene = getGene(transcript)
         if (gene != null && fmin < gene.getFmin()) {

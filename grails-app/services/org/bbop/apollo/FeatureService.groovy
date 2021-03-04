@@ -731,6 +731,7 @@ class FeatureService {
             return;
         }
         Collections.sort(sortedExons, new FeaturePositionComparator<Exon>(false))
+        println "initial number of exons ${sortedExons.size()}"
         int inc = 1;
         for (int i = 0; i < sortedExons.size() - 1; i += inc) {
             inc = 1;
@@ -741,6 +742,7 @@ class FeatureService {
                     try {
                         exonService.mergeExons(leftExon, rightExon);
                         sortedExons = transcriptService.getSortedExons(transcript, false)
+                        println "merging exons -> ${sortedExons.size()}"
                         // we have to reload the sortedExons again and start over
                         ++inc;
                     } catch (AnnotationException e) {

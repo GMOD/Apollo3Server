@@ -21,7 +21,6 @@ class ExonService {
     def transcriptService
     def featureService
     def featureRelationshipService
-    def featurePropertyService
     def sequenceService
     def overlapperService
     def nameService
@@ -46,11 +45,12 @@ class ExonService {
      * @throws AnnotationException - If exons don't belong to the same transcript or are in separate strands
      */
     @Transactional
-    public void mergeExons(Exon exon1, Exon exon2) throws AnnotationException {
+    void mergeExons(Exon exon1, Exon exon2) throws AnnotationException {
 //        // both exons must be part of the same transcript
 //        if (!getTranscript(exon1).equals(getTranscript(exon2))) {
 //            throw new AnnotationEditorException("mergeExons(): Exons must have same parent transcript", exon1, exon2);
 //        }
+        println "merging exons"
         // both exons must be in the same strand
         Transcript transcript = getTranscript(exon1);
         if (!exon1?.featureLocation?.getStrand()?.equals(exon2?.featureLocation?.getStrand())) {
@@ -91,23 +91,8 @@ class ExonService {
      */
     @Transactional
     void deleteExon(Transcript transcript, Exon exon) {
-        featurePropertyService.deleteAllProperties(exon)
-        featureRelationshipService.removeFeatureRelationship(transcript,exon)
-
-
-        // an empty transcript should be removed from gene,  TODO??
-//        if (transcript.getNumberOfExons() == 0) {
-//            if (transcript.getGene() != null) {
-//                deleteTranscript(transcript.getGene(), transcript);
-//            }
-//            else {
-//                deleteFeature(transcript);
-//            }
-//        }
-//        else {
-//            setLongestORF(transcript);
-//        }
         // update transcript boundaries if necessary
+        println "deleting exon "
         if (exon.getFmin().equals(transcript.getFmin())) {
             int fmin = Integer.MAX_VALUE;
             for (Exon e : transcriptService.getExons(transcript)) {
@@ -129,41 +114,17 @@ class ExonService {
         // update gene boundaries if necessary
         transcriptService.updateGeneBoundaries(transcript);
 
-//        FeatureLocation.deleteAll(exon.featureLocations)
-        exon.save(flush: true)
-        transcript.save(flush: true)
-        exon.featureLocation.delete()
-        exon.featureLocation = null
-        exon.parentFeatureRelationships?.clear()
-        exon.childFeatureRelationships?.clear()
-        exon.featureProperties?.clear()
-
-//        FeatureLocation.executeUpdate("MATCH (e:Exon {uniqueName : '${exon.uniqueName}'} )-[r]-(parent) delete e,r")
-
-//        exon = null
-//        exon.refresh()
-//        transcript = Transcript.findById(transcript.id)
-
-        List<FeatureRelationship> parentFeatures = FeatureRelationship.findAllByFrom(exon)
-        def childFeatures = FeatureRelationship.findAllByTo(exon)
-        if(parentFeatures){
-            parentFeatures.each { FeatureRelationship it ->
-                FeatureRelationship.executeUpdate("delete from FeatureRelationship fr where fr.id = :frid",[frid:it.id])
-            }
-        }
-
-//        FeatureProperty.executeUpdate("delete from FeatureProperty fp where fp.feature.id = :exonId",[exonId:exon.id])
-//        Exon.executeUpdate("delete from Exon e where e.id = :exonId",[exonId:exon.id])
-        exon.delete(flush: true)
-//        Exon.deleteAll(exon)
         transcript.save(flush: true)
 
+        FeatureLocation.executeUpdate("MATCH (e:Exon {uniqueName : ${exon.uniqueName}} )-[r]-(parent) delete e,r")
+//        transcript.save(flush: true)
+        println "DELETED exon"
 
     }
 
 
     @Transactional
-    public void setFmin(Exon exon, Integer fmin) {
+    void setFmin(Exon exon, Integer fmin) {
         exon.getFeatureLocation().setFmin(fmin);
         Transcript transcript = getTranscript(exon)
         if (transcript != null && fmin < transcript.getFmin()) {
@@ -172,7 +133,7 @@ class ExonService {
     }
 
     @Transactional
-    public void setFmax(Exon exon, Integer fmax) {
+    void setFmax(Exon exon, Integer fmax) {
         exon.getFeatureLocation().setFmax(fmax);
         Transcript transcript = getTranscript(exon)
         if (transcript != null && fmax > transcript.getFmax()) {
@@ -182,7 +143,7 @@ class ExonService {
 
 
     @Transactional
-    public Exon makeIntron(Exon exon, int genomicPosition, int minimumIntronSize) {
+    Exon makeIntron(Exon exon, int genomicPosition, int minimumIntronSize) {
         String sequence = sequenceService.getResiduesFromFeature(exon)
         int exonPosition = featureService.convertSourceCoordinateToLocalCoordinate(exon,genomicPosition);
 //        // find donor coordinate
