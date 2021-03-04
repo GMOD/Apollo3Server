@@ -368,6 +368,7 @@ class UserController {
         println "input users ${params}"
         JSONObject dataObject = permissionService.handleInput(request, params)
         println "data object ${dataObject as JSON}"
+        println "Users: ${User.count} -> ${User.all.username}"
         User user = User.findByUsername(dataObject.username)
         if (user) {
             render user as JSON
@@ -415,36 +416,40 @@ class UserController {
                 , metadata: dataObject.metadata ? dataObject.metadata.toString() : null
                 , passwordHash: new Sha256Hash(dataObject.newPassword ?: dataObject.password).toHex()
             )
+            println "not yet saved, so saving now ${user}"
             user.save(insert: true, failOnError: true)
-            log.debug "created user ${user as JSON}"
+            println "created user ${user as JSON}"
             // to support webservice, get current user from session or input object
             def currentUser = permissionService.getCurrentUser(dataObject)
-            log.debug "current user ${currentUser}"
+            println "current user ${currentUser}"
             // allow specify the metadata creator through webservice, if not specified, take current user as the creator
             if (!user.getMetaData(FeatureStringEnum.CREATOR.value)) {
                 log.debug "creator does not exist, set current user as the creator"
                 user.addMetaData(FeatureStringEnum.CREATOR.value, currentUser.id.toString())
             }
-            log.debug "creator does not exist, set current user as the creator"
+            println "creator does not exist, set current user as the creator"
             String roleString = dataObject.role ?: GlobalPermissionEnum.USER.name()
             Role role = Role.findByName(roleString.toUpperCase())
             if (!role) {
                 role = Role.findByName(GlobalPermissionEnum.USER.name())
             }
-            log.debug "adding role: ${role}"
+            println "adding role: ${role}"
             user.addToRoles(role)
             role.addToUsers(user)
-            role.save()
+            role.save(failOnError: true, flush: true)
+            println "role saved ${role}"
             user.save(flush: true)
+            println "re-saved user ${user}"
 
-            log.debug "Added user ${user.username} with role ${role.name}"
+            println "Added user ${user.username} with role ${role.name}"
             JSONObject jsonObject = user.properties
 //            jsonObject = user.properties
-            log.debug "json object ${jsonObject as JSON}"
+            println "json object ${jsonObject as JSON}"
             jsonObject.email = user.username
             jsonObject.username = user.username
             jsonObject.id = user.id
             jsonObject.userId = user.id
+            println "rendering json object "
             render jsonObject as JSON
         } catch (e) {
             log.error(e.toString())

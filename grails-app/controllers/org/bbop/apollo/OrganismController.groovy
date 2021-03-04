@@ -197,14 +197,20 @@ class OrganismController {
             return
         }
         try {
-            if (!permissionService.hasPermissions(organismJson, PermissionEnum.ADMINISTRATE)) {
-                def error = [error: 'not authorized to delete all features from organism']
-                log.error(error.error)
-                render error as JSON
-                return
-            }
+//            if (!permissionService.hasPermissions(organismJson, PermissionEnum.ADMINISTRATE)) {
+//                def error = [error: 'not authorized to delete all features from organism']
+//                log.error(error.error)
+//                render error as JSON
+//                return
+//            }
+            println "organism identifier ${organismJson}"
 
             Organism organism = Organism.findByCommonName(organismJson.organism)
+            println "organism found? ${organism}"
+
+            Organism.all.each {
+                println "org: ${it}"
+            }
 
             if (!organism) {
                 organism = Organism.findById(organismJson.organism as Long)
