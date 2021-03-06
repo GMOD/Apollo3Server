@@ -148,7 +148,7 @@ class TestController {
         Feature.executeUpdate(" MATCH (f:Feature) where f.name in ['bill','bob','jill'] delete f")
         println Feature.countByNameInList(['bill','bob','jill'])
         String uniqueName = UUID.randomUUID().toString()
-        new Feature(name: "bob", uniqueName: uniqueName).save()
+        new Feature(name: "bob", uniqueName: uniqueName).save(flush: true)
 
 
         Feature.executeUpdate("MATCH (f:Feature) where f.uniqueName = ${uniqueName} set f.name = 'jill' return f")

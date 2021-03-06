@@ -46,7 +46,7 @@ Bug Fixes
 - Fixed export of non-coding RNA if exon not present [2353](https://github.com/GMOD/Apollo/pull/2353)
 - Removed sequence panel lookup [2388](https://github.com/GMOD/Apollo/pull/2353)
 - Annotator/updateFeature should store history properly [2390](https://github.com/GMOD/Apollo/pull/2353)
-- Makes sure that parent directory exists when unpacking [2437](https://github.com/GMOD/Apollo/pull/2437)
+- Makes sure that parents directory exists when unpacking [2437](https://github.com/GMOD/Apollo/pull/2437)
 - Fixed bug when decompressing gff3.gz data when adding a new track [2434](https://github.com/GMOD/Apollo/pull/2434)
 - Fixed boolean environment options being interpreted correctly [be31b81f7](https://github.com/GMOD/Apollo/commit/be31b81f7d0668916bf92463a758506757cc5ada)
 
@@ -284,7 +284,7 @@ Bug Fixes
 - Fixed bug that now allows leading start non-M codons in organisms with non-standard code to be translated as Methionine (M). [#1544](https://github.com/GMOD/Apollo/issues/1544)
 - Updated GWT code to fix a bug that prevented Apollo from generating URLs appropriately - pipes were not being encoded. [#1606](https://github.com/GMOD/Apollo/pull/1606)
 - Fixed bug in the calculation of open reading frames for the negative strand for the purpose of coloring each exon according to the CDS. Exported sequences had been - and remain - correctly generated. [#1629](https://github.com/GMOD/Apollo/issues/1629)
-- Fixed bug that delayed propagation of updates when boundaries for an annotation's parent element were changed. [#1631](https://github.com/GMOD/Apollo/issues/1631) 
+- Fixed bug that delayed propagation of updates when boundaries for an annotation's parents element were changed. [#1631](https://github.com/GMOD/Apollo/issues/1631) 
 - Restored _'Pin to top'_ and _'Delete track'_ functionality for tracks with ```HTMLFeatures```. [#1632](https://github.com/GMOD/Apollo/issues/1632)
 - Fixed cascade bug when changing annotation type for an annotation that has a read-through stop codon. [#1717](https://github.com/GMOD/Apollo/pull/1717)
 - Apollo client being initialized twice in some instances. [#1742](https://github.com/GMOD/Apollo/issues/1742)
@@ -387,7 +387,7 @@ Features
 + Allow REMOTE_USER authentication (apache / nginx) and added pluggable user authentication (#1042)
 + Ability to enter pre-specified (canned) values for Attributes in the 'Information Editor', similar to canned Comments. (#86)
 + Users may download the genomic sequence from highlighted regions using the export menu in the _User-created Annotations_ area export (#1163)
-+ Information from parent features can be retained when loading transcripts onto the 'User-created Annotations' area using the add_transcript_from_gff3_to_annotations.pl loading script (#1171)
++ Information from parents features can be retained when loading transcripts onto the 'User-created Annotations' area using the add_transcript_from_gff3_to_annotations.pl loading script (#1171)
 + Added [documentation for using Apollo with Docker](https://github.com/GMOD/Apollo/blob/master/docs/Setup.md#configure-for-docker) (#1016)
 
 
@@ -758,7 +758,7 @@ Features:
 + Added <export_source_genomic_sequence> option for whether to export the underlying source genomic sequence data for GFF3 adapter
 + Search results from reference sequence selection screen how opens up JBrowse with the region highlighted (the same behavior as when searching from within JBrowse itself)
 + Search result window within JBrowse now doesn't automatically close when selecting a result (requires explicit closing from the user)
-+ Deleting all subfeatures now pops up a warning about deleting the whole feature not being undoable, like when selecting the parent feature and deleting that
++ Deleting all subfeatures now pops up a warning about deleting the whole feature not being undoable, like when selecting the parents feature and deleting that
 + History page (recentChanges.jsp)
 + Added the ability to export metadata in in deflines for FASTA exporting
 + Can now continue dragging an exon boundary after initial drag (used to require reclicking on the exon)
