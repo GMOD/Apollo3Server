@@ -117,9 +117,17 @@ class TestController {
     }
 
     def getTestFeatures2(){
-        def results = Feature.executeQuery(" MATCH (f:Feature) where f.name in ['bill','bob','jill'] return f.name")
+        // note that matching ONLY feature is problematic as it fails to add feature location as it tries to initiate a proxy for feature location
+        def results = Feature.executeQuery(" MATCH (f:Feature)-[fl:FeatureLocation]-(s:Sequence) where f.name in ['bill','bob','jill'] return f,fl,s")
+        List<Feature> returnFeatures = []
+        for(def r in results){
+            returnFeatures.add(r[0] as Feature)
+        }
+        println "results"
         println results
-        render results
+        println "return features"
+        println returnFeatures
+        render returnFeatures as JSON
     }
 
     def createFeature(String name){
@@ -139,13 +147,13 @@ class TestController {
     }
 
     def deleteTestFeatures(){
-        def deletedResults = Feature.executeUpdate(" MATCH (f:Feature) where f.name in ['bill','bob','jill'] delete f")
+        def deletedResults = Feature.executeUpdate(" MATCH (f:Feature) where f.name in ['bill','bob','jill'] delete f return f")
         render deletedResults
     }
 
     def doAllParts1(){
         println Feature.countByNameInList(['bill','bob','jill'])
-        Feature.executeUpdate(" MATCH (f:Feature) where f.name in ['bill','bob','jill'] delete f")
+        Feature.executeUpdate(" MATCH (f:Feature) where f.name in ['bill','bob','jill'] delete f return f")
         println Feature.countByNameInList(['bill','bob','jill'])
         String uniqueName = UUID.randomUUID().toString()
         def feature = new Feature(name: "bob", uniqueName: uniqueName).save(flush: true,failOnError: true)
@@ -159,6 +167,7 @@ class TestController {
 
 
         getTestFeatures1()
+//        getTestFeatures2()
         println Feature.countByNameInList(['bill','bob','jill'])
 //        render new JSONObject() as JSON
     }
