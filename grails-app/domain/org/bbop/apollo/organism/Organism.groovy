@@ -12,6 +12,7 @@ class Organism implements JsonMetadata {
     static constraints = {
         comment nullable: true
         abbreviation nullable: true
+        uniqueName nullable: false,unique: true
         species nullable: true
         genus nullable: true
         valid nullable: true
@@ -26,15 +27,16 @@ class Organism implements JsonMetadata {
         officialGeneSetTrack nullable: true, blank: false
     }
 
-    String abbreviation;
-    String genus;
-    String species;
-    String commonName;
-    String comment;
-    Boolean valid;
-    boolean publicMode;
+    String uniqueName
+    String abbreviation
+    String genus
+    String species
+    String commonName
+    String comment
+    Boolean valid
+    boolean publicMode
     boolean obsolete
-    String blatdb;
+    String blatdb
     String directory
     String genomeFasta
     String genomeFastaIndex

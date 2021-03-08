@@ -37,6 +37,7 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
             start: 1,
             end: 100,
             length: 99,
+            uniqueName: UUID.randomUUID().toString()
         ).save(failOnError: true)
         jsonObject.put(FeatureStringEnum.FMIN.value, 73)
         jsonObject.put(FeatureStringEnum.FMAX.value, 113)

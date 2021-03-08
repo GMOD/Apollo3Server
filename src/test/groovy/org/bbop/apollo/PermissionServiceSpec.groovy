@@ -50,8 +50,9 @@ class PermissionServiceSpec extends Specification implements ServiceUnitTest<Per
         userGroup.addToUsers(user2)
         user2.addToUserGroups(userGroup)
 
-        Organism organism = new Organism(
+        new Organism(
             commonName: "Honeybee"
+            , uniqueName: UUID.randomUUID().toString()
             , directory: "src/integration-test/groovy/resources/sequences/honeybee-Group1.10/"
         ).save()
     }

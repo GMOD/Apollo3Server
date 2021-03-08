@@ -1469,7 +1469,7 @@ class RequestHandlingService {
             returnString = returnString.substring(1, returnString.length() - 1)
         }
         try {
-            brokerMessagingTemplate.convertAndSend "/topic/AnnotationNotification/" + sequence.organismId + "/" + sequence.id, returnString
+            brokerMessagingTemplate.convertAndSend "/topic/AnnotationNotification/" + sequence.organism.id+ "/" + sequence.id, returnString
         } catch (e) {
             log.error("problem sending message: ${e}")
         }

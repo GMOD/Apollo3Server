@@ -54,7 +54,7 @@ class DomainMarshallerService {
             def returnArray = [:]
             returnArray['id'] = it.id
             returnArray['name'] = it.name
-            returnArray['organismId'] = it.organismId
+//            returnArray['organismId'] = it.organismId
             returnArray['organism'] = it.organism
             returnArray['length'] = it?.length
             returnArray['start'] = it?.start

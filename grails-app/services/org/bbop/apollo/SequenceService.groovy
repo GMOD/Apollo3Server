@@ -219,7 +219,7 @@ class SequenceService {
 
     String getRawResiduesFromSequence(Sequence sequence, int fmin, int fmax) {
         log.debug "inuput sequence ${sequence}"
-        log.debug "with orgs $sequence.organism , $sequence.organismId "
+        log.debug "with orgs $sequence.organism , $sequence.organism.id"
         log.debug "sequence as JSON ${sequence as JSON}"
 //        log.debug "org count ${Organism.count}"
 //        for(def o in Organism.all){
@@ -381,6 +381,7 @@ class SequenceService {
                             , start: refSeq.start
                             , end: refSeq.end
                             , name: refSeq.name
+                            , uniqueName: UUID.randomUUID().toString()
                     ).save(failOnError: true)
                     log.debug "added sequence ${sequence}"
                 }
@@ -447,7 +448,8 @@ class SequenceService {
                                 length: entry.size,
                                 start: 0,
                                 end: entry.size,
-                                name: entry.contig
+                                name: entry.contig,
+                                uniqueName: UUID.randomUUID().toString()
                         ).save(failOnError: true,insert: true)
                         log.debug "added sequence ${sequence}"
                     }

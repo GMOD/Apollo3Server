@@ -97,7 +97,7 @@ class SequenceController {
         session.setAttribute(FeatureStringEnum.DEFAULT_SEQUENCE_NAME.value, sequenceInstance.name)
         session.setAttribute(FeatureStringEnum.SEQUENCE_NAME.value, sequenceInstance.name)
         session.setAttribute(FeatureStringEnum.ORGANISM_JBROWSE_DIRECTORY.value, organism.directory)
-        session.setAttribute(FeatureStringEnum.ORGANISM_ID.value, sequenceInstance.organismId)
+        session.setAttribute(FeatureStringEnum.ORGANISM_ID.value, organism.id)
 
         JSONObject sequenceObject = new JSONObject()
         sequenceObject.put("id", sequenceInstance.id)

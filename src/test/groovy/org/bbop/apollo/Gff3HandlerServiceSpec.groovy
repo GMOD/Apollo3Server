@@ -27,6 +27,7 @@ class Gff3HandlerServiceSpec extends Specification implements ServiceUnitTest<Gf
             , start: 5
             , end: 8
             , name: "Group-1.10"
+            , uniqueName: UUID.randomUUID().toString()
         ).save()
     }
 

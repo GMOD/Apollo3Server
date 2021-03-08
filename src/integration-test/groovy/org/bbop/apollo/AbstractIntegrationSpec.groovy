@@ -79,7 +79,7 @@ class AbstractIntegrationSpec extends Specification {
             , start: 0
             , end: 1405242
             , organism: organism
-            , organismId: organism.id
+//            , organismId: organism.id
             , name: "Group1.10"
         ).save(failOnError: true, flush: true)
 

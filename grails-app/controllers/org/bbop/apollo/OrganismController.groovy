@@ -299,6 +299,7 @@ class OrganismController {
                     genus: requestObject.genus ?: "",
                     obsolete: false,
                     valid: true,
+                    uniqueName: UUID.randomUUID().toString(),
                     species: requestObject.species ?: "",
                     metadata: requestObject.metadata ? requestObject.metadata.toString() : "",
                     publicMode: requestObject.containsKey("publicMode") ? Boolean.valueOf(requestObject.publicMode as String) : false,
@@ -1120,6 +1121,7 @@ class OrganismController {
                 , blatdb: organismJson.blatdb
                 , species: organismJson.species
                 , genus: organismJson.genus
+                , uniqueName: UUID.randomUUID().toString()
                 , obsolete: false
                 , metadata: organismJson.metadata ? organismJson.metadata.toString() : null
                 , nonDefaultTranslationTable: organismJson.nonDefaultTranslationTable ?: null

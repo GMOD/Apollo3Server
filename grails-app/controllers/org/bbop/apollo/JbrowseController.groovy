@@ -204,7 +204,7 @@ class JbrowseController {
                     organismJBrowseDirectory = organism.directory
                     session.setAttribute(FeatureStringEnum.ORGANISM_JBROWSE_DIRECTORY.value, organismJBrowseDirectory)
                     session.setAttribute(FeatureStringEnum.SEQUENCE_NAME.value, sequence.name)
-                    session.setAttribute(FeatureStringEnum.ORGANISM_ID.value, sequence.organismId)
+//                    session.setAttribute(FeatureStringEnum.ORGANISM_ID.value, sequence.organismId)
                     session.setAttribute(FeatureStringEnum.ORGANISM.value, sequence.organism.commonName)
                     return organismJBrowseDirectory
                 }
