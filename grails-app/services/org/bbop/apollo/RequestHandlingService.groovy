@@ -980,12 +980,12 @@ class RequestHandlingService {
             inputObject.put(FeatureStringEnum.NAME.value, gene.name)
 
 //            CDS generatedCDS = transcriptService.getCDS(transcript)
+            def json = featureService.convertFeatureToJSON(transcript)
+            transcriptJSONList += json
 
             if (!suppressHistory) {
                 featureService.addOwnersByString(inputObject.username, gene, transcript)
-                def json = featureService.convertFeatureToJSON(transcript)
                 featureEventService.addNewFeatureEventWithUser(FeatureOperation.ADD_TRANSCRIPT, transcriptService.getGene(transcript).name, transcript.uniqueName, inputObject, json, permissionService.getCurrentUser(inputObject))
-                transcriptJSONList += json
             }
 
         }
