@@ -40,7 +40,7 @@ class SequenceSearchService {
                         "strand" result.subjectStrand
                     })
                     "feature" ({
-                        "uniquename" result.subjectId
+                        "uniqueName" result.subjectId
                         "type"({
                             "name" "region"
                             "cv" ({
@@ -56,7 +56,7 @@ class SequenceSearchService {
                         "strand" result.queryStrand
                     })
                     "feature" ({
-                        "uniquename" result.queryId
+                        "uniqueName" result.queryId
                         "type" ({
                             "name" "region"
                             "cv"({

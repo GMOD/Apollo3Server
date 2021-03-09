@@ -2185,7 +2185,7 @@ class RequestHandlingService {
     /**
      *  From AnnotationEditorService
      */
-//    { "track": "Group1.3", "features": [ { "uniquename": "179e77b9-9329-4633-9f9e-888e3cf9b76a" } ], "operation": "delete_feature" }:
+//    { "track": "Group1.3", "features": [ { "uniqueName": "179e77b9-9329-4633-9f9e-888e3cf9b76a" } ], "operation": "delete_feature" }:
     def deleteFeature(JSONObject inputObject) {
         log.debug "in delete feature ${inputObject as JSON}"
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.WRITE)
@@ -2767,7 +2767,7 @@ class RequestHandlingService {
 
         for (int i = 0; i < features.length(); i++) {
             String type = features.get(i).type
-            String uniqueName = features.get(i).uniquename
+            String uniqueName = features.getJSONObject(i).getString(FeatureStringEnum.UNIQUENAME.value)
             Feature feature = Feature.findByUniqueName(uniqueName)
             checkOwnersDelete(feature, inputObject)
             FeatureEvent currentFeatureEvent = featureEventService.findCurrentFeatureEvent(feature.uniqueName).get(0)

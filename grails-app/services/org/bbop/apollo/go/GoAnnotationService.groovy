@@ -152,7 +152,7 @@ class GoAnnotationService {
     }
 
     def deleteAnnotations(JSONArray featuresArray) {
-        def featureUniqueNames = featuresArray.uniquename as List<String>
+        def featureUniqueNames = featuresArray.uniqueName as List<String>
         List<Feature> features = Feature.findAllByUniqueNameInList(featureUniqueNames)
         for (Feature thisFeature in features) {
             deleteAnnotationFromFeature(thisFeature)

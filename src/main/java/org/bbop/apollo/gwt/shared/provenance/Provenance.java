@@ -7,7 +7,7 @@ import java.util.List;
 public class Provenance {
 
   private Long id;
-  private String feature; // I think this is the gene it refers to? I think the uniquename
+  private String feature;
   private String field;
   private Reference reference;
   private List<String> noteList;
