@@ -2495,9 +2495,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         if (neo4jFeature.id() != null) {
             jsonFeature.put(FeatureStringEnum.ID.value, neo4jFeature.id())
         }
-        def types = neo4jFeature.labels()
-        String type = types.last() // TODO: find a better way for this to get the most specific type
-//        jsonFeature.put(FeatureStringEnum.TYPE.value, generateJSONFeatureStringForType(neo4jFeature.ontologyId))
+//        def types = neo4jFeature.labels()
+        String type = getCvTermFromNeo4jFeature(neo4jFeature) // TODO: find a better way for this to get the most specific type
+        jsonFeature.put(FeatureStringEnum.TYPE.value, type)
+
         jsonFeature.put(FeatureStringEnum.UNIQUENAME.value, neo4jFeature.get(FeatureStringEnum.UNIQUENAME.value).asString())
         if (neo4jFeature.get(FeatureStringEnum.NAME.value) != null) {
             jsonFeature.put(FeatureStringEnum.NAME.value, neo4jFeature.get(FeatureStringEnum.NAME.value).asString())

@@ -768,7 +768,6 @@ class RequestHandlingService {
 
         log.debug "input json object ${inputObject as JSON}"
 
-
         String sequenceName = permissionService.getSequenceNameFromInput(inputObject)
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.READ)
         if (sequenceName != sequence.name) {
@@ -783,28 +782,28 @@ class RequestHandlingService {
 //            featureLocations {
 //                eq('sequence', sequence)
 //            }
-//            fetchMode 'owners', FetchMode.JOIN
-//            fetchMode 'featureLocations', FetchMode.JOIN
-//            fetchMode 'featureLocations.sequence', FetchMode.JOIN
-//            fetchMode 'featureProperties', FetchMode.JOIN
-//            fetchMode 'featureDBXrefs', FetchMode.JOIN
-//            fetchMode 'status', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships', FetchMode.JOIN
-//            fetchMode 'childFeatureRelationships', FetchMode.JOIN
-//            fetchMode 'childFeatureRelationships.parentFeature', FetchMode.JOIN
-//            fetchMode 'childFeatureRelationships.parentFeature.featureLocations', FetchMode.JOIN
-//            fetchMode 'childFeatureRelationships.parentFeature.featureLocations.sequence', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.parentFeature', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.parentFeature.featureLocations', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.parentFeature.featureLocations.sequence', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.childFeature', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.childFeature.parentFeatureRelationships', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.childFeature.childFeatureRelationships', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.childFeature.featureLocations', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.childFeature.featureLocations.sequence', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.childFeature.featureProperties', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.childFeature.featureDBXrefs', FetchMode.JOIN
-//            fetchMode 'parentFeatureRelationships.childFeature.owners', FetchMode.JOIN
+//            join 'owners'
+//            join 'featureLocations'
+//            join 'featureLocations.sequence'
+//            join 'featureProperties'
+//            join 'featureDBXrefs'
+//            join 'status'
+//            join 'parentFeatureRelationships'
+//            join 'childFeatureRelationships'
+//            join 'childFeatureRelationships.parentFeature'
+//            join 'childFeatureRelationships.parentFeature.featureLocations'
+//            join 'childFeatureRelationships.parentFeature.featureLocations.sequence'
+//            join 'parentFeatureRelationships.parentFeature'
+//            join 'parentFeatureRelationships.parentFeature.featureLocations'
+//            join 'parentFeatureRelationships.parentFeature.featureLocations.sequence'
+//            join 'parentFeatureRelationships.childFeature'
+//            join 'parentFeatureRelationships.childFeature.parentFeatureRelationships'
+//            join 'parentFeatureRelationships.childFeature.childFeatureRelationships'
+//            join 'parentFeatureRelationships.childFeature.featureLocations'
+//            join 'parentFeatureRelationships.childFeature.featureLocations.sequence'
+//            join 'parentFeatureRelationships.childFeature.featureProperties'
+//            join 'parentFeatureRelationships.childFeature.featureDBXrefs'
+//            join 'parentFeatureRelationships.childFeature.owners'
 //            'in'('class', viewableAnnotationTranscriptList + viewableAnnotationFeatureList + viewableSequenceAlterationList)
 //        }
 //        def features = Feature.createCriteria().listDistinct {
@@ -846,39 +845,80 @@ class RequestHandlingService {
 //            "WHERE o.id='${sequence.organism.id}' and s.name = '${sequence.name}'\n"  +
 //            "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child}), owners: collect(u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
 
+//        String query = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature),\n" +
+//            "(f)-[owner:OWNERS]-(u)\n" +
+//            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
+//            "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Feature)<-[gfr]-(f) \n" +
+//            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
+//            "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature) \n" +
+//            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
+//            "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child}), " +
+//            "owners: collect(distinct u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
+
+        println "organism cournt ${Organism.count}"
+        println "sequencew cournt ${Sequence.count}"
+
+        def typeList = viewableAnnotationTranscriptList + viewableAnnotationFeatureList + viewableSequenceAlterationList
+        List<String> typeStringList = new ArrayList<>()
+        typeList.each {
+            int lastIndex = it.lastIndexOf(".")
+            typeStringList.add("'"+it.substring(lastIndex+1)+"'")
+        }
+
+        println "type list: ${typeList}"
+//
         String query = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature),\n" +
             "(f)-[owner:OWNERS]-(u)\n" +
-            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
-            "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Feature)<-[gfr]-(f) \n" +
-            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
-            "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature) \n" +
-            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
-            "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child}), " +
-            "owners: collect(u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
-
-
-        log.debug "query output: ${query}"
+            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}')\n" +
+                "and s.name = '${sequence.name}'\n" +
+                "and any(l in labels(f) where l in ${typeStringList})  \n" +
+            "RETURN {sequence: s,feature: f,location: fl, owners: collect(distinct u) }"
+//            "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Feature)<-[gfr]-(f) \n" +
+//            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
+//            "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature) \n" +
+//            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
+//            "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child}), " +
+//            "owners: collect(distinct u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
+        println "query output: ${query}"
         def nodes = Feature.executeQuery(query).unique()
-        log.debug "actual returned nodes ${nodes} ${nodes.size()}"
-
-
+        println "actual returned nodes ${nodes} ${nodes.size()}"
+//
+//
         JSONArray jsonFeatures = new JSONArray()
         nodes.each{
-            log.debug "forist node ${it} "
-            log.debug "class of it ${it.getClass()}"
+            println "forist node ${it} "
+            println "class of it ${it.getClass()}"
 //            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
 //        features.each { feature ->
 //            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
             JSONObject jsonObject = featureService.convertNeo4jFeatureToJSON(it, false)
             jsonFeatures.put(jsonObject)
         }
+//
+//        println "output size ${nodes.size()}"
+//        println "lazy returned features ${nodes as JSON}"
+//        inputObject.put(AnnotationEditorController.REST_FEATURES, jsonFeatures)
+//        log.debug "getFeatures ${System.currentTimeMillis() - start}ms"
+//        return inputObject
 
-        log.debug "outputs ${nodes}"
-        log.debug "lazy returned features ${nodes as JSON}"
+//        def features = Feature.createCriteria().listDistinct {
+////            eq('featureLocation.sequence', sequence)
+////            'in'('class', viewableAnnotationTranscriptList + viewableAnnotationFeatureList + viewableSequenceAlterationList)
+//        }
+
+//        Feature.join()
+
+
+//        JSONArray jsonFeatures = new JSONArray()
+//        features.each { feature ->
+//            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
+//            jsonFeatures.put(jsonObject)
+//        }
 
         inputObject.put(AnnotationEditorController.REST_FEATURES, jsonFeatures)
-        log.debug "getFeatures ${System.currentTimeMillis() - start}ms"
+        println "getFeatures ${System.currentTimeMillis() - start}ms"
         return inputObject
+
 
     }
 
