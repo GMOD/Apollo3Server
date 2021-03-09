@@ -1,6 +1,7 @@
 package org.bbop.apollo
 
 import grails.converters.JSON
+import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.alteration.SequenceAlterationInContext
 import org.bbop.apollo.attributes.*
@@ -1874,6 +1875,28 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         return returnFeature;
     }
 
+
+
+    // TODO: add unit tests and move to a non-transcration method
+    @NotTransactional
+    def getSOUrlForCvTermLabels(List<String> cvTermsArray){
+        return cvTermsArray.collect{  getSOUrlForCvTerm(it)}.findAll{ it!=null}
+    }
+
+    @NotTransactional
+    String getSOUrlForCvTerm(String cvTerm){
+        String ontologyId = null
+        try {
+            ontologyId = Class.forName("org.bbop.apollo.feature.${cvTerm}")?.ontologyId
+        } catch (e) {
+        }
+        try {
+            ontologyId = ontologyId ?: Class.forName("org.bbop.apollo.variant.${cvTerm}")?.ontologyId
+        } catch (e) {
+        }
+        return ontologyId
+    }
+
     String findMostSpecificLabel(Collection<String> labels) {
         def filteredLabels = labels.findAll { it != "Feature" && !it.contains("TranscriptRegion") && it != "SpliceSite" }
         if(filteredLabels.contains("MRNA")) return "MRNA"
@@ -1909,6 +1932,68 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         } else {
             return false
         }
+    }
+
+
+    @NotTransactional
+    def castNeo4jFeature(InternalNode internalNode) {
+        String label = findMostSpecificLabel(internalNode.labels())
+        switch (label.toUpperCase()) {
+            case MRNA.cvTerm.toUpperCase(): return internalNode as MRNA
+            case MiRNA.cvTerm.toUpperCase(): return internalNode as MiRNA
+            case NcRNA.cvTerm.toUpperCase(): return internalNode as NcRNA
+            case GuideRNA.cvTerm.toUpperCase(): return internalNode as GuideRNA
+            case RNasePRNA.cvTerm.toUpperCase(): return internalNode as RNasePRNA
+            case TelomeraseRNA.cvTerm.toUpperCase(): return internalNode as TelomeraseRNA
+            case SrpRNA.cvTerm.toUpperCase(): return internalNode as SrpRNA
+            case LncRNA.cvTerm.toUpperCase(): return internalNode as LncRNA
+            case RNaseMRPRNA.cvTerm.toUpperCase(): return internalNode as RNaseMRPRNA
+            case ScRNA.cvTerm.toUpperCase(): return internalNode as ScRNA
+            case PiRNA.cvTerm.toUpperCase(): return internalNode as PiRNA
+            case TmRNA.cvTerm.toUpperCase(): return internalNode as TmRNA
+            case EnzymaticRNA.cvTerm.toUpperCase(): return internalNode as EnzymaticRNA
+            case SnoRNA.cvTerm.toUpperCase(): return internalNode as SnoRNA
+            case SnRNA.cvTerm.toUpperCase(): return internalNode as SnRNA
+            case RRNA.cvTerm.toUpperCase(): return internalNode as RRNA
+            case TRNA.cvTerm.toUpperCase(): return internalNode as TRNA
+            case Transcript.cvTerm.toUpperCase(): return internalNode as Transcript
+            case Gene.cvTerm.toUpperCase(): return internalNode as Gene
+            case Exon.cvTerm.toUpperCase(): return internalNode as Exon
+            case CDS.cvTerm.toUpperCase(): return internalNode as CDS
+            case Intron.cvTerm.toUpperCase(): return internalNode as Intron
+            case Pseudogene.cvTerm.toUpperCase(): return internalNode as Pseudogene
+            case PseudogenicRegion.cvTerm.toUpperCase(): return internalNode as PseudogenicRegion
+            case ProcessedPseudogene.cvTerm.toUpperCase(): return internalNode as ProcessedPseudogene
+            case TransposableElement.alternateCvTerm.toUpperCase():
+            case TransposableElement.cvTerm.toUpperCase(): return internalNode as TransposableElement
+            case Terminator.alternateCvTerm.toUpperCase():
+            case Terminator.cvTerm.toUpperCase(): return internalNode as Terminator
+            case ShineDalgarnoSequence.alternateCvTerm.toUpperCase():
+            case ShineDalgarnoSequence.cvTerm.toUpperCase(): return internalNode as ShineDalgarnoSequence
+            case RepeatRegion.alternateCvTerm.toUpperCase():
+            case RepeatRegion.cvTerm.toUpperCase(): return internalNode as RepeatRegion
+            case InsertionArtifact.cvTerm.toUpperCase(): return internalNode as InsertionArtifact
+            case DeletionArtifact.cvTerm.toUpperCase(): return internalNode as DeletionArtifact
+            case SubstitutionArtifact.cvTerm.toUpperCase(): return internalNode as SubstitutionArtifact
+            case Insertion.cvTerm.toUpperCase(): return internalNode as Insertion
+            case Deletion.cvTerm.toUpperCase(): return internalNode as Deletion
+            case Substitution.cvTerm.toUpperCase(): return internalNode as Substitution
+            case StopCodonReadThrough.cvTerm.toUpperCase(): return internalNode as StopCodonReadThrough
+            case NonCanonicalFivePrimeSpliceSite.cvTerm.toUpperCase(): return internalNode as NonCanonicalFivePrimeSpliceSite
+            case NonCanonicalThreePrimeSpliceSite.cvTerm.toUpperCase(): return internalNode as NonCanonicalThreePrimeSpliceSite
+            case NonCanonicalFivePrimeSpliceSite.alternateCvTerm.toUpperCase(): return internalNode as NonCanonicalFivePrimeSpliceSite
+            case NonCanonicalThreePrimeSpliceSite.alternateCvTerm.toUpperCase(): return internalNode as NonCanonicalThreePrimeSpliceSite
+            case SNV.cvTerm.toUpperCase(): return internalNode as SNV
+            case SNP.cvTerm.toUpperCase(): return internalNode as SNP
+            case MNV.cvTerm.toUpperCase(): return internalNode as MNV
+            case MNP.cvTerm.toUpperCase(): return internalNode as MNP
+            case Indel.cvTerm.toUpperCase(): return internalNode as Indel
+            default:
+                log.error("None for type: " + internalNode)
+//        log.error("No feature type exists for ${ontologyId}")
+                return internalNode as Feature
+        }
+
     }
 
     // TODO: (perform on client side, slightly ugly)
@@ -2881,8 +2966,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         if (inputFeature.symbol) {
             jsonFeature.put(FeatureStringEnum.SYMBOL.value, inputFeature.symbol)
         }
-        if (inputFeature.status) {
-            jsonFeature.put(FeatureStringEnum.STATUS.value, inputFeature.status.value)
+        def statusValue = Status.executeQuery("MATCH (f:Feature)--(s:Status) where f.uniqueName = ${inputFeature.uniqueName} return s.value")
+        if (statusValue.size()>0) {
+            jsonFeature.put(FeatureStringEnum.STATUS.value, statusValue)
         }
         if (inputFeature.description) {
             jsonFeature.put(FeatureStringEnum.DESCRIPTION.value, inputFeature.description)
@@ -2899,8 +2985,12 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         start = System.currentTimeMillis()
         if (inputFeature.featureLocation) {
-            Sequence sequence = inputFeature.featureLocation.to
-            jsonFeature.put(FeatureStringEnum.SEQUENCE.value, sequence.name)
+            def sequenceNodes = Feature.executeQuery("MATCH (f:Feature)-[fl:FEATURELOCATION]-(s:Sequence) where f.uniqueName=${inputFeature.uniqueName} return s limit 1")
+            println "sequence node ${sequenceNodes} and ${sequenceNodes.size()}"
+            Sequence sequence = sequenceNodes[0]  as Sequence
+            if(sequence!=null){
+                jsonFeature.put(FeatureStringEnum.SEQUENCE.value, sequence.name)
+            }
         }
 
         if (inputFeature.goAnnotations) {
@@ -2944,8 +3034,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         start = System.currentTimeMillis()
 
-        if (inputFeature.featureLocation) {
-            FeatureLocation featureLocation = inputFeature.featureLocation
+        def featureLocationNodes = FeatureLocation.executeQuery("MATCH (f:Feature)-[fl:FEATURELOCATION]-(s:Sequence) where f.uniqueName = ${inputFeature.uniqueName} return fl")
+        if (featureLocationNodes.size()>0) {
+//            FeatureLocation featureLocation = inputFeature.featureLocation
+            FeatureLocation featureLocation = featureLocationNodes[0] as FeatureLocation
             if (featureLocation != null) {
                 jsonFeature.put(FeatureStringEnum.LOCATION.value, convertFeatureLocationToJSON(featureLocation));
             }
@@ -3642,7 +3734,6 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         mainGene.save(flush: true)
         return mainGene
     }
-
 
     private class SequenceAlterationInContextPositionComparator<SequenceAlterationInContext> implements Comparator<SequenceAlterationInContext> {
         @Override

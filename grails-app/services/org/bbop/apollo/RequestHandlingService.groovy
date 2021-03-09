@@ -2278,21 +2278,21 @@ class RequestHandlingService {
                     }
                     int numberTranscripts = transcriptService.getTranscripts(gene).size()
                     // if the # of transcripts is 1, then delete the gene as well
-                    goAnnotationService.deleteAnnotationFromFeature(transcript)
-                    provenanceService.deleteAnnotationFromFeature(transcript)
-                    geneProductService.deleteAnnotationFromFeature(transcript)
+                    goAnnotationService.deleteAnnotations(transcript)
+                    provenanceService.deleteAnnotations(transcript)
+                    geneProductService.deleteAnnotations(transcript)
 
-                    goAnnotationService.removeGoAnnotationsFromFeature(transcript)
-                    provenanceService.removeProvenancesFromFeature(transcript)
-                    geneProductService.removeGeneProductsFromFeature(transcript)
+//                    goAnnotationService.removeGoAnnotationsFromFeature(transcript)
+//                    provenanceService.removeProvenancesFromFeature(transcript)
+//                    geneProductService.removeGeneProductsFromFeature(transcript)
 
                     featureRelationshipService.removeFeatureRelationship(gene, transcript)
                     featureRelationshipService.deleteFeatureAndChildren(transcript)
                     if (numberTranscripts == 1) {
 //                        Feature topLevelFeature = featureService.getTopLevelFeature(gene)
-                        goAnnotationService.deleteAnnotationFromFeature(gene)
-                        provenanceService.deleteAnnotationFromFeature(gene)
-                        geneProductService.deleteAnnotationFromFeature(gene)
+                        goAnnotationService.deleteAnnotations(gene)
+                        provenanceService.deleteAnnotations(gene)
+                        geneProductService.deleteAnnotations(gene)
                         featureRelationshipService.deleteFeatureAndChildren(gene)
 
                         if (!suppressEvents) {
@@ -2336,9 +2336,9 @@ class RequestHandlingService {
                 } else {
                     // if we are deleting the top level
                     Feature topLevelFeature = featureService.getTopLevelFeature(feature)
-                    goAnnotationService.removeGoAnnotationsFromFeature(topLevelFeature)
-                    provenanceService.removeProvenancesFromFeature(topLevelFeature)
-                    geneProductService.removeGeneProductsFromFeature(topLevelFeature)
+                    goAnnotationService.deleteAnnotations(topLevelFeature)
+                    provenanceService.deleteAnnotations(topLevelFeature)
+                    geneProductService.deleteAnnotations(topLevelFeature)
                     featureRelationshipService.deleteFeatureAndChildren(topLevelFeature)
 
                     if (!suppressEvents) {

@@ -141,22 +141,16 @@ class GeneProductService {
     return returnObject
   }
 
-  def deleteAnnotationFromFeature(Feature thisFeature) {
-    GeneProduct.deleteAll(GeneProduct.executeQuery("select ga from GeneProduct  ga join ga.feature f where f = :feature", [feature: thisFeature]))
+  def deleteAnnotations(Feature feature) {
+    int deletions = GeneProduct.executeUpdate("MATCH (f:Feature)-[r]-(g:GeneProduct) where f.uniqueName = ${feature.uniqueName} delete g,r return count(g)")
+    log.debug("Deleted ${deletions} gene products")
+    return deletions
   }
 
   def deleteAnnotations(JSONArray featuresArray) {
-    def featureUniqueNames = featuresArray.uniqueName as List<String>
-    List<Feature> features = Feature.findAllByUniqueNameInList(featureUniqueNames)
-    for (Feature thisFeature in features) {
-      deleteAnnotationFromFeature(thisFeature)
-    }
+    int deletions = GeneProduct.executeUpdate("MATCH (f:Feature)-[r]-(g:GeneProduct) where f.uniqueName in ${featuresArray.uniqueName} delete g,r return count(g)")
+    log.debug("Deleted ${deletions} gene products")
+    return deletions
   }
 
-  def removeGeneProductsFromFeature(Feature feature) {
-    def geneProducts = feature.geneProducts
-    for (def annotation in geneProducts) {
-      feature.removeFromGeneProducts(annotation)
-    }
-  }
 }

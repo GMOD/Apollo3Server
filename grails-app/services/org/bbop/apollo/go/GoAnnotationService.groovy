@@ -147,22 +147,17 @@ class GoAnnotationService {
         return returnObject
     }
 
-    def deleteAnnotationFromFeature(Feature thisFeature) {
-        GoAnnotation.deleteAll(GoAnnotation.executeQuery("select ga from GoAnnotation ga join ga.feature f where f = :feature", [feature: thisFeature]))
+
+    def deleteAnnotations(Feature feature) {
+        int deletions = GoAnnotation.executeUpdate("MATCH (f:Feature)-[r]-(go:GoAnnotation) where f.uniqueName = ${feature.uniqueName} delete go,r return count(go)")
+        log.debug("Deleted ${deletions} go annotations")
+        return deletions
     }
 
     def deleteAnnotations(JSONArray featuresArray) {
-        def featureUniqueNames = featuresArray.uniqueName as List<String>
-        List<Feature> features = Feature.findAllByUniqueNameInList(featureUniqueNames)
-        for (Feature thisFeature in features) {
-            deleteAnnotationFromFeature(thisFeature)
-        }
+        int deletions = GoAnnotation.executeUpdate("MATCH (f:Feature)-[r]-(go:GoAnnotation) where f.uniqueName in ${featuresArray.uniqueName} delete go,r return count(go)")
+        log.debug("Deleted ${deletions} go annotations")
+        return deletions
     }
 
-    def removeGoAnnotationsFromFeature(Feature feature) {
-        def goAnnotations = feature.goAnnotations
-        for (def annotation in goAnnotations) {
-            feature.removeFromGoAnnotations(annotation)
-        }
-    }
 }
