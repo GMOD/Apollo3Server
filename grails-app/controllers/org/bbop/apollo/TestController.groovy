@@ -161,11 +161,13 @@ class TestController {
         println "feature output: ${feature.uniqueName}"
 
 
+
         int updated = Feature.executeUpdate("MATCH (f:Feature) where f.uniqueName = ${uniqueName} set f.name = 'jill' return f")
         println "updated: ${updated}"
         def featuresInList = Feature.findAllByNameInList(['bill','bob','jill']) as JSON
 
-        render featuresInList as JSON
+        println featuresInList
+        render featuresInList
 
 //        testService.renameUser1(uniqueName ,"jill")
 
