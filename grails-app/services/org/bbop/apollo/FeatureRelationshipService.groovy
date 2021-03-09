@@ -11,16 +11,31 @@ import org.bbop.apollo.relationship.FeatureRelationship
 class FeatureRelationshipService {
 
     List<Feature> getChildrenForFeatureAndTypes(Feature feature, String... ontologyIds) {
-        def list = new ArrayList<Feature>()
-        if (feature?.parentFeatureRelationships != null) {
-            feature.parentFeatureRelationships.each { it ->
-                if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.to.ontologyId))) {
-                    list.push(it.to)
-                }
+        def featureList = Feature.executeQuery("MATCH (f:Feature)-[fr:FEATURERELATIONSHIP]->(child:Feature) where f.uniqueName=${feature.uniqueName} RETURN child ")
+        List<Feature> returnFeatureList = new ArrayList<Feature>()
+        println "feature list ${featureList}, ${ontologyIds}"
+
+        for(def f in featureList){
+            def returnFeature = f as Feature
+            println "feature f: ${f} and return feature ${returnFeature}, ${ontologyIds}"
+            if(ontologyIds.length==0){
+                returnFeatureList.add( returnFeature)
+            }
+            else if( ontologyIds.contains(returnFeature.ontologyId)){
+                returnFeatureList.add( returnFeature)
             }
         }
+        println "return feature list ${returnFeatureList}"
 
-        return list
+//        if(ontologyIds.length==0){
+//            return featureList
+//        }
+//        else{
+//            return featureList.findAll { Feature f ->
+//                (f && ontologyIds.contains(f.ontologyId))
+//            }
+//        }
+        return returnFeatureList
     }
 
 

@@ -15,7 +15,7 @@ import org.bbop.apollo.attributes.DBXref
 import org.bbop.apollo.geneProduct.GeneProduct
 import org.bbop.apollo.go.GoAnnotation
 
-class Feature implements Ontological{
+class Feature {
 
     static constraints = {
         name nullable: false
@@ -37,6 +37,11 @@ class Feature implements Ontological{
     Date dateCreated;
     Date lastUpdated ;
     FeatureLocation featureLocation
+    static String ontologyId
+    static String cvTerm
+
+    static fetchMode = [featureLocation:'eager']
+
 
     static hasMany = [
             parentFeatureRelationships: FeatureRelationship  // relationships where I am the parent feature relationship

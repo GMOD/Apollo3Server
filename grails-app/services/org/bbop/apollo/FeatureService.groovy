@@ -599,8 +599,8 @@ class FeatureService {
                 log.debug "no gene, CALCULATING CDS"
                 calculateCDS(transcript, readThroughStopCodon)
                 CDS calculatedCDS = transcriptService.getCDS(transcript)
-                log.debug "final CDS ${calculatedCDS}"
-                log.debug "final CDS location ${calculatedCDS.featureLocation as JSON}"
+                println "final CDS ${calculatedCDS}"
+                println "final CDS location ${calculatedCDS.featureLocation as JSON}"
                 calculatedCDS.save(flush: true)
                 calculatedCDS.featureLocation.save(flush: true)
             } else {
@@ -803,12 +803,13 @@ class FeatureService {
         CDS cds = transcriptService.getCDS(transcript);
         log.debug "got CDS ${cds} from transcript ${transcript}"
         if (cds == null) {
-            log.debug "cds is not null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
+//            log.debug "cds is null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
             setLongestORF(transcript, readThroughStopCodon);
             return;
         }
         boolean manuallySetStart = cdsService.isManuallySetTranslationStart(cds);
         boolean manuallySetEnd = cdsService.isManuallySetTranslationEnd(cds);
+        log.debug "manually start and end ${manuallySetStart} ${manuallySetEnd}"
         if (manuallySetStart && manuallySetEnd) {
             return;
         }
@@ -1389,7 +1390,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
     @Transactional
     void setLongestORF(Transcript transcript, boolean readThroughStopCodon) {
-        Organism organism = transcript.featureLocation.to.organism
+//        Organism organism = transcript.featureLocation.to.organism
+        Organism organism = Organism.executeQuery("MATCH (t:Transcript)-[]-(s:Sequence)-[]-(o:Organism) where t.uniqueName = ${transcript.uniqueName} return o limit 1")[0] as Organism
         TranslationTable translationTable = organismService.getTranslationTable(organism)
         String mrna = getResiduesWithAlterationsAndFrameshifts(transcript)
 
@@ -2898,8 +2900,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         start = System.currentTimeMillis()
         if (inputFeature.featureLocation) {
-            Sequence sequence = inputFeature.featureLocation.to
-            jsonFeature.put(FeatureStringEnum.SEQUENCE.value, sequence.name)
+            String sequenceName = Sequence.executeQuery(" MATCH (f:Feature)-[fl:FeatureLocation]-(s:Sequence) where f.uniquename = ${inputFeature.uniqueName} return s.name")[0] as String
+//            Sequence sequence = inputFeature.featureLocation.to
+            jsonFeature.put(FeatureStringEnum.SEQUENCE.value, sequenceName)
         }
 
         if (inputFeature.goAnnotations) {
@@ -3764,9 +3767,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
     List<SequenceAlterationArtifact> getSequenceAlterationsForFeature(Feature feature) {
-        int fmin = feature.fmin
-        int fmax = feature.fmax
-        Sequence sequence = feature.featureLocation.to
+
+//        int fmin = feature.fmin
+//        int fmax = feature.fmax
+//        Sequence sequence = feature.featureLocation.to
 //        log.debug "fmin ${fmin}"
 //        log.debug "fmax ${fmax}"
 //        log.debug "sequence ${sequence}"
@@ -3802,8 +3806,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         List<SequenceAlterationInContext> sequenceAlterationInContextList = new ArrayList<>()
         if (!(feature.instanceOf(CDS.class) && !(feature.instanceOf(Transcript.class)))) {
             // for features that are not instance of CDS or Transcript (ex. Single exons)
-            int featureFmin = feature.fmin
-            int featureFmax = feature.fmax
+            def featureLocation = FeatureLocation.findByFrom(feature)
+            int featureFmin = featureLocation.fmin
+            int featureFmax = featureLocation.fmax
             for (SequenceAlterationArtifact eachSequenceAlteration : sequenceAlterations) {
                 int alterationFmin = eachSequenceAlteration.fmin
                 int alterationFmax = eachSequenceAlteration.fmax
