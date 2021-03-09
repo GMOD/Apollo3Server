@@ -117,6 +117,7 @@ class TestController {
     }
 
     def getTestFeatures2(){
+
         // note that matching ONLY feature is problematic as it fails to add feature location as it tries to initiate a proxy for feature location
         def results = Feature.executeQuery(" MATCH (f:Feature)-[fl:FeatureLocation]-(s:Sequence) where f.name in ['bill','bob','jill'] return f,fl,s")
         List<Feature> returnFeatures = []
@@ -162,11 +163,14 @@ class TestController {
 
         int updated = Feature.executeUpdate("MATCH (f:Feature) where f.uniqueName = ${uniqueName} set f.name = 'jill' return f")
         println "updated: ${updated}"
+        def featuresInList = Feature.findAllByNameInList(['bill','bob','jill']) as JSON
+
+        render featuresInList as JSON
 
 //        testService.renameUser1(uniqueName ,"jill")
 
 
-        getTestFeatures1()
+//        getTestFeatures1()
 //        getTestFeatures2()
         println Feature.countByNameInList(['bill','bob','jill'])
 //        render new JSONObject() as JSON
