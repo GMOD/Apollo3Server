@@ -132,22 +132,15 @@ class ProvenanceService {
     return returnObject
   }
 
-  def deleteAnnotationFromFeature(Feature thisFeature) {
-    Provenance.deleteAll(Provenance.executeQuery("select ga from Provenance  ga join ga.feature f where f = :feature", [feature: thisFeature]))
+  def deleteAnnotations(Feature feature) {
+    int deletions = Provenance.executeUpdate("MATCH (f:Feature)-[r]-(g:Provenance) where f.uniqueName = ${feature.uniqueName} delete g,r return count(g)")
+    log.debug("Deleted ${deletions} provenance annotations")
+    return deletions
   }
 
   def deleteAnnotations(JSONArray featuresArray) {
-    def featureUniqueNames = featuresArray.uniquename as List<String>
-    List<Feature> features = Feature.findAllByUniqueNameInList(featureUniqueNames)
-    for (Feature thisFeature in features) {
-      deleteAnnotationFromFeature(thisFeature)
-    }
-  }
-
-  def removeProvenancesFromFeature(Feature feature) {
-      def provenances = feature.provenances
-      for(def annotation in provenances){
-        feature.removeFromProvenances(annotation)
-      }
+    int deletions = Provenance.executeUpdate("MATCH (f:Feature)-[r]-(g:Provenance) where f.uniqueName in ${featuresArray.uniqueName} delete g,r return count(g)")
+    log.debug("Deleted ${deletions} provenance annotations")
+    return deletions
   }
 }

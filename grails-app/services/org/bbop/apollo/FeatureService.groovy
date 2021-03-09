@@ -1,6 +1,7 @@
 package org.bbop.apollo
 
 import grails.converters.JSON
+import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.alteration.SequenceAlterationInContext
 import org.bbop.apollo.attributes.*
@@ -1874,24 +1875,11 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         return returnFeature;
     }
 
-    String findMostSpecificLabel(Collection<String> labels) {
-        def filteredLabels = labels.findAll { it != "Feature" && !it.contains("TranscriptRegion") && it != "SpliceSite" }
-        if(filteredLabels.contains("MRNA")) return "MRNA"
-        log.debug "filtered labels ${filteredLabels}"
-//        if (filteredLabels.indexOf("Transcript") >= 0) {
-//            if (filteredLabels.size() > 1) {
-//                return filteredLabels.findAll { it != "Transcript" }.first()
-//            } else {
-//                return filteredLabels.last()
-//            }
-//        }
-        return filteredLabels.last()
 
-    }
 
     String getCvTermFromNeo4jFeature(def feature) {
         log.debug "cv term ${feature}"
-        String specificType = findMostSpecificLabel(feature.labels())
+        String specificType = FeatureTypeMapper.findMostSpecificLabel(feature.labels())
         log.debug "specific type ${specificType}"
         return Class.forName("org.bbop.apollo.feature.${specificType}")?.cvTerm
     }
@@ -1910,6 +1898,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             return false
         }
     }
+
+
 
     // TODO: (perform on client side, slightly ugly)
     Feature generateFeatureForType(String ontologyId) {
@@ -2495,9 +2485,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         if (neo4jFeature.id() != null) {
             jsonFeature.put(FeatureStringEnum.ID.value, neo4jFeature.id())
         }
-        def types = neo4jFeature.labels()
-        String type = types.last() // TODO: find a better way for this to get the most specific type
-//        jsonFeature.put(FeatureStringEnum.TYPE.value, generateJSONFeatureStringForType(neo4jFeature.ontologyId))
+//        def types = neo4jFeature.labels()
+        String type = getCvTermFromNeo4jFeature(neo4jFeature) // TODO: find a better way for this to get the most specific type
+        jsonFeature.put(FeatureStringEnum.TYPE.value, type)
+
         jsonFeature.put(FeatureStringEnum.UNIQUENAME.value, neo4jFeature.get(FeatureStringEnum.UNIQUENAME.value).asString())
         if (neo4jFeature.get(FeatureStringEnum.NAME.value) != null) {
             jsonFeature.put(FeatureStringEnum.NAME.value, neo4jFeature.get(FeatureStringEnum.NAME.value).asString())
@@ -2880,8 +2871,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         if (inputFeature.symbol) {
             jsonFeature.put(FeatureStringEnum.SYMBOL.value, inputFeature.symbol)
         }
-        if (inputFeature.status) {
-            jsonFeature.put(FeatureStringEnum.STATUS.value, inputFeature.status.value)
+        def statusValue = Status.executeQuery("MATCH (f:Feature)--(s:Status) where f.uniqueName = ${inputFeature.uniqueName} return s.value")
+        if (statusValue.size()>0) {
+            jsonFeature.put(FeatureStringEnum.STATUS.value, statusValue)
         }
         if (inputFeature.description) {
             jsonFeature.put(FeatureStringEnum.DESCRIPTION.value, inputFeature.description)
@@ -2898,8 +2890,12 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         start = System.currentTimeMillis()
         if (inputFeature.featureLocation) {
-            Sequence sequence = inputFeature.featureLocation.to
-            jsonFeature.put(FeatureStringEnum.SEQUENCE.value, sequence.name)
+            def sequenceNodes = Feature.executeQuery("MATCH (f:Feature)-[fl:FEATURELOCATION]-(s:Sequence) where f.uniqueName=${inputFeature.uniqueName} return s limit 1")
+            println "sequence node ${sequenceNodes} and ${sequenceNodes.size()}"
+            Sequence sequence = sequenceNodes[0]  as Sequence
+            if(sequence!=null){
+                jsonFeature.put(FeatureStringEnum.SEQUENCE.value, sequence.name)
+            }
         }
 
         if (inputFeature.goAnnotations) {
@@ -2943,8 +2939,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         start = System.currentTimeMillis()
 
-        if (inputFeature.featureLocation) {
-            FeatureLocation featureLocation = inputFeature.featureLocation
+        def featureLocationNodes = FeatureLocation.executeQuery("MATCH (f:Feature)-[fl:FEATURELOCATION]-(s:Sequence) where f.uniqueName = ${inputFeature.uniqueName} return fl")
+        if (featureLocationNodes.size()>0) {
+//            FeatureLocation featureLocation = inputFeature.featureLocation
+            FeatureLocation featureLocation = featureLocationNodes[0] as FeatureLocation
             if (featureLocation != null) {
                 jsonFeature.put(FeatureStringEnum.LOCATION.value, convertFeatureLocationToJSON(featureLocation));
             }
@@ -3641,7 +3639,6 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         mainGene.save(flush: true)
         return mainGene
     }
-
 
     private class SequenceAlterationInContextPositionComparator<SequenceAlterationInContext> implements Comparator<SequenceAlterationInContext> {
         @Override

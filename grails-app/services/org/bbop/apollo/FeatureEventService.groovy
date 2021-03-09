@@ -581,7 +581,7 @@ class FeatureEventService {
                     log.debug "original command object = ${originalCommandObject as JSON}"
                     log.debug "final command object = ${addCommandObject as JSON}"
                     requestHandlingService.addTranscript(addCommandObject)
-                    transcriptsToCheckForIsoformOverlap.add(jsonFeature.getString("uniquename"))
+                    transcriptsToCheckForIsoformOverlap.add(jsonFeature.getString(FeatureStringEnum.UNIQUENAME.value))
 
                 } else {
                     addCommandObject.put(FeatureStringEnum.SUPPRESS_EVENTS.value, false)

@@ -1,24 +1,36 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
+import org.bbop.apollo.attributes.DBXref
 import org.bbop.apollo.attributes.FeatureProperty
+import org.bbop.apollo.attributes.FeatureSynonym
 import org.bbop.apollo.attributes.Frameshift
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.go.GoAnnotation
 import org.bbop.apollo.relationship.FeatureRelationship
+import org.neo4j.driver.internal.InternalNode
 
 @Transactional(readOnly = true)
 class FeatureRelationshipService {
 
+    def featureService
+
     List<Feature> getChildrenForFeatureAndTypes(Feature feature, String... ontologyIds) {
+        def children = Feature.executeQuery("MATCH (f:Feature)-[fr:FEATURERELATIONSHIP]->(child:Feature) where f.uniqueName = ${feature.uniqueName} return child ")
+        println "getting children ${children}"
         def list = new ArrayList<Feature>()
-        if (feature?.parentFeatureRelationships != null) {
-            feature.parentFeatureRelationships.each { it ->
-                if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.to.ontologyId))) {
-                    list.push(it.to)
-                }
+        def ontologyIdCollection = ontologyIds as Collection<String>
+        children?.each { InternalNode it ->
+            Collection<String> labels = FeatureTypeMapper.getSOUrlForCvTermLabels(it.labels())
+            println "labels ${labels} vs ${ontologyIdCollection}"
+            println "ontology type: ${it.ontologyId}"
+            if (ontologyIds.size() == 0 || (ontologyIdCollection.intersect(labels))) {
+                def castFeature = FeatureTypeMapper.castNeo4jFeature(it)
+                list.push(castFeature)
             }
         }
+        println "return list ${list}"
 
         return list
     }
@@ -56,12 +68,17 @@ class FeatureRelationshipService {
     }
 
     List<Feature> getParentsForFeature(Feature feature, String... ontologyIds) {
+        def parents = Feature.executeQuery("MATCH (parent:Feature)-[fr:FEATURERELATIONSHIP]->(f:Feature) where f.uniqueName = ${feature.uniqueName} return parent")
         def list = new ArrayList<Feature>()
-        if (feature?.childFeatureRelationships != null) {
-            feature.childFeatureRelationships.each { it ->
-                if (ontologyIds.size() == 0 || (it && ontologyIds.contains(it.from.ontologyId))) {
-                    list.push(it.from)
-                }
+        def ontologyIdCollection = ontologyIds as Collection<String>
+        parents?.each { InternalNode it ->
+            println "raw labels: "+it.labels()
+            Collection<String> labels = FeatureTypeMapper.getSOUrlForCvTermLabels(it.labels())
+            if (ontologyIds.size() == 0 || (ontologyIdCollection.intersect(labels))) {
+//                String cvTerm = featureService.getCvTermFromNeo4jFeature(it)
+                println "ontology type: ${it.ontologyId}"
+                def castFeature = FeatureTypeMapper.castNeo4jFeature(it)
+                list.push(castFeature)
             }
         }
 
@@ -185,10 +202,7 @@ class FeatureRelationshipService {
 //    }
 
     List<Feature> getChildren(Feature feature) {
-        def exonRelations = feature.parentFeatureRelationships.findAll()
-        return exonRelations.collect { it ->
-            it.to
-        }
+        return getChildrenForFeatureAndTypes(feature)
     }
 
     /**
@@ -201,39 +215,60 @@ class FeatureRelationshipService {
     @Transactional
     def deleteFeatureAndChildren(Feature feature) {
 
-        if(feature.instanceOf(Transcript.class)){
+        // delete all relationships and delete all children that are features
 
-        }
-        else{
-
-        }
-
-        // if grandchildren then delete those
-        for (FeatureRelationship featureRelationship in feature.parentFeatureRelationships) {
-            if (featureRelationship.childFeature?.parentFeatureRelationships) {
-                deleteFeatureAndChildren(featureRelationship.childFeature)
-            }
+        def children = getChildren(feature)
+        children.each {
+            deleteFeatureAndChildren(it)
         }
 
-        // create a list of relationships to remove (assume we have no grandchildren here)
-        List<FeatureRelationship> relationshipsToRemove = []
-        for (FeatureRelationship featureRelationship in feature.parentFeatureRelationships) {
-            relationshipsToRemove << featureRelationship
-        }
+        //
+//        FeatureSynonym.executeUpdate("MATCH (f:Feature)-[r]->(p:FeatureSynonym) where f.uniqueName = ${feature.uniqueName} " +
+//                " delete r,p")
+//        DBXref.executeUpdate("MATCH (f:Feature)-[r]->(p:DBXref) where f.uniqueName = ${feature.uniqueName} " +
+//                " delete r,p")
+//        FeatureProperty.executeUpdate("MATCH (f:Feature)-[r]->(p:FeatureProperty) where f.uniqueName = ${feature.uniqueName} " +
+//                " delete r,p")
+//        GoAnnotation.executeUpdate("MATCH (f:Feature)-[r]->(p:GoAnnotation) where f.uniqueName = ${feature.uniqueName} " +
+//                " delete r,p")
+//        GoAnnotation.executeUpdate("MATCH (f:Feature)-[r]->(p:GoAnnotation) where f.uniqueName = ${feature.uniqueName} " +
+//                " delete r,p")
+//        Feature.executeUpdate("MATCH (f:Feature)-[r]->(child:Feature) delete r,child")
 
-        // actually delete those
-        relationshipsToRemove.each {
-            it.to.delete()
-            feature.removeFromParentFeatureRelationships(it)
-            it.delete()
-        }
-
-        // last, delete self or save updated relationships
-        if (!feature.parentFeatureRelationships && !feature.childFeatureRelationships) {
-            feature.delete(flush: true)
-        } else {
-            feature.save(flush: true)
-        }
+        Feature.deleteAll(feature)
+//        if(feature.instanceOf(Transcript.class)){
+//
+//        }
+//        else{
+//
+//        }
+//
+//        // if grandchildren then delete those
+//        for (FeatureRelationship featureRelationship in feature.parentFeatureRelationships) {
+//            if (featureRelationship.childFeature?.parentFeatureRelationships) {
+//                deleteFeatureAndChildren(featureRelationship.childFeature)
+//            }
+//        }
+//
+//        // create a list of relationships to remove (assume we have no grandchildren here)
+//        List<FeatureRelationship> relationshipsToRemove = []
+//        for (FeatureRelationship featureRelationship in feature.parentFeatureRelationships) {
+//            relationshipsToRemove << featureRelationship
+//        }
+//
+//        // actually delete those
+//        relationshipsToRemove.each {
+//            it.to.delete()
+//            feature.removeFromParentFeatureRelationships(it)
+//            it.delete()
+//        }
+//
+//        // last, delete self or save updated relationships
+//        if (!feature.parentFeatureRelationships && !feature.childFeatureRelationships) {
+//            feature.delete(flush: true)
+//        } else {
+//            feature.save(flush: true)
+//        }
 
     }
 }

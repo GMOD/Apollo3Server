@@ -45,10 +45,10 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
 
         given: "transcript data"
         String jsonString = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40736-RA\",\"children\":[{\"location\":{\"fmin\":938708,\"fmax\":938770,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":939570,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}],\"operation\":\"add_transcript\"}"
-        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@EXON_1@\" }, { \"uniquename\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
-        String undoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
-        String undoString2 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"undo\", \"count\": 1}"
-        String redoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"redo\", \"count\": 1}"
+        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@EXON_1@\" }, { \"uniqueName\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
+        String undoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
+        String undoString2 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"undo\", \"count\": 1}"
+        String redoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"redo\", \"count\": 1}"
 
         when: "we insert a transcript"
         Organism organism = new Organism(
@@ -162,8 +162,8 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         given: "transcript data"
         setupDefaultUserOrg()
         String jsonString = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40736-RA\",\"children\":[{\"location\":{\"fmin\":938708,\"fmax\":938770,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":939570,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}],\"operation\":\"add_transcript\"}"
-        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@EXON_1@\" }, { \"uniquename\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
-        String undoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
+        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@EXON_1@\" }, { \"uniqueName\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
+        String undoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
 
         when: "we insert a transcript"
         JSONObject returnObject = requestHandlingService.addTranscript(JSON.parse(jsonString) as JSONObject)
@@ -219,9 +219,9 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         given: "transcript data"
         setupDefaultUserOrg()
         String jsonString = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40736-RA\",\"children\":[{\"location\":{\"fmin\":938708,\"fmax\":938770,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":939570,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}],\"operation\":\"add_transcript\"}"
-        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@EXON_1@\" }, { \"uniquename\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
-        String undoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
-        String redoString2 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"redo\", \"count\": 1}"
+        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@EXON_1@\" }, { \"uniqueName\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
+        String undoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
+        String redoString2 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"redo\", \"count\": 1}"
 
         when: "we insert a transcript"
         JSONObject returnObject = requestHandlingService.addTranscript(JSON.parse(jsonString) as JSONObject)
@@ -278,10 +278,10 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         given: "transcript data"
         setupDefaultUserOrg()
         String jsonString = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40736-RA\",\"children\":[{\"location\":{\"fmin\":938708,\"fmax\":938770,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":939570,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":938708,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}],\"operation\":\"add_transcript\"}"
-        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@EXON_1@\" }, { \"uniquename\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
-        String undoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
-        String undoString2 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"undo\", \"count\": 1}"
-        String redoString2 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"redo\", \"count\": 1}"
+        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@EXON_1@\" }, { \"uniqueName\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
+        String undoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
+        String undoString2 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"undo\", \"count\": 1}"
+        String redoString2 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"redo\", \"count\": 1}"
 
         when: "we insert a transcript"
         JSONObject returnObject = requestHandlingService.addTranscript(JSON.parse(jsonString) as JSONObject)
@@ -358,10 +358,10 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         setupDefaultUserOrg()
         String addTranscriptString1 = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"location\":{\"fmin\":938708,\"fmax\":938770,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40736-RA\",\"children\":[{\"location\":{\"fmin\":938708,\"fmax\":938770,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}}]}],\"operation\":\"add_transcript\"}"
         String addTranscriptString2 = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"location\":{\"fmin\":939570,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40736-RA\",\"children\":[{\"location\":{\"fmin\":939570,\"fmax\":939601,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}}]}],\"operation\":\"add_transcript\"}"
-        String mergeString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" }, { \"uniquename\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"merge_transcripts\" }"
-        String undoString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
-        String redoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"redo\", \"count\": 1}"
-        String redoString2 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"redo\", \"count\": 1}"
+        String mergeString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_1@\" }, { \"uniqueName\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"merge_transcripts\" }"
+        String undoString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"undo\", \"count\": 1}"
+        String redoString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_1@\" } ], \"operation\": \"redo\", \"count\": 1}"
+        String redoString2 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_2@\" } ], \"operation\": \"redo\", \"count\": 1}"
 
         when: "we insert two transcripts"
         requestHandlingService.addTranscript(JSON.parse(addTranscriptString1))
@@ -462,11 +462,11 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         String gb40788String = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40788-RA\",\"children\":[{\"location\":{\"fmin\":65107,\"fmax\":65286,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":71477,\"fmax\":71651,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":75270,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
         JSONObject jsonAddTranscriptObject1 = JSON.parse(gb40787String) as JSONObject
         JSONObject jsonAddTranscriptObject2 = JSON.parse(gb40788String) as JSONObject
-        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniquename\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
-        String undoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
-        String redoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
-        String setExonBoundaryCommand = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"uniquename\":\"@EXON_UNIQUENAME@\",\"location\":{\"fmin\":${allFmin},\"fmax\":${newFmax}}}],\"operation\":\"set_exon_boundaries\"}"
-        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT1_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
+        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniqueName\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
+        String undoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
+        String redoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
+        String setExonBoundaryCommand = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"uniqueName\":\"@EXON_UNIQUENAME@\",\"location\":{\"fmin\":${allFmin},\"fmax\":${newFmax}}}],\"operation\":\"set_exon_boundaries\"}"
+        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT1_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
 
         when: "we add both transcripts"
         requestHandlingService.addTranscript(jsonAddTranscriptObject1)
@@ -636,11 +636,11 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         String gb40788String = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40788-RA\",\"children\":[{\"location\":{\"fmin\":65107,\"fmax\":65286,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":71477,\"fmax\":71651,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":75270,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
         JSONObject jsonAddTranscriptObject1 = JSON.parse(gb40787String) as JSONObject
         JSONObject jsonAddTranscriptObject2 = JSON.parse(gb40788String) as JSONObject
-        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniquename\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
-        String undoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
-        String redoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
-        String setExonBoundaryCommand = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"uniquename\":\"@EXON_UNIQUENAME@\",\"location\":{\"fmin\":${newFmin},\"fmax\":${newFmax}}}],\"operation\":\"set_exon_boundaries\"}"
-        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT1_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
+        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniqueName\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
+        String undoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
+        String redoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
+        String setExonBoundaryCommand = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"uniqueName\":\"@EXON_UNIQUENAME@\",\"location\":{\"fmin\":${newFmin},\"fmax\":${newFmax}}}],\"operation\":\"set_exon_boundaries\"}"
+        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT1_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
 
         when: "we add both transcripts"
         requestHandlingService.addTranscript(jsonAddTranscriptObject1)
@@ -797,11 +797,11 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         String gb40788String = "{ ${testCredentials} \"track\": \"Group1.10\", ${testCredentials} \"features\": [{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40788-RA\",\"children\":[{\"location\":{\"fmin\":65107,\"fmax\":65286,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":71477,\"fmax\":71651,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":75270,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
         JSONObject jsonAddTranscriptObject1 = JSON.parse(gb40787String) as JSONObject
         JSONObject jsonAddTranscriptObject2 = JSON.parse(gb40788String) as JSONObject
-        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", ${testCredentials} \"features\": [ { \"uniquename\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniquename\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
-        String undoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
-        String redoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
-        String setExonBoundaryCommand = "{${testCredentials} \"track\":\"Group1.10\",${testCredentials} \"features\":[{\"uniquename\":\"@EXON_UNIQUENAME@\",\"location\":{\"fmin\":${newFmin},\"fmax\":${newFmax}}}],\"operation\":\"set_exon_boundaries\"}"
-        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", ${testCredentials} \"features\": [ { \"uniquename\": \"@TRANSCRIPT1_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
+        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", ${testCredentials} \"features\": [ { \"uniqueName\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniqueName\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
+        String undoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
+        String redoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":1,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
+        String setExonBoundaryCommand = "{${testCredentials} \"track\":\"Group1.10\",${testCredentials} \"features\":[{\"uniqueName\":\"@EXON_UNIQUENAME@\",\"location\":{\"fmin\":${newFmin},\"fmax\":${newFmax}}}],\"operation\":\"set_exon_boundaries\"}"
+        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", ${testCredentials} \"features\": [ { \"uniqueName\": \"@TRANSCRIPT1_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
 
         when: "we add both transcripts"
         requestHandlingService.addTranscript(jsonAddTranscriptObject1)
@@ -951,12 +951,12 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         String gb40788String = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40788-RA\",\"children\":[{\"location\":{\"fmin\":65107,\"fmax\":65286,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":71477,\"fmax\":71651,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":75270,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
         JSONObject jsonAddTranscriptObject1 = JSON.parse(gb40787String) as JSONObject
         JSONObject jsonAddTranscriptObject2 = JSON.parse(gb40788String) as JSONObject
-        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniquename\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
-        String undoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
-        String redoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
-        String setExonBoundary40788Command = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"uniquename\":\"@EXON_UNIQUENAME@\",\"location\":{\"fmin\":${gb40788Fmin},\"fmax\":${new40788Fmax}}}],\"operation\":\"set_exon_boundaries\"}"
-        String setExonBoundary40787Command = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"uniquename\":\"@EXON_UNIQUENAME@\",\"location\":{\"fmin\":${new40787Fmin},\"fmax\":${gb40787Fmax}}}],\"operation\":\"set_exon_boundaries\"}"
-        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT1_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
+        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniqueName\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
+        String undoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
+        String redoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
+        String setExonBoundary40788Command = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"uniqueName\":\"@EXON_UNIQUENAME@\",\"location\":{\"fmin\":${gb40788Fmin},\"fmax\":${new40788Fmax}}}],\"operation\":\"set_exon_boundaries\"}"
+        String setExonBoundary40787Command = "{${testCredentials} \"track\":\"Group1.10\",\"features\":[{\"uniqueName\":\"@EXON_UNIQUENAME@\",\"location\":{\"fmin\":${new40787Fmin},\"fmax\":${gb40787Fmax}}}],\"operation\":\"set_exon_boundaries\"}"
+        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT1_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
 
 
         when: "we add the two transcripts"
@@ -1182,11 +1182,11 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         String gb40788String = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40788-RA\",\"children\":[{\"location\":{\"fmin\":65107,\"fmax\":65286,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":71477,\"fmax\":71651,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":75270,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
         JSONObject jsonAddTranscriptObject1 = JSON.parse(gb40787String) as JSONObject
         JSONObject jsonAddTranscriptObject2 = JSON.parse(gb40788String) as JSONObject
-        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniquename\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
-        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@EXON_1@\" }, { \"uniquename\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
-        String undoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
-        String redoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
-        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
+        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniqueName\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
+        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@EXON_1@\" }, { \"uniqueName\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
+        String undoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
+        String redoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
+        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
 
 
         when: "we add the two transcripts"
@@ -1320,12 +1320,12 @@ class FeatureEventServiceIntegrationSpec extends AbstractIntegrationSpec {
         String gb40788String = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"mRNA\"},\"name\":\"GB40788-RA\",\"children\":[{\"location\":{\"fmin\":65107,\"fmax\":65286,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":71477,\"fmax\":71651,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":75270,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"exon\"}},{\"location\":{\"fmin\":65107,\"fmax\":75367,\"strand\":-1},\"type\":{\"cv\":{\"name\":\"sequence\"},\"name\":\"CDS\"}}]}], \"operation\": \"add_transcript\" }"
         JSONObject jsonAddTranscriptObject1 = JSON.parse(gb40787String) as JSONObject
         JSONObject jsonAddTranscriptObject2 = JSON.parse(gb40788String) as JSONObject
-        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniquename\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
-        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@EXON_1@\" }, { \"uniquename\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
-        String undoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
-        String redoOperation = "{${testCredentials} \"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
-        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
-        String deleteString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniquename\": \"@TRANSCRIPT_NAME@\" } ], \"operation\": \"delete_feature\" }"
+        String mergeTranscriptString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT1_UNIQUENAME@\" }, { \"uniqueName\": \"@TRANSCRIPT2_UNIQUENAME@\" } ], \"operation\": \"merge_transcripts\" }"
+        String splitString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@EXON_1@\" }, { \"uniqueName\": \"@EXON_2@\" } ], \"operation\": \"split_transcript\" }"
+        String undoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"undo\"}"
+        String redoOperation = "{${testCredentials} \"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"count\":@COUNT@,\"track\":\"Group1.10\",\"operation\":\"redo\"}"
+        String getHistoryString = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_UNIQUENAME@\" } ], \"operation\": \"get_history_for_features\" }"
+        String deleteString1 = "{ ${testCredentials} \"track\": \"Group1.10\", \"features\": [ { \"uniqueName\": \"@TRANSCRIPT_NAME@\" } ], \"operation\": \"delete_feature\" }"
 
 
         when: "we add the two transcripts"

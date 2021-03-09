@@ -682,7 +682,7 @@ class SequenceService {
 
             JSONObject outFeature = featureService.convertFeatureToJSON(gbolFeature)
             outFeature.put("residues", sequence)
-            outFeature.put("uniquename", uniqueName)
+            outFeature.put(FeatureStringEnum.UNIQUENAME.value, uniqueName)
             return outFeature
         }
     }
