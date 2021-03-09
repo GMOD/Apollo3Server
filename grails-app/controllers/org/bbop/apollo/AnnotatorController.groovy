@@ -200,7 +200,7 @@ class AnnotatorController {
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "uniquename", type = "string", paramType = "query", example = "Uniquename (UUID) of the feature we are editing")
+        , @ApiImplicitParam(name = "uniqueName", type = "string", paramType = "query", example = "Uniquename (UUID) of the feature we are editing")
         , @ApiImplicitParam(name = "name", type = "string", paramType = "query", example = "Updated feature name")
         , @ApiImplicitParam(name = "symbol", type = "string", paramType = "query", example = "Updated feature symbol")
         , @ApiImplicitParam(name = "synonyms", type = "string", paramType = "query", example = "Updated synonyms pipe (|) separated")
@@ -216,7 +216,7 @@ class AnnotatorController {
             render status: HttpStatus.UNAUTHORIZED
             return
         }
-        Feature feature = Feature.findByUniqueName(data.uniquename)
+        Feature feature = Feature.findByUniqueName(data.uniqueName)
 
         FeatureOperation featureOperation = detectFeatureOperation(feature, data)
         JSONObject originalFeatureJsonObject = featureService.convertFeatureToJSON(feature)
@@ -319,7 +319,7 @@ class AnnotatorController {
     @ApiImplicitParams([
         @ApiImplicitParam(name = "username", type = "email", paramType = "query")
         , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "uniquename", type = "string", paramType = "query", example = "Uniquename (UUID) of the exon we are editing")
+        , @ApiImplicitParam(name = "uniqueName", type = "string", paramType = "query", example = "Uniquename (UUID) of the exon we are editing")
         , @ApiImplicitParam(name = "fmin", type = "int", paramType = "query", example = "fmin for Exon Location")
         , @ApiImplicitParam(name = "fmax", type = "int", paramType = "query", example = "fmax for Exon Location")
         , @ApiImplicitParam(name = "strand", type = "int", paramType = "query", example = "strand for Feature Location 1 or -1")
@@ -335,7 +335,7 @@ class AnnotatorController {
         JSONObject jsonObject = new JSONObject()
         JSONObject featureObject = new JSONObject()
         JSONArray featuresArray = new JSONArray()
-        featureObject.put(FeatureStringEnum.UNIQUENAME.value, data.uniquename)
+        featureObject.put(FeatureStringEnum.UNIQUENAME.value, data.uniqueName)
         JSONObject featureLocationObject = new JSONObject()
         featureLocationObject.put(FeatureStringEnum.FMIN.value, data.fmin)
         featureLocationObject.put(FeatureStringEnum.FMAX.value, data.fmax)

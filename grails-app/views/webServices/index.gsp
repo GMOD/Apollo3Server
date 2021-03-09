@@ -59,7 +59,7 @@
 %{--organism - (if applicable) the "common name" of the organism for the operation -- will also pull from the "user preferences" if none is specified.--}%
 %{--track/sequence - (if applicable) reference sequence name (shown in sequence panel / genomic browse)--}%
 %{--</div>--}%
-%{--uniquename - (if applicable) the uniquename is a UUID used to guarantee a unique ID--}%
+%{--uniqueName - (if applicable) the uniqueName is a UUID used to guarantee a unique ID--}%
 %{--</jumbotron>--}%
 
 <div id="list-featureEvent" class="content scaffold-list" role="main">

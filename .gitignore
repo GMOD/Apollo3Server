@@ -75,3 +75,4 @@ bin
 build
 apollo_data
 apollo.yml
+node_modules/*

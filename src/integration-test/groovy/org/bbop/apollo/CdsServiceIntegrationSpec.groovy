@@ -95,7 +95,7 @@ class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
         when: "a stopCodonReadThrough is created"
         Transcript transcript = Transcript.findByName("GB40828-RA-00001")
         CDS cds = transcriptService.getCDS(transcript)
-        String setReadThroughStopCodonString = "{ ${testCredentials} \"operation\":\"set_readthrough_stop_codon\",\"features\":[{\"readthrough_stop_codon\":true,\"uniquename\":\"@UNIQUENAME@\"}],\"track\":\"Group1.10\",\"clientToken\":\"1231232\"}"
+        String setReadThroughStopCodonString = "{ ${testCredentials} \"operation\":\"set_readthrough_stop_codon\",\"features\":[{\"readthrough_stop_codon\":true,\"uniqueName\":\"@UNIQUENAME@\"}],\"track\":\"Group1.10\",\"clientToken\":\"1231232\"}"
         setReadThroughStopCodonString = setReadThroughStopCodonString.replace("@UNIQUENAME@", transcript.uniqueName)
         JSONObject setReadThroughRequestObject = JSON.parse(setReadThroughStopCodonString) as JSONObject
         JSONObject setReadThroughReturnObject = requestHandlingService.setReadthroughStopCodon(setReadThroughRequestObject)
@@ -115,7 +115,7 @@ class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
         }
         
         when: "a request is sent for the CDS sequence with the read through stop codon"
-        String getSequenceString = "{ ${testCredentials} \"operation\":\"get_sequence\",\"features\":[{\"uniquename\":\"@UNIQUENAME@\"}],\"track\":\"Group1.10\",\"type\":\"@SEQUENCE_TYPE@\"}"
+        String getSequenceString = "{ ${testCredentials} \"operation\":\"get_sequence\",\"features\":[{\"uniqueName\":\"@UNIQUENAME@\"}],\"track\":\"Group1.10\",\"type\":\"@SEQUENCE_TYPE@\"}"
         String getCdsSequenceString = getSequenceString.replaceAll("@UNIQUENAME@", transcript.uniqueName)
         getCdsSequenceString = getCdsSequenceString.replaceAll("@SEQUENCE_TYPE@", FeatureStringEnum.TYPE_CDS.value)
         JSONObject commandObject = JSON.parse(getCdsSequenceString) as JSONObject

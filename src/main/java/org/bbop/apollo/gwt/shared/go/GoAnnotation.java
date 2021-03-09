@@ -9,7 +9,7 @@ public class GoAnnotation {
 
   private Long id;
   private Aspect aspect;
-  private String gene; // I think tis is the gene it refers to? I think the uniquename
+  private String gene;
   private String goTerm;
   private String goTermLabel;
   private String geneRelationship;
