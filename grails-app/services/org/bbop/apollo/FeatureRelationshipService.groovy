@@ -22,11 +22,11 @@ class FeatureRelationshipService {
         def list = new ArrayList<Feature>()
         def ontologyIdCollection = ontologyIds as Collection<String>
         children?.each { InternalNode it ->
-            Collection<String> labels = featureService.getSOUrlForCvTermLabels(it.labels())
+            Collection<String> labels = FeatureTypeMapper.getSOUrlForCvTermLabels(it.labels())
             println "labels ${labels} vs ${ontologyIdCollection}"
             println "ontology type: ${it.ontologyId}"
             if (ontologyIds.size() == 0 || (ontologyIdCollection.intersect(labels))) {
-                def castFeature = featureService.castNeo4jFeature(it)
+                def castFeature = FeatureTypeMapper.castNeo4jFeature(it)
                 list.push(castFeature)
             }
         }
@@ -72,11 +72,12 @@ class FeatureRelationshipService {
         def list = new ArrayList<Feature>()
         def ontologyIdCollection = ontologyIds as Collection<String>
         parents?.each { InternalNode it ->
-            Collection<String> labels = featureService.getSOUrlForCvTermLabels(it.labels())
+            println "raw labels: "+it.labels()
+            Collection<String> labels = FeatureTypeMapper.getSOUrlForCvTermLabels(it.labels())
             if (ontologyIds.size() == 0 || (ontologyIdCollection.intersect(labels))) {
 //                String cvTerm = featureService.getCvTermFromNeo4jFeature(it)
                 println "ontology type: ${it.ontologyId}"
-                def castFeature = featureService.castNeo4jFeature(it)
+                def castFeature = FeatureTypeMapper.castNeo4jFeature(it)
                 list.push(castFeature)
             }
         }
