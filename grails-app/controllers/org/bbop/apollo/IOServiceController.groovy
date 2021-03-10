@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiOperation
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
-import org.bbop.apollo.location.FeatureLocation
 import org.bbop.apollo.organism.Organism
 import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.DownloadFile
@@ -113,7 +112,7 @@ class IOServiceController extends AbstractApolloController {
             }
 
             if (typeOfExport == FeatureStringEnum.TYPE_VCF.value) {
-                queryParams['viewableAnnotationList'] = requestHandlingService.viewableSequenceAlterationList
+                queryParams['viewableAnnotationList'] = FeatureTypeMapper.VIEWABLE_SEQUENCE_ALTERATION_LIST
                 features = SequenceAlteration.createCriteria().list() {
                     featureLocation {
                         sequence {
@@ -123,7 +122,7 @@ class IOServiceController extends AbstractApolloController {
                             }
                         }
                     }
-                    'in'('class', requestHandlingService.viewableSequenceAlterationList)
+                    'in'('class', FeatureTypeMapper.VIEWABLE_SEQUENCE_ALTERATION_LIST)
                 }
 
                 log.debug "IOService query: ${System.currentTimeMillis() - st}ms"
@@ -179,7 +178,7 @@ class IOServiceController extends AbstractApolloController {
                     "RETURN {type: labels(f),sequence: s,feature: f,location: fl,children: collect(DISTINCT {type: labels(child), location: pl2,r1: fr,feature: child,sequence: s}), " +
                     "owners: collect(distinct u),parent: { type: labels(parent), location: pl,r2:gfr,feature:parent }}"
 //
-                println "full genes query ${fullGenesQuery}"
+                log.debug "full genes query ${fullGenesQuery}"
 
 //
                 def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery).unique()
@@ -194,10 +193,9 @@ class IOServiceController extends AbstractApolloController {
                     " AND NOT (f)-[:FEATURERELATIONSHIP]-(:Feature) " +
                     "RETURN {type: labels(f),sequence: s,feature: f,location: fl, owners: collect(distinct u)}"
 
-                println "single level query ${singleLevelQuery}"
+                log.debug "single level query ${singleLevelQuery}"
                 neo4jFeatureNodes += Feature.executeQuery(singleLevelQuery).unique()
 //
-//                println "neo4j with single nodes ${neo4jFeatureNodes as JSON}"
                 features = neo4jFeatureNodes
 
                 log.debug "IOService query: ${System.currentTimeMillis() - st}ms"
@@ -226,7 +224,6 @@ class IOServiceController extends AbstractApolloController {
                     gff3HandlerService.writeNeo4jFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String, true, sequenceList)
                 } else {
 //                    gff3HandlerService.writeFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String)
-//                    println("features to write ${features as JSON}")
                     gff3HandlerService.writeNeo4jFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String)
                 }
             } else if (typeOfExport == FeatureStringEnum.TYPE_GO.value) {

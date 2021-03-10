@@ -10,32 +10,10 @@ import org.bbop.apollo.attributes.FeatureProperty
 import org.bbop.apollo.attributes.Status
 import org.bbop.apollo.event.AnnotationEvent
 import org.bbop.apollo.feature.CDS
-import org.bbop.apollo.feature.EnzymaticRNA
 import org.bbop.apollo.feature.Exon
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.feature.Gene
-import org.bbop.apollo.feature.GuideRNA
-import org.bbop.apollo.feature.LncRNA
-import org.bbop.apollo.feature.MRNA
-import org.bbop.apollo.feature.MiRNA
-import org.bbop.apollo.feature.NcRNA
-import org.bbop.apollo.feature.PiRNA
-import org.bbop.apollo.feature.ProcessedPseudogene
-import org.bbop.apollo.feature.Pseudogene
-import org.bbop.apollo.feature.PseudogenicRegion
-import org.bbop.apollo.feature.RNaseMRPRNA
-import org.bbop.apollo.feature.RRNA
-import org.bbop.apollo.feature.RepeatRegion
-import org.bbop.apollo.feature.ScRNA
-import org.bbop.apollo.feature.SnRNA
-import org.bbop.apollo.feature.SnoRNA
-import org.bbop.apollo.feature.SrpRNA
-import org.bbop.apollo.feature.TRNA
-import org.bbop.apollo.feature.TelomeraseRNA
-import org.bbop.apollo.feature.Terminator
-import org.bbop.apollo.feature.TmRNA
 import org.bbop.apollo.feature.Transcript
-import org.bbop.apollo.feature.TransposableElement
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
 import org.bbop.apollo.history.FeatureEvent
@@ -45,19 +23,8 @@ import org.bbop.apollo.organism.Organism
 import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.Strand
 import org.bbop.apollo.user.User
-import org.bbop.apollo.variant.Deletion
-import org.bbop.apollo.variant.DeletionArtifact
-import org.bbop.apollo.variant.Indel
-import org.bbop.apollo.variant.Insertion
-import org.bbop.apollo.variant.InsertionArtifact
-import org.bbop.apollo.variant.MNP
-import org.bbop.apollo.variant.MNV
-import org.bbop.apollo.variant.SNP
-import org.bbop.apollo.variant.SNV
 import org.bbop.apollo.variant.SequenceAlteration
 import org.bbop.apollo.variant.SequenceAlterationArtifact
-import org.bbop.apollo.variant.Substitution
-import org.bbop.apollo.variant.SubstitutionArtifact
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONException
 import org.grails.web.json.JSONObject
@@ -86,7 +53,6 @@ class RequestHandlingService {
     def configWrapperService
     def nameService
     def permissionService
-//    def preferenceService
     def featurePropertyService
     def featureEventService
     def goAnnotationService
@@ -95,117 +61,6 @@ class RequestHandlingService {
     def jsonWebUtilityService
     def brokerMessagingTemplate
 
-    public static final List<String> viewableAnnotationFeatureCvTermList =[
-        RepeatRegion.cvTerm,
-        Terminator.cvTerm,
-        TransposableElement.cvTerm
-    ]
-    public static final List<String> viewableAnnotationTranscriptParentCvTermList =[
-        Gene.cvTerm,
-        Pseudogene.cvTerm,
-        PseudogenicRegion.cvTerm,
-        ProcessedPseudogene.cvTerm,
-    ]
-
-    public static final List<String> nonCodingAnnotationTranscriptCvTermList =[
-        Transcript.cvTerm,
-        TRNA.cvTerm,
-        SnRNA.cvTerm,
-        SnoRNA.cvTerm,
-        NcRNA.cvTerm,
-        RRNA.cvTerm,
-        MiRNA.cvTerm,
-        GuideRNA.cvTerm,
-        RNaseMRPRNA.cvTerm,
-        TelomeraseRNA.cvTerm,
-        SrpRNA.cvTerm,
-        LncRNA.cvTerm,
-        RNaseMRPRNA.cvTerm,
-        ScRNA.cvTerm,
-        PiRNA.cvTerm,
-        TmRNA.cvTerm,
-        EnzymaticRNA.cvTerm,
-    ]
-
-    public static final List<String> viewableAnnotationTranscriptCvTermList =[MRNA.cvTerm] + nonCodingAnnotationTranscriptList
-
-    public static final List<String> viewableAlterationCvTermList  = [
-        DeletionArtifact.cvTerm,
-        InsertionArtifact.cvTerm,
-        SubstitutionArtifact.cvTerm
-    ]
-
-    public static final List<String> viewableSequenceAlterationCvTermList =[
-        Deletion.cvTerm,
-        Insertion.cvTerm,
-        Substitution.cvTerm,
-        SNV.cvTerm,
-        SNP.cvTerm,
-        MNV.cvTerm,
-        MNP.cvTerm,
-        Indel.cvTerm
-    ]
-
-    public static
-    final List<String> viewableAnnotationCvTermList = viewableAnnotationFeatureCvTermList + viewableAnnotationTranscriptParentCvTermList + viewableSequenceAlterationCvTermList
-    public static
-    final List<String> viewableAnnotationTypesCvTermList = viewableAnnotationFeatureCvTermList + viewableAnnotationTranscriptCvTermList + viewableAnnotationTranscriptParentCvTermList
-
-    public static final List<String> viewableAnnotationFeatureList = [
-        RepeatRegion.class.name,
-        Terminator.class.name,
-        TransposableElement.class.name
-    ]
-    public static final List<String> viewableAnnotationTranscriptParentList = [
-        Gene.class.name,
-        Pseudogene.class.name,
-        PseudogenicRegion.class.name,
-        ProcessedPseudogene.class.name,
-    ]
-
-    public static final List<String> nonCodingAnnotationTranscriptList = [
-        Transcript.class.name,
-        TRNA.class.name,
-        SnRNA.class.name,
-        SnoRNA.class.name,
-        NcRNA.class.name,
-        RRNA.class.name,
-        MiRNA.class.name,
-        GuideRNA.class.name,
-        RNaseMRPRNA.class.name,
-        TelomeraseRNA.class.name,
-        SrpRNA.class.name,
-        LncRNA.class.name,
-        RNaseMRPRNA.class.name,
-        ScRNA.class.name,
-        PiRNA.class.name,
-        TmRNA.class.name,
-        EnzymaticRNA.class.name,
-    ]
-
-    public static final List<String> viewableAnnotationTranscriptList = [MRNA.class.name] + nonCodingAnnotationTranscriptList
-
-    public static final List<String> viewableAlterationList = [
-        DeletionArtifact.class.name,
-        InsertionArtifact.class.name,
-        SubstitutionArtifact.class.name
-    ]
-
-    public static final List<String> viewableSequenceAlterationList = [
-        Deletion.class.name,
-        Insertion.class.name,
-        Substitution.class.name,
-        SNV.class.name,
-        SNP.class.name,
-        MNV.class.name,
-        MNP.class.name,
-        Indel.class.name
-    ]
-
-    public static
-    final List<String> viewableAnnotationList = viewableAnnotationFeatureList + viewableAnnotationTranscriptParentList + viewableSequenceAlterationList
-    public static
-    final List<String> viewableAnnotationTypesList = viewableAnnotationFeatureList + viewableAnnotationTranscriptList + viewableAnnotationTranscriptParentList
 
     JSONObject setSymbol(JSONObject inputObject) {
         JSONObject updateFeatureContainer = jsonWebUtilityService.createJSONFeatureContainer()
@@ -855,17 +710,17 @@ class RequestHandlingService {
 //            "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child}), " +
 //            "owners: collect(distinct u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
 
-        println "organism cournt ${Organism.count}"
-        println "sequencew cournt ${Sequence.count}"
+        log.debug "organism cournt ${Organism.count}"
+        log.debug "sequencew cournt ${Sequence.count}"
 
-        def typeList = viewableAnnotationTranscriptList + viewableAnnotationFeatureList + viewableSequenceAlterationList
+        def typeList = FeatureTypeMapper.VIEWABLE_ANNOTATION_TRANSCRIPT_LIST + FeatureTypeMapper.VIEWABLE_ANNOTATION_FEATURE_LIST + FeatureTypeMapper.VIEWABLE_SEQUENCE_ALTERATION_LIST
         List<String> typeStringList = new ArrayList<>()
         typeList.each {
             int lastIndex = it.lastIndexOf(".")
             typeStringList.add("'"+it.substring(lastIndex+1)+"'")
         }
 
-        println "type list: ${typeList}"
+        log.debug "type list: ${typeList}"
 //
         String query = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature),\n" +
             "(f)-[owner:OWNERS]-(u)\n" +
@@ -879,15 +734,15 @@ class RequestHandlingService {
 //            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
 //            "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child}), " +
 //            "owners: collect(distinct u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
-        println "query output: ${query}"
+        log.debug "query output: ${query}"
         def nodes = Feature.executeQuery(query).unique()
-        println "actual returned nodes ${nodes} ${nodes.size()}"
+        log.debug "actual returned nodes ${nodes} ${nodes.size()}"
 //
 //
         JSONArray jsonFeatures = new JSONArray()
         nodes.each{
-            println "forist node ${it} "
-            println "class of it ${it.getClass()}"
+            log.debug "forist node ${it} "
+            log.debug "class of it ${it.getClass()}"
 //            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
 //        features.each { feature ->
 //            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
@@ -916,7 +771,7 @@ class RequestHandlingService {
 //        }
 
         inputObject.put(AnnotationEditorController.REST_FEATURES, jsonFeatures)
-        println "getFeatures ${System.currentTimeMillis() - start}ms"
+        log.debug "getFeatures ${System.currentTimeMillis() - start}ms"
         return inputObject
 
 
@@ -2136,7 +1991,7 @@ class RequestHandlingService {
             JSONObject jsonFeature = featuresArray.getJSONObject(i)
             useName = jsonFeature.has(FeatureStringEnum.USE_NAME.value) ? jsonFeature.get(FeatureStringEnum.USE_NAME.value) : false
             if (jsonFeature.get(FeatureStringEnum.TYPE.value).name == Gene.cvTerm ||
-                FeatureService.PSEUDOGENIC_FEATURE_TYPES.contains(jsonFeature.get(FeatureStringEnum.TYPE.value).name)) {
+                FeatureTypeMapper.PSEUDOGENIC_FEATURE_TYPES.contains(jsonFeature.get(FeatureStringEnum.TYPE.value).name)) {
                 // if jsonFeature is of type gene or pseudogene
                 JSONObject jsonGene = JSON.parse(jsonFeature.toString())
                 jsonGene.remove(FeatureStringEnum.CHILDREN.value)
@@ -2777,7 +2632,7 @@ class RequestHandlingService {
 
             if (originalType == type) {
                 log.warn "Cannot change ${uniqueName} from ${originalType} -> ${type}. Nothing to do."
-            } else if (originalType in FeatureService.SINGLETON_FEATURE_TYPES && type in FeatureService.RNA_FEATURE_TYPES) {
+            } else if (originalType in FeatureTypeMapper.SINGLETON_FEATURE_TYPES && type in FeatureTypeMapper.RNA_FEATURE_TYPES) {
                 log.error "B Not enough information available to change ${uniqueName} from ${originalType} -> ${type}."
             } else {
                 Feature newFeature = featureService.changeAnnotationType(inputObject, feature, sequence, user, type)
@@ -3086,13 +2941,13 @@ class RequestHandlingService {
     }
 
     def addVariant(JSONObject inputObject) {
-        println "${inputObject.toString()}"
+        log.debug "${inputObject.toString()}"
         JSONObject returnObject = jsonWebUtilityService.createJSONFeatureContainer();
         JSONArray features = inputObject.getJSONArray(FeatureStringEnum.FEATURES.value)
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.WRITE)
 
 
-        println "output sequence ${sequence} ${sequence as JSON}"
+        log.debug "output sequence ${sequence} ${sequence as JSON}"
         boolean suppressHistory = false
         boolean suppressEvents = false
 

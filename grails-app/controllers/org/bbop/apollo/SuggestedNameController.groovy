@@ -400,16 +400,15 @@ class SuggestedNameController {
     @ApiImplicitParams([
             @ApiImplicitParam(name = "username", type = "email", paramType = "query")
             , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-//            , @ApiImplicitParam(name = "names", type = "string", paramType = "query", example = "A comma-delimited list of names to add, with organisms, and types {names:[ {name:'name1':organisms:['bee','cow'],types:['gene','ncRNA']}}")
             , @ApiImplicitParam(name = "names", type = "string", paramType = "query", example = "A comma-delimited list of names to add")
     ])
     @Transactional
     def addNames() {
         try {
             JSONObject nameJson = permissionService.handleInput(request, params)
-            println "Adding suggested names ${nameJson}"
+            log.debug "Adding suggested names ${nameJson}"
             if (!permissionService.hasGlobalPermissions(nameJson, GlobalPermissionEnum.ADMIN)) {
-                println "DOES NOT have global permissions"
+                log.error "DOES NOT have global permissions to add names"
                 render status: UNAUTHORIZED
                 return
             }
@@ -421,7 +420,7 @@ class SuggestedNameController {
                 render  nameJson.names as JSON
             } else {
                 def error = [error: 'names not found']
-                println(error.error)
+                log.error(error.error)
                 render error as JSON
             }
         }

@@ -12,7 +12,6 @@ import org.bbop.apollo.attributes.FeatureType
 import org.bbop.apollo.event.AnnotationEvent
 import org.bbop.apollo.event.AnnotationListener
 import org.bbop.apollo.feature.Feature
-import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
 import org.bbop.apollo.organism.Organism
@@ -482,7 +481,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         returnObject.put(FeatureStringEnum.FEATURES.value, jsonFeatures)
 
         List<SequenceAlterationArtifact> sequenceAlterationList = Feature.executeQuery("select f from Feature f join f.featureLocations fl join fl.sequence s where s = :sequence and f.class in :sequenceTypes"
-                , [sequence: sequence, sequenceTypes: requestHandlingService.viewableAlterationList])
+                , [sequence: sequence, sequenceTypes: FeatureTypeMapper.viewableAlterationList])
         for (SequenceAlterationArtifact alteration : sequenceAlterationList) {
             jsonFeatures.put(featureService.convertFeatureToJSON(alteration, true));
         }
@@ -947,7 +946,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
             List<Long> sequenceList = inputObject.sequence.collect {
                 return Long.valueOf(it.id)
             }
-            List<String> featureUniqueNames = Feature.executeQuery("select f.uniqueName from Feature f left join f.parentFeatureRelationships pfr  join f.featureLocations fl join fl.sequence s   where f.childFeatureRelationships is empty and s.id in (:sequenceList) and f.class in (:viewableTypes) ", [sequenceList: sequenceList, viewableTypes: requestHandlingService.viewableAnnotationList])
+            List<String> featureUniqueNames = Feature.executeQuery("select f.uniqueName from Feature f left join f.parentFeatureRelationships pfr  join f.featureLocations fl join fl.sequence s   where f.childFeatureRelationships is empty and s.id in (:sequenceList) and f.class in (:viewableTypes) ", [sequenceList: sequenceList, viewableTypes: FeatureTypeMapper.VIEWABLE_ANNOTATION_LIST])
             featureUniqueNames.each {
                 def jsonObject = new JSONObject()
                 jsonObject.put(FeatureStringEnum.UNIQUENAME.value, it)
@@ -1062,26 +1061,6 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render jre as JSON
     }
 
-    private String getOntologyIdForType(String type) {
-        JSONObject cvTerm = new JSONObject()
-        if (type.toUpperCase() == Gene.cvTerm.toUpperCase()) {
-            JSONObject cvTermName = new JSONObject()
-            cvTermName.put(FeatureStringEnum.NAME.value, FeatureStringEnum.CV.value)
-            cvTerm.put(FeatureStringEnum.CV.value, cvTermName)
-            cvTerm.put(FeatureStringEnum.NAME.value, type)
-        } else {
-            JSONObject cvTermName = new JSONObject()
-            cvTermName.put(FeatureStringEnum.NAME.value, FeatureStringEnum.SEQUENCE.value)
-            cvTerm.put(FeatureStringEnum.CV.value, cvTermName)
-            cvTerm.put(FeatureStringEnum.NAME.value, type)
-        }
-        return featureService.convertJSONToOntologyId(cvTerm)
-    }
-
-    private List<FeatureType> getFeatureTypeListForType(String type) {
-        String ontologyId = getOntologyIdForType(type)
-        return FeatureType.findAllByOntologyId(ontologyId)
-    }
 
     @ApiOperation(value = "Get canned comments", nickname = "/getCannedComments", httpMethod = "POST")
     @ApiImplicitParams([
@@ -1098,7 +1077,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
 
         Organism organism = Organism.findById(inputObject.getLong(FeatureStringEnum.ORGANISM_ID.value))
         String type = inputObject.getString(FeatureStringEnum.TYPE.value)
-        List<FeatureType> featureTypeList = getFeatureTypeListForType(type)
+        List<FeatureType> featureTypeList = FeatureTypeMapper.getFeatureTypeListForType(type)
         render cannedCommentService.getCannedComments(organism, featureTypeList) as JSON
     }
 
@@ -1117,7 +1096,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
 
         Organism organism = Organism.findById(inputObject.getLong(FeatureStringEnum.ORGANISM_ID.value))
         String type = inputObject.getString(FeatureStringEnum.TYPE.value)
-        List<FeatureType> featureTypeList = getFeatureTypeListForType(type)
+        List<FeatureType> featureTypeList = FeatureTypeMapper.getFeatureTypeListForType(type)
         render cannedAttributeService.getCannedKeys(organism, featureTypeList) as JSON
     }
 
@@ -1136,7 +1115,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
 
         Organism organism = Organism.findById(inputObject.getLong(FeatureStringEnum.ORGANISM_ID.value))
         String type = inputObject.getString(FeatureStringEnum.TYPE.value)
-        List<FeatureType> featureTypeList = getFeatureTypeListForType(type)
+        List<FeatureType> featureTypeList = FeatureTypeMapper.getFeatureTypeListForType(type)
         render cannedAttributeService.getCannedValues(organism, featureTypeList) as JSON
     }
 
@@ -1160,7 +1139,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         if (inputObject.containsKey(FeatureStringEnum.TYPE.value)) {
             type = inputObject.getString(FeatureStringEnum.TYPE.value)
         }
-        List<FeatureType> featureTypeList = type ? getFeatureTypeListForType(type) : []
+        List<FeatureType> featureTypeList = type ? FeatureTypeMapper.getFeatureTypeListForType(type) : []
         log.debug "type ${type} ${featureTypeList}"
         render availableStatusService.getAvailableStatuses(organism, featureTypeList) as JSON
     }
