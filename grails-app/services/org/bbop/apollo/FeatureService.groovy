@@ -1,7 +1,6 @@
 package org.bbop.apollo
 
 import grails.converters.JSON
-import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.alteration.SequenceAlterationInContext
 import org.bbop.apollo.attributes.*
@@ -46,19 +45,10 @@ class FeatureService {
     def geneProductService
     def provenanceService
 
-    public static final String MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE = "Manually associate transcript to gene"
-    public static final String MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE = "Manually dissociate transcript from gene"
-    public static final String MANUALLY_ASSOCIATE_FEATURE_TO_GENE = "Manually associate feature to gene"
-    public static final String MANUALLY_DISSOCIATE_FEATURE_FROM_GENE = "Manually dissociate feature from gene"
-
-    public static final def SINGLETON_FEATURE_TYPES = [RepeatRegion.cvTerm, TransposableElement.cvTerm, Terminator.cvTerm]
-    public static final RNA_FEATURE_TYPES = [
-        MRNA.cvTerm, MiRNA.cvTerm, NcRNA.cvTerm, RRNA.cvTerm, SnRNA.cvTerm, SnoRNA.cvTerm,
-        TRNA.cvTerm, Transcript.cvTerm,
-        GuideRNA.cvTerm, RNaseMRPRNA.cvTerm, TelomeraseRNA.cvTerm, SrpRNA.cvTerm, LncRNA.cvTerm,
-        RNasePRNA.cvTerm, ScRNA.cvTerm, PiRNA.cvTerm, TmRNA.cvTerm, EnzymaticRNA.cvTerm,
-    ]
-    public static final PSEUDOGENIC_FEATURE_TYPES = [Pseudogene.cvTerm, PseudogenicRegion.cvTerm, ProcessedPseudogene.cvTerm]
+    final String MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE = "Manually associate transcript to gene"
+    final String MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE = "Manually dissociate transcript from gene"
+    final String MANUALLY_ASSOCIATE_FEATURE_TO_GENE = "Manually associate feature to gene"
+    final String MANUALLY_DISSOCIATE_FEATURE_FROM_GENE = "Manually dissociate feature from gene"
 
 
     @Transactional
@@ -1635,7 +1625,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             if (jsonFeature.has(FeatureStringEnum.LOCATION.value)) {
                 JSONObject jsonLocation = jsonFeature.getJSONObject(FeatureStringEnum.LOCATION.value);
                 FeatureLocation featureLocation
-                if (SINGLETON_FEATURE_TYPES.contains(type.getString(FeatureStringEnum.NAME.value))) {
+                if (FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(type.getString(FeatureStringEnum.NAME.value))) {
                     featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, returnFeature, Strand.NONE.value)
                 } else {
                     featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, returnFeature)
@@ -3370,7 +3360,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
      */
     def associateFeatureToGene(Feature feature, Gene originalGene) {
         log.debug "associateFeatureToGene: ${feature.name} -> ${originalGene.name}"
-        if (!SINGLETON_FEATURE_TYPES.contains(feature.cvTerm)) {
+        if (!FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(feature.cvTerm)) {
             log.error("Feature type can not be associated with a gene with this method: ${feature.cvTerm}")
             return
         }
@@ -3440,7 +3430,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 //        log.debug "dissociateTranscriptFromGene: ${transcript.name} -> ${gene.name}"
         featureRelationshipService.removeFeatureRelationship(gene, transcript)
         Gene newGene
-        if (PSEUDOGENIC_FEATURE_TYPES.contains(gene.cvTerm)) {
+        if (FeatureTypeMapper.PSEUDOGENIC_FEATURE_TYPES.contains(gene.cvTerm)) {
             newGene = new Pseudogene(
                 uniqueName: nameService.generateUniqueName(),
                 name: nameService.generateUniqueName(gene)
@@ -3992,7 +3982,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         String topLevelFeatureType = null
         if (type == Transcript.cvTerm) {
             topLevelFeatureType = Pseudogene.cvTerm
-        } else if (SINGLETON_FEATURE_TYPES.contains(type)) {
+        } else if (FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(type)) {
             topLevelFeatureType = type
         } else {
             topLevelFeatureType = Gene.cvTerm
@@ -4039,7 +4029,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             }
         }
 
-        if (!SINGLETON_FEATURE_TYPES.contains(originalType) && RNA_FEATURE_TYPES.contains(type)) {
+        if (!FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(originalType) && FeatureTypeMapper.RNA_FEATURE_TYPES.contains(type)) {
             // *RNA to *RNA
             if (transcriptList.size() == 1) {
                 featureRelationshipService.deleteFeatureAndChildren(parentGene)
@@ -4095,7 +4085,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             }
             newGene.save(flush: true)
             newFeature = transcript
-        } else if (!SINGLETON_FEATURE_TYPES.contains(originalType) && SINGLETON_FEATURE_TYPES.contains(type)) {
+        } else if (!FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(originalType) && FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(type)) {
             // *RNA to singleton
             if (transcriptList.size() == 1) {
                 featureRelationshipService.deleteFeatureAndChildren(parentGene)
@@ -4110,7 +4100,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             currentFeatureJsonObject.get(FeatureStringEnum.LOCATION.value).strand = 0
             Feature singleton = addFeature(currentFeatureJsonObject, sequence, user, true)
             newFeature = singleton
-        } else if (SINGLETON_FEATURE_TYPES.contains(originalType) && SINGLETON_FEATURE_TYPES.contains(type)) {
+        } else if (FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(originalType) && FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(type)) {
             // singleton to singleton
             currentFeatureJsonObject.put(FeatureStringEnum.UNIQUENAME.value, uniqueName)
             featureRelationshipService.deleteFeatureAndChildren(feature)
@@ -4128,7 +4118,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     def addFeature(JSONObject jsonFeature, Sequence sequence, User user, boolean suppressHistory, boolean useName = false) {
         Feature returnFeature = null
 
-        if (RNA_FEATURE_TYPES.contains(jsonFeature.get(FeatureStringEnum.TYPE.value).name)) {
+        if (FeatureTypeMapper.RNA_FEATURE_TYPES.contains(jsonFeature.get(FeatureStringEnum.TYPE.value).name)) {
             Gene gene = jsonFeature.has(FeatureStringEnum.PARENT_ID.value) ? (Gene) Feature.findByUniqueName(jsonFeature.getString(FeatureStringEnum.PARENT_ID.value)) : null
             Transcript transcript = null
 
@@ -4267,7 +4257,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             setOwner(feature, user);
             feature.save(flush: true)
             if (jsonFeature.get(FeatureStringEnum.TYPE.value).name == Gene.cvTerm ||
-                PSEUDOGENIC_FEATURE_TYPES.contains(jsonFeature.get(FeatureStringEnum.TYPE.value).name)) {
+                FeatureTypeMapper.PSEUDOGENIC_FEATURE_TYPES.contains(jsonFeature.get(FeatureStringEnum.TYPE.value).name)) {
                 Transcript transcript = transcriptService.getTranscripts(feature).iterator().next()
                 setOwner(transcript, user);
                 removeExonOverlapsAndAdjacencies(transcript)

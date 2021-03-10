@@ -214,13 +214,13 @@ class FeatureEventController {
             log.debug "dateCreatedBeforeDate ${params.dateCreatedBeforeDate}"
 
 
-            'in'('class', requestHandlingService.viewableAnnotationList)
+            'in'('class', FeatureTypeMapper.VIEWABLE_ANNOTATION_LIST)
         }
 
         def filters = [organismName: params.organismName, featureType: params.featureType, ownerName: params.ownerName]
 
         def featureTypes = []
-        RequestHandlingService.viewableAnnotationTypesList.each() {
+        FeatureTypeMapper.VIEWABLE_ANNOTATION_TYPES_LIST.each() {
             featureTypes << it.substring(it.lastIndexOf(".") + 1)
         }.sort()
 

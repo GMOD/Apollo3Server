@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiOperation
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
-import org.bbop.apollo.location.FeatureLocation
 import org.bbop.apollo.organism.Organism
 import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.DownloadFile
@@ -113,7 +112,7 @@ class IOServiceController extends AbstractApolloController {
             }
 
             if (typeOfExport == FeatureStringEnum.TYPE_VCF.value) {
-                queryParams['viewableAnnotationList'] = requestHandlingService.viewableSequenceAlterationList
+                queryParams['viewableAnnotationList'] = FeatureTypeMapper.VIEWABLE_SEQUENCE_ALTERATION_LIST
                 features = SequenceAlteration.createCriteria().list() {
                     featureLocation {
                         sequence {
@@ -123,7 +122,7 @@ class IOServiceController extends AbstractApolloController {
                             }
                         }
                     }
-                    'in'('class', requestHandlingService.viewableSequenceAlterationList)
+                    'in'('class', FeatureTypeMapper.VIEWABLE_SEQUENCE_ALTERATION_LIST)
                 }
 
                 log.debug "IOService query: ${System.currentTimeMillis() - st}ms"

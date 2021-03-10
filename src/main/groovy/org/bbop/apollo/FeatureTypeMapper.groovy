@@ -1,6 +1,6 @@
 package org.bbop.apollo
 
-import grails.gorm.transactions.NotTransactional
+
 import org.bbop.apollo.attributes.FeatureType
 import org.bbop.apollo.feature.CDS
 import org.bbop.apollo.feature.EnzymaticRNA
@@ -53,6 +53,94 @@ import org.neo4j.driver.internal.InternalNode
 class FeatureTypeMapper {
 
     // TODO: add unit tests and move to a non-transcration method
+    public static final def SINGLETON_FEATURE_TYPES = [RepeatRegion.cvTerm, TransposableElement.cvTerm, Terminator.cvTerm]
+    public static final RNA_FEATURE_TYPES = [
+        MRNA.cvTerm, MiRNA.cvTerm, NcRNA.cvTerm, RRNA.cvTerm, SnRNA.cvTerm, SnoRNA.cvTerm,
+        TRNA.cvTerm, Transcript.cvTerm,
+        GuideRNA.cvTerm, RNaseMRPRNA.cvTerm, TelomeraseRNA.cvTerm, SrpRNA.cvTerm, LncRNA.cvTerm,
+        RNasePRNA.cvTerm, ScRNA.cvTerm, PiRNA.cvTerm, TmRNA.cvTerm, EnzymaticRNA.cvTerm,
+    ]
+    public static final PSEUDOGENIC_FEATURE_TYPES = [Pseudogene.cvTerm, PseudogenicRegion.cvTerm, ProcessedPseudogene.cvTerm]
+    public static final List<String> VIEWABLE_ANNOTATION_FEATURE_CV_TERM_LIST =[
+        RepeatRegion.cvTerm,
+        Terminator.cvTerm,
+        TransposableElement.cvTerm
+    ]
+    public static final List<String> VIEWABLE_ANNOTATION_TRANSCRIPT_PARENT_CV_TERM_LIST =[
+        Gene.cvTerm,
+        Pseudogene.cvTerm,
+        PseudogenicRegion.cvTerm,
+        ProcessedPseudogene.cvTerm,
+    ]
+    public static final List<String> VIEWABLE_ANNOTATION_TRANSCRIPT_CV_TERM_LIST =[MRNA.cvTerm] + NON_CODING_ANNOTATION_TRANSCRIPT_LIST
+    public static final List<String> VIEWABLE_ALTERATION_CV_TERM_LIST = [
+        DeletionArtifact.cvTerm,
+        InsertionArtifact.cvTerm,
+        SubstitutionArtifact.cvTerm
+    ]
+    public static final List<String> VIEWABLE_SEQUENCE_ALTERATION_CV_TERM_LIST =[
+        Deletion.cvTerm,
+        Insertion.cvTerm,
+        Substitution.cvTerm,
+        SNV.cvTerm,
+        SNP.cvTerm,
+        MNV.cvTerm,
+        MNP.cvTerm,
+        Indel.cvTerm
+    ]
+    public static
+    final List<String> VIEWABLE_ANNOTATION_CV_TERM_LIST = VIEWABLE_ANNOTATION_FEATURE_CV_TERM_LIST + VIEWABLE_ANNOTATION_TRANSCRIPT_PARENT_CV_TERM_LIST + VIEWABLE_SEQUENCE_ALTERATION_CV_TERM_LIST
+    public static final List<String> VIEWABLE_ANNOTATION_FEATURE_LIST = [
+        RepeatRegion.class.name,
+        Terminator.class.name,
+        TransposableElement.class.name
+    ]
+    public static final List<String> VIEWABLE_ANNOTATION_TRANSCIPT_PARENT_LIST = [
+        Gene.class.name,
+        Pseudogene.class.name,
+        PseudogenicRegion.class.name,
+        ProcessedPseudogene.class.name,
+    ]
+    public static final List<String> NON_CODING_ANNOTATION_TRANSCRIPT_LIST = [
+        Transcript.class.name,
+        TRNA.class.name,
+        SnRNA.class.name,
+        SnoRNA.class.name,
+        NcRNA.class.name,
+        RRNA.class.name,
+        MiRNA.class.name,
+        GuideRNA.class.name,
+        RNaseMRPRNA.class.name,
+        TelomeraseRNA.class.name,
+        SrpRNA.class.name,
+        LncRNA.class.name,
+        RNaseMRPRNA.class.name,
+        ScRNA.class.name,
+        PiRNA.class.name,
+        TmRNA.class.name,
+        EnzymaticRNA.class.name,
+    ]
+    public static final List<String> VIEWABLE_ANNOTATION_TRANSCRIPT_LIST = [MRNA.class.name] + NON_CODING_ANNOTATION_TRANSCRIPT_LIST
+    public static final List<String> viewableAlterationList = [
+        DeletionArtifact.class.name,
+        InsertionArtifact.class.name,
+        SubstitutionArtifact.class.name
+    ]
+    public static final List<String> VIEWABLE_SEQUENCE_ALTERATION_LIST = [
+        Deletion.class.name,
+        Insertion.class.name,
+        Substitution.class.name,
+        SNV.class.name,
+        SNP.class.name,
+        MNV.class.name,
+        MNP.class.name,
+        Indel.class.name
+    ]
+    public static
+    final List<String> VIEWABLE_ANNOTATION_LIST = VIEWABLE_ANNOTATION_FEATURE_LIST + VIEWABLE_ANNOTATION_TRANSCIPT_PARENT_LIST + VIEWABLE_SEQUENCE_ALTERATION_LIST
+    public static
+    final List<String> VIEWABLE_ANNOTATION_TYPES_LIST = VIEWABLE_ANNOTATION_FEATURE_LIST + VIEWABLE_ANNOTATION_TRANSCRIPT_LIST + VIEWABLE_ANNOTATION_TRANSCIPT_PARENT_LIST
+
     static def getSOUrlForCvTermLabels(List<String> cvTermsArray){
         return cvTermsArray.collect{  getSOUrlForCvTerm(it)}.findAll{ it!=null}
     }

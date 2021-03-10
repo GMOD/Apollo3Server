@@ -12,7 +12,6 @@ import org.bbop.apollo.attributes.FeatureType
 import org.bbop.apollo.event.AnnotationEvent
 import org.bbop.apollo.event.AnnotationListener
 import org.bbop.apollo.feature.Feature
-import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
 import org.bbop.apollo.organism.Organism
@@ -482,7 +481,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         returnObject.put(FeatureStringEnum.FEATURES.value, jsonFeatures)
 
         List<SequenceAlterationArtifact> sequenceAlterationList = Feature.executeQuery("select f from Feature f join f.featureLocations fl join fl.sequence s where s = :sequence and f.class in :sequenceTypes"
-                , [sequence: sequence, sequenceTypes: requestHandlingService.viewableAlterationList])
+                , [sequence: sequence, sequenceTypes: FeatureTypeMapper.viewableAlterationList])
         for (SequenceAlterationArtifact alteration : sequenceAlterationList) {
             jsonFeatures.put(featureService.convertFeatureToJSON(alteration, true));
         }
@@ -947,7 +946,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
             List<Long> sequenceList = inputObject.sequence.collect {
                 return Long.valueOf(it.id)
             }
-            List<String> featureUniqueNames = Feature.executeQuery("select f.uniqueName from Feature f left join f.parentFeatureRelationships pfr  join f.featureLocations fl join fl.sequence s   where f.childFeatureRelationships is empty and s.id in (:sequenceList) and f.class in (:viewableTypes) ", [sequenceList: sequenceList, viewableTypes: requestHandlingService.viewableAnnotationList])
+            List<String> featureUniqueNames = Feature.executeQuery("select f.uniqueName from Feature f left join f.parentFeatureRelationships pfr  join f.featureLocations fl join fl.sequence s   where f.childFeatureRelationships is empty and s.id in (:sequenceList) and f.class in (:viewableTypes) ", [sequenceList: sequenceList, viewableTypes: FeatureTypeMapper.VIEWABLE_ANNOTATION_LIST])
             featureUniqueNames.each {
                 def jsonObject = new JSONObject()
                 jsonObject.put(FeatureStringEnum.UNIQUENAME.value, it)

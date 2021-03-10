@@ -404,15 +404,15 @@ class AnnotatorController {
                     case "transposable_element": viewableTypes.add(TransposableElement.class.canonicalName)
                         break
                     case "sequence_alteration":
-                        viewableTypes = requestHandlingService.viewableSequenceAlterationList
+                        viewableTypes = FeatureTypeMapper.VIEWABLE_SEQUENCE_ALTERATION_LIST
                         break
                     default:
                         log.info "Type not found for annotation filter '${type}'"
-                        viewableTypes = requestHandlingService.viewableAnnotationList + requestHandlingService.viewableSequenceAlterationList
+                        viewableTypes = FeatureTypeMapper.VIEWABLE_ANNOTATION_LIST + FeatureTypeMapper.VIEWABLE_SEQUENCE_ALTERATION_LIST
                         break
                 }
             } else {
-                viewableTypes = requestHandlingService.viewableAnnotationList + requestHandlingService.viewableSequenceAlterationList
+                viewableTypes = FeatureTypeMapper.VIEWABLE_ANNOTATION_LIST + FeatureTypeMapper.VIEWABLE_SEQUENCE_ALTERATION_LIST
             }
 
             long start = System.currentTimeMillis()
