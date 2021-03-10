@@ -50,7 +50,6 @@ class ExonService {
 //        if (!getTranscript(exon1).equals(getTranscript(exon2))) {
 //            throw new AnnotationEditorException("mergeExons(): Exons must have same parent transcript", exon1, exon2);
 //        }
-        println "merging exons"
         // both exons must be in the same strand
         Transcript transcript = getTranscript(exon1);
         if (!exon1?.featureLocation?.getStrand()?.equals(exon2?.featureLocation?.getStrand())) {
@@ -92,7 +91,6 @@ class ExonService {
     @Transactional
     void deleteExon(Transcript transcript, Exon exon) {
         // update transcript boundaries if necessary
-        println "deleting exon "
         if (exon.getFmin().equals(transcript.getFmin())) {
             int fmin = Integer.MAX_VALUE;
             for (Exon e : transcriptService.getExons(transcript)) {
@@ -118,8 +116,6 @@ class ExonService {
 
         FeatureLocation.executeUpdate("MATCH (e:Exon {uniqueName : ${exon.uniqueName}} )-[r]-(parent) delete e,r")
 //        transcript.save(flush: true)
-        println "DELETED exon"
-
     }
 
 

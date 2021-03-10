@@ -49,20 +49,19 @@ class GroupController {
 //        List<GroupOrganismPermission> groupOrganismPermissions = GroupOrganismPermission.executeQuery(query)
         def groupOrganismPermissions = GroupOrganismPermission.executeQuery(query)
         if (groupOrganismPermissions) {
-//            println "post-save found permissions ${groupOrganismPermissions} ... ${groupOrganismPermissions as JSON}"
             JSONObject permissionsJSONObject = new JSONObject()
             def permissionObject = groupOrganismPermissions.first().permission
-            println "keys ${permissionObject.keys()}"
+            log.debug "keys ${permissionObject.keys()}"
             permissionsJSONObject.permissions = permissionObject.get(FeatureStringEnum.PERMISSIONS.value).asString()
 
-            println "keys object ${permissionsJSONObject as JSON}"
+            log.debug "keys object ${permissionsJSONObject as JSON}"
             JSONArray jsonArray = new JSONArray()
             jsonArray.add(permissionsJSONObject)
             render jsonArray as JSON
         }
         else{
 //        List<GroupOrganismPermission> groupOrganismPermissions = GroupOrganismPermission.findAllByGroup(group)
-            println "found NO permissions ${groupOrganismPermissions} ??"
+            log.warn "found NO permissions ${groupOrganismPermissions} ??"
             render groupOrganismPermissions as JSON
         }
     }
@@ -204,11 +203,6 @@ class GroupController {
         }
     }
 
-//    private JSONObject convertGroup(UserGroup userGroup) {
-//        JSONObject jsonObject = userGroup.properties
-//        println "user grou pproperly ${jsonObject as JSON}"
-//        return jsonObject
-//    }
 
     @ApiOperation(value = "Create group", nickname = "/createGroup", httpMethod = "POST")
     @ApiImplicitParams([
@@ -254,9 +248,6 @@ class GroupController {
         }
 
         if (returnArray.size() == 1) {
-//            JSONObject jsonObject = userGroups.g.properties
-//            println "group json objectd ${jsonObject as JSON}"
-//            render convertGroup(groups[0]) as JSON
             render returnArray[0] as JSON
         } else {
             // TODO
@@ -291,8 +282,6 @@ class GroupController {
             groupList = UserGroup.findAllByIdInList(ids)
         } else if (dataObject.name) {
             List<String> splitGroups = dataObject.name.split(",") as List<String>
-//            println splitGroups
-//            println splitGroups.size()
             groupList = UserGroup.findAllByNameInList(splitGroups)
         }
         if (!groupList) {
@@ -415,7 +404,6 @@ class GroupController {
         }
 
         if (!groupOrganismPermission && permissionsArray) {
-//            println "creating new permissions! "
             groupOrganismPermission = new GroupOrganismPermission(
                 group: group
                 , organism: organism
@@ -423,21 +411,13 @@ class GroupController {
             ).save(insert: true, flush: true)
             log.debug "created new permissions! ${groupOrganismPermission} "
         } else
-//        groupOrganismPermission.group = group
         if (permissionsArray.size() == 0) {
-//            println "deleting ${permissionsArray}"
             groupOrganismPermission.delete(flush: true)
             render groupOrganismPermission as JSON
             return
         } else {
             groupOrganismPermission.permissions = permissionsArray
-//            groupOrganismPermission.permissionsArray = permissionsArray
         }
-
-//        println "input data object ${dataObject} -> ${permissionsArray}"
-
-//        groupOrganismPermission.permissions = permissionsArray
-//        groupOrganismPermission.save(flush: true)
 
         log.info "Updated permissions for group ${group.name} and organism ${organism?.commonName} and permissions ${permissionsArray?.toString()}"
 
@@ -532,7 +512,7 @@ class GroupController {
         usersToAdd.each {
             String query = "MATCH (g:UserGroup ), (u:User) where g.name= '${groupInstance.name}' and (u.id = ${it.id} OR u.username = '${it.username}') create (g)-[admin:ADMIN]->(u)"
             def updates = User.executeUpdate(query)
-            println "updates ${updates}"
+            log.debug "updates ${updates}"
 //            groupInstance.addToAdmin(it)
 //            it.addToGroupAdmins(groupInstance)
             it.save()
@@ -556,7 +536,7 @@ class GroupController {
     ])
     def getGroupAdmin() {
         JSONObject dataObject = permissionService.handleInput(request, params)
-        println "data: ${dataObject}"
+        log.debug "data: ${dataObject}"
         if (!permissionService.hasGlobalPermissions(dataObject, GlobalPermissionEnum.ADMIN)) {
             def error = [error: 'not authorized to view the metadata']
             log.error(error.error)
@@ -583,23 +563,17 @@ class GroupController {
 //        }
 
 
-        JSONArray adminList = new JSONArray()
         String otherQuery = "MATCH (g:UserGroup)-[admin:ADMIN]-(u:User) where g.name = '${dataObject.name}' return { admin: u } limit 1"
         def admins = User.executeQuery(otherQuery)
-        println "admins ${admins}"
+        log.debug "admins ${admins}"
         if (admins) {
             def admin = admins.first().admin
-            println "admin ${admin.keys()}"
-//                    println "admin keys ${firstAdmin.keys()}"
             JSONObject userObject = new JSONObject()
-//                    userObject.id = user.id
             userObject.email = admin.get(FeatureStringEnum.USERNAME.value).asString()
             userObject.username = admin.get(FeatureStringEnum.USERNAME.value).asString()
             userObject.firstName = admin.get("firstName")
             userObject.lastName = admin.get("lastName")
-//            adminList.add(userObject)
             returnArray.add(userObject)
-//            groupObject.admin = adminList
         }
 
 
@@ -615,7 +589,7 @@ class GroupController {
     ])
     def getGroupCreator() {
         JSONObject dataObject = permissionService.handleInput(request, params)
-        println "data: ${dataObject}"
+        log.debug "data: ${dataObject}"
         if (!permissionService.hasGlobalPermissions(dataObject, GlobalPermissionEnum.ADMIN)) {
             def error = [error: 'not authorized to view the metadata']
             log.error(error.error)

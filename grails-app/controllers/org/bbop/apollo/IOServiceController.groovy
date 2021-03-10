@@ -179,7 +179,7 @@ class IOServiceController extends AbstractApolloController {
                     "RETURN {type: labels(f),sequence: s,feature: f,location: fl,children: collect(DISTINCT {type: labels(child), location: pl2,r1: fr,feature: child,sequence: s}), " +
                     "owners: collect(distinct u),parent: { type: labels(parent), location: pl,r2:gfr,feature:parent }}"
 //
-                println "full genes query ${fullGenesQuery}"
+                log.debug "full genes query ${fullGenesQuery}"
 
 //
                 def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery).unique()
@@ -194,10 +194,9 @@ class IOServiceController extends AbstractApolloController {
                     " AND NOT (f)-[:FEATURERELATIONSHIP]-(:Feature) " +
                     "RETURN {type: labels(f),sequence: s,feature: f,location: fl, owners: collect(distinct u)}"
 
-                println "single level query ${singleLevelQuery}"
+                log.debug "single level query ${singleLevelQuery}"
                 neo4jFeatureNodes += Feature.executeQuery(singleLevelQuery).unique()
 //
-//                println "neo4j with single nodes ${neo4jFeatureNodes as JSON}"
                 features = neo4jFeatureNodes
 
                 log.debug "IOService query: ${System.currentTimeMillis() - st}ms"
@@ -226,7 +225,6 @@ class IOServiceController extends AbstractApolloController {
                     gff3HandlerService.writeNeo4jFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String, true, sequenceList)
                 } else {
 //                    gff3HandlerService.writeFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String)
-//                    println("features to write ${features as JSON}")
                     gff3HandlerService.writeNeo4jFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String)
                 }
             } else if (typeOfExport == FeatureStringEnum.TYPE_GO.value) {

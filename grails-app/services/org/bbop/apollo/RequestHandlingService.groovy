@@ -86,7 +86,6 @@ class RequestHandlingService {
     def configWrapperService
     def nameService
     def permissionService
-//    def preferenceService
     def featurePropertyService
     def featureEventService
     def goAnnotationService
@@ -855,8 +854,8 @@ class RequestHandlingService {
 //            "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child}), " +
 //            "owners: collect(distinct u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
 
-        println "organism cournt ${Organism.count}"
-        println "sequencew cournt ${Sequence.count}"
+        log.debug "organism cournt ${Organism.count}"
+        log.debug "sequencew cournt ${Sequence.count}"
 
         def typeList = viewableAnnotationTranscriptList + viewableAnnotationFeatureList + viewableSequenceAlterationList
         List<String> typeStringList = new ArrayList<>()
@@ -865,7 +864,7 @@ class RequestHandlingService {
             typeStringList.add("'"+it.substring(lastIndex+1)+"'")
         }
 
-        println "type list: ${typeList}"
+        log.debug "type list: ${typeList}"
 //
         String query = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature),\n" +
             "(f)-[owner:OWNERS]-(u)\n" +
@@ -879,15 +878,15 @@ class RequestHandlingService {
 //            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
 //            "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child}), " +
 //            "owners: collect(distinct u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
-        println "query output: ${query}"
+        log.debug "query output: ${query}"
         def nodes = Feature.executeQuery(query).unique()
-        println "actual returned nodes ${nodes} ${nodes.size()}"
+        log.debug "actual returned nodes ${nodes} ${nodes.size()}"
 //
 //
         JSONArray jsonFeatures = new JSONArray()
         nodes.each{
-            println "forist node ${it} "
-            println "class of it ${it.getClass()}"
+            log.debug "forist node ${it} "
+            log.debug "class of it ${it.getClass()}"
 //            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
 //        features.each { feature ->
 //            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
@@ -916,7 +915,7 @@ class RequestHandlingService {
 //        }
 
         inputObject.put(AnnotationEditorController.REST_FEATURES, jsonFeatures)
-        println "getFeatures ${System.currentTimeMillis() - start}ms"
+        log.debug "getFeatures ${System.currentTimeMillis() - start}ms"
         return inputObject
 
 
@@ -3086,13 +3085,13 @@ class RequestHandlingService {
     }
 
     def addVariant(JSONObject inputObject) {
-        println "${inputObject.toString()}"
+        log.debug "${inputObject.toString()}"
         JSONObject returnObject = jsonWebUtilityService.createJSONFeatureContainer();
         JSONArray features = inputObject.getJSONArray(FeatureStringEnum.FEATURES.value)
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.WRITE)
 
 
-        println "output sequence ${sequence} ${sequence as JSON}"
+        log.debug "output sequence ${sequence} ${sequence as JSON}"
         boolean suppressHistory = false
         boolean suppressEvents = false
 

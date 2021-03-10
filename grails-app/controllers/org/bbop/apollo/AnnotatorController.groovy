@@ -770,7 +770,7 @@ class AnnotatorController {
 
         try {
             String returnString = trackService.getCommonDataDirectory()
-            println "Returning common data directory ${returnString}"
+            log.debug "Returning common data directory ${returnString}"
             if (returnString) {
                 returnObject.error = returnString
             }
@@ -900,16 +900,14 @@ class AnnotatorController {
 
     def ping() {
         log.debug "Ping: Evaluating Saves"
-//        preferenceService.evaluateSaves()
-        println "pinging ingi gin g "
         if (permissionService.checkPermissions(PermissionEnum.READ)) {
             log.debug("permissions checked and alive")
             JSONObject a = new JSONObject()
             a.test = "c"
-            println "proxyies ${Proxy.count}"
+            log.debug "proxyies ${Proxy.count}"
 //            Proxy.findAllByActive(true).each { proxy ->
             Proxy.all.each { proxy ->
-                println "proxy ${proxy.referenceUrl} ${proxy.targetUrl} ${proxy.active}"
+                log.debug "proxy ${proxy.referenceUrl} ${proxy.targetUrl} ${proxy.active}"
                 a[proxy.targetUrl] = proxy.referenceUrl
             }
             render a as JSON

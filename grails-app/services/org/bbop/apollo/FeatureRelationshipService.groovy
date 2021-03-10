@@ -14,23 +14,21 @@ import org.neo4j.driver.internal.InternalNode
 @Transactional(readOnly = true)
 class FeatureRelationshipService {
 
-    def featureService
-
     List<Feature> getChildrenForFeatureAndTypes(Feature feature, String... ontologyIds) {
         def children = Feature.executeQuery("MATCH (f:Feature)-[fr:FEATURERELATIONSHIP]->(child:Feature) where f.uniqueName = ${feature.uniqueName} return child ")
-        println "getting children ${children}"
+        log.debug "getting children ${children}"
         def list = new ArrayList<Feature>()
         def ontologyIdCollection = ontologyIds as Collection<String>
         children?.each { InternalNode it ->
             Collection<String> labels = FeatureTypeMapper.getSOUrlForCvTermLabels(it.labels())
-            println "labels ${labels} vs ${ontologyIdCollection}"
-            println "ontology type: ${it.ontologyId}"
+            log.debug "labels ${labels} vs ${ontologyIdCollection}"
+            log.debug "ontology type: ${it.ontologyId}"
             if (ontologyIds.size() == 0 || (ontologyIdCollection.intersect(labels))) {
                 def castFeature = FeatureTypeMapper.castNeo4jFeature(it)
                 list.push(castFeature)
             }
         }
-        println "return list ${list}"
+        log.debug "return list ${list}"
 
         return list
     }
@@ -72,11 +70,10 @@ class FeatureRelationshipService {
         def list = new ArrayList<Feature>()
         def ontologyIdCollection = ontologyIds as Collection<String>
         parents?.each { InternalNode it ->
-            println "raw labels: "+it.labels()
+            log.debug "raw labels: "+it.labels()
             Collection<String> labels = FeatureTypeMapper.getSOUrlForCvTermLabels(it.labels())
             if (ontologyIds.size() == 0 || (ontologyIdCollection.intersect(labels))) {
-//                String cvTerm = featureService.getCvTermFromNeo4jFeature(it)
-                println "ontology type: ${it.ontologyId}"
+                log.debug "ontology type: ${it.ontologyId}"
                 def castFeature = FeatureTypeMapper.castNeo4jFeature(it)
                 list.push(castFeature)
             }

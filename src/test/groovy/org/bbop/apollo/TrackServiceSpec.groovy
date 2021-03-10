@@ -61,7 +61,6 @@ class TrackServiceSpec extends Specification implements ServiceUnitTest<TrackSer
 
         when: "we get the coding gene"
         JSONArray subArray = firstGeneChildren.getJSONArray(3)
-        println "subarray siez ${subArray.size()}"
         JSONObject codingGene = subArray.getJSONObject(0)
         JSONArray codingGeneChildren = codingGene.children
 
@@ -115,7 +114,6 @@ class TrackServiceSpec extends Specification implements ServiceUnitTest<TrackSer
 
         when: "we flatten it"
         JSONArray renderedArray = service.flattenArray(inputArray, 'gene')
-        println renderedArray.name
 
         then: "we should see an expected result"
         assert renderedArray.size() == 8

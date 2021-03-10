@@ -386,8 +386,8 @@ class FeatureService {
                 // Scenario II - find an overlapping isoform and if present, add current transcript to its gene
                 FeatureLocation featureLocation = convertJSONToFeatureLocation(jsonTranscript.getJSONObject(FeatureStringEnum.LOCATION.value), sequence, null)
 //                Collection<Feature> overlappingFeatures = getOverlappingFeatures(featureLocation).findAll() {
-                println "input JSON ${jsonTranscript as JSON}"
-                println "input JSON location ${featureLocation as JSON}"
+                log.debug "input JSON ${jsonTranscript as JSON}"
+                log.debug "input JSON location ${featureLocation as JSON}"
                 Collection<InternalNode> overlappingFeatures = getOverlappingNeo4jFeatures(featureLocation).findAll() {
                     log.debug "it as ${it}"
                     String type = getCvTermFromNeo4jFeature(it)
@@ -411,7 +411,7 @@ class FeatureService {
                     log.error e
                 }
 
-//                println "overlapping features to check: ${overlappingFeaturesToCheck?.size()} -> ${overlappingFeaturesToCheck}"
+//                log.debug "overlapping features to check: ${overlappingFeaturesToCheck?.size()} -> ${overlappingFeaturesToCheck}"
 
                 for (Gene eachFeature : overlappingFeaturesToCheck) {
                     // get the proper object instead of its proxy, due to lazy loading
@@ -732,7 +732,7 @@ class FeatureService {
             return;
         }
         Collections.sort(sortedExons, new FeaturePositionComparator<Exon>(false))
-        println "initial number of exons ${sortedExons.size()}"
+        log.debug "initial number of exons ${sortedExons.size()}"
         int inc = 1;
         for (int i = 0; i < sortedExons.size() - 1; i += inc) {
             inc = 1;
@@ -743,7 +743,7 @@ class FeatureService {
                     try {
                         exonService.mergeExons(leftExon, rightExon);
                         sortedExons = transcriptService.getSortedExons(transcript, false)
-                        println "merging exons -> ${sortedExons.size()}"
+                        log.debug "merging exons -> ${sortedExons.size()}"
                         // we have to reload the sortedExons again and start over
                         ++inc;
                     } catch (AnnotationException e) {
@@ -2891,7 +2891,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         start = System.currentTimeMillis()
         if (inputFeature.featureLocation) {
             def sequenceNodes = Feature.executeQuery("MATCH (f:Feature)-[fl:FEATURELOCATION]-(s:Sequence) where f.uniqueName=${inputFeature.uniqueName} return s limit 1")
-            println "sequence node ${sequenceNodes} and ${sequenceNodes.size()}"
+            log.debug "sequence node ${sequenceNodes} and ${sequenceNodes.size()}"
             Sequence sequence = sequenceNodes[0]  as Sequence
             if(sequence!=null){
                 jsonFeature.put(FeatureStringEnum.SEQUENCE.value, sequence.name)

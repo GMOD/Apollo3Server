@@ -127,9 +127,9 @@ class FeatureTypeMapper {
             case MNP.cvTerm.toUpperCase(): return internalNode as MNP
             case Indel.cvTerm.toUpperCase(): return internalNode as Indel
             default:
-                println("None for type: " + internalNode)
+                throw new RuntimeException("Unable to find type for ${internalNode} with labels ${internalNode.labels()} and label ${label}.")
 //        log.error("No feature type exists for ${ontologyId}")
-                return internalNode as Feature
+//                return internalNode as Feature
         }
 
     }
