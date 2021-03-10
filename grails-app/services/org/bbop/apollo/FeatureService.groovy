@@ -1,7 +1,6 @@
 package org.bbop.apollo
 
 import grails.converters.JSON
-import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.alteration.SequenceAlterationInContext
 import org.bbop.apollo.attributes.*
@@ -46,19 +45,10 @@ class FeatureService {
     def geneProductService
     def provenanceService
 
-    public static final String MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE = "Manually associate transcript to gene"
-    public static final String MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE = "Manually dissociate transcript from gene"
-    public static final String MANUALLY_ASSOCIATE_FEATURE_TO_GENE = "Manually associate feature to gene"
-    public static final String MANUALLY_DISSOCIATE_FEATURE_FROM_GENE = "Manually dissociate feature from gene"
-
-    public static final def SINGLETON_FEATURE_TYPES = [RepeatRegion.cvTerm, TransposableElement.cvTerm, Terminator.cvTerm]
-    public static final RNA_FEATURE_TYPES = [
-        MRNA.cvTerm, MiRNA.cvTerm, NcRNA.cvTerm, RRNA.cvTerm, SnRNA.cvTerm, SnoRNA.cvTerm,
-        TRNA.cvTerm, Transcript.cvTerm,
-        GuideRNA.cvTerm, RNaseMRPRNA.cvTerm, TelomeraseRNA.cvTerm, SrpRNA.cvTerm, LncRNA.cvTerm,
-        RNasePRNA.cvTerm, ScRNA.cvTerm, PiRNA.cvTerm, TmRNA.cvTerm, EnzymaticRNA.cvTerm,
-    ]
-    public static final PSEUDOGENIC_FEATURE_TYPES = [Pseudogene.cvTerm, PseudogenicRegion.cvTerm, ProcessedPseudogene.cvTerm]
+    final String MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE = "Manually associate transcript to gene"
+    final String MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE = "Manually dissociate transcript from gene"
+    final String MANUALLY_ASSOCIATE_FEATURE_TO_GENE = "Manually associate feature to gene"
+    final String MANUALLY_DISSOCIATE_FEATURE_FROM_GENE = "Manually dissociate feature from gene"
 
 
     @Transactional
@@ -386,8 +376,8 @@ class FeatureService {
                 // Scenario II - find an overlapping isoform and if present, add current transcript to its gene
                 FeatureLocation featureLocation = convertJSONToFeatureLocation(jsonTranscript.getJSONObject(FeatureStringEnum.LOCATION.value), sequence, null)
 //                Collection<Feature> overlappingFeatures = getOverlappingFeatures(featureLocation).findAll() {
-                println "input JSON ${jsonTranscript as JSON}"
-                println "input JSON location ${featureLocation as JSON}"
+                log.debug "input JSON ${jsonTranscript as JSON}"
+                log.debug "input JSON location ${featureLocation as JSON}"
                 Collection<InternalNode> overlappingFeatures = getOverlappingNeo4jFeatures(featureLocation).findAll() {
                     log.debug "it as ${it}"
                     String type = getCvTermFromNeo4jFeature(it)
@@ -411,7 +401,7 @@ class FeatureService {
                     log.error e
                 }
 
-//                println "overlapping features to check: ${overlappingFeaturesToCheck?.size()} -> ${overlappingFeaturesToCheck}"
+//                log.debug "overlapping features to check: ${overlappingFeaturesToCheck?.size()} -> ${overlappingFeaturesToCheck}"
 
                 for (Gene eachFeature : overlappingFeaturesToCheck) {
                     // get the proper object instead of its proxy, due to lazy loading
@@ -732,7 +722,7 @@ class FeatureService {
             return;
         }
         Collections.sort(sortedExons, new FeaturePositionComparator<Exon>(false))
-        println "initial number of exons ${sortedExons.size()}"
+        log.debug "initial number of exons ${sortedExons.size()}"
         int inc = 1;
         for (int i = 0; i < sortedExons.size() - 1; i += inc) {
             inc = 1;
@@ -743,7 +733,7 @@ class FeatureService {
                     try {
                         exonService.mergeExons(leftExon, rightExon);
                         sortedExons = transcriptService.getSortedExons(transcript, false)
-                        println "merging exons -> ${sortedExons.size()}"
+                        log.debug "merging exons -> ${sortedExons.size()}"
                         // we have to reload the sortedExons again and start over
                         ++inc;
                     } catch (AnnotationException e) {
@@ -1552,13 +1542,13 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         Feature returnFeature
         try {
             JSONObject type = jsonFeature.getJSONObject(FeatureStringEnum.TYPE.value);
-            String ontologyId = convertJSONToOntologyId(type)
+            String ontologyId = FeatureTypeMapper.convertJSONToOntologyId(type)
             if (!ontologyId) {
                 log.warn "Feature type not set for ${type}"
                 return null
             }
 
-            returnFeature = generateFeatureForType(ontologyId)
+            returnFeature = FeatureTypeMapper.generateFeatureForType(ontologyId)
             if (jsonFeature.has(FeatureStringEnum.ID.value)) {
                 returnFeature.setId(jsonFeature.getLong(FeatureStringEnum.ID.value));
             }
@@ -1637,7 +1627,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             if (jsonFeature.has(FeatureStringEnum.LOCATION.value)) {
                 JSONObject jsonLocation = jsonFeature.getJSONObject(FeatureStringEnum.LOCATION.value);
                 FeatureLocation featureLocation
-                if (SINGLETON_FEATURE_TYPES.contains(type.getString(FeatureStringEnum.NAME.value))) {
+                if (FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(type.getString(FeatureStringEnum.NAME.value))) {
                     featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, returnFeature, Strand.NONE.value)
                 } else {
                     featureLocation = convertJSONToFeatureLocation(jsonLocation, sequence, returnFeature)
@@ -1903,125 +1893,6 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
 
 
-    // TODO: (perform on client side, slightly ugly)
-    Feature generateFeatureForType(String ontologyId) {
-        switch (ontologyId) {
-            case MRNA.ontologyId: return new MRNA()
-            case MiRNA.ontologyId: return new MiRNA()
-            case NcRNA.ontologyId: return new NcRNA()
-            case GuideRNA.ontologyId: return new GuideRNA()
-            case RNasePRNA.ontologyId: return new RNasePRNA()
-            case TelomeraseRNA.ontologyId: return new TelomeraseRNA()
-            case SrpRNA.ontologyId: return new SrpRNA()
-            case LncRNA.ontologyId: return new LncRNA()
-            case RNaseMRPRNA.ontologyId: return new RNaseMRPRNA()
-            case ScRNA.ontologyId: return new ScRNA()
-            case PiRNA.ontologyId: return new PiRNA()
-            case TmRNA.ontologyId: return new TmRNA()
-            case EnzymaticRNA.ontologyId: return new EnzymaticRNA()
-            case SnoRNA.ontologyId: return new SnoRNA()
-            case SnRNA.ontologyId: return new SnRNA()
-            case RRNA.ontologyId: return new RRNA()
-            case TRNA.ontologyId: return new TRNA()
-            case Exon.ontologyId: return new Exon()
-            case CDS.ontologyId: return new CDS()
-            case Intron.ontologyId: return new Intron()
-            case Gene.ontologyId: return new Gene()
-            case Pseudogene.ontologyId: return new Pseudogene()
-            case PseudogenicRegion.ontologyId: return new PseudogenicRegion()
-            case ProcessedPseudogene.ontologyId: return new ProcessedPseudogene()
-            case Transcript.ontologyId: return new Transcript()
-            case TransposableElement.ontologyId: return new TransposableElement()
-            case Terminator.ontologyId: return new Terminator()
-            case ShineDalgarnoSequence.ontologyId: return new ShineDalgarnoSequence()
-            case RepeatRegion.ontologyId: return new RepeatRegion()
-            case InsertionArtifact.ontologyId: return new InsertionArtifact()
-            case DeletionArtifact.ontologyId: return new DeletionArtifact()
-            case SubstitutionArtifact.ontologyId: return new SubstitutionArtifact()
-            case Insertion.ontologyId: return new Insertion()
-            case Deletion.ontologyId: return new Deletion()
-            case Substitution.ontologyId: return new Substitution()
-            case NonCanonicalFivePrimeSpliceSite.ontologyId: return new NonCanonicalFivePrimeSpliceSite()
-            case NonCanonicalThreePrimeSpliceSite.ontologyId: return new NonCanonicalThreePrimeSpliceSite()
-            case StopCodonReadThrough.ontologyId: return new StopCodonReadThrough()
-            case SNV.ontologyId: return new SNV()
-            case SNP.ontologyId: return new SNP()
-            case MNV.ontologyId: return new MNV()
-            case MNP.ontologyId: return new MNP()
-            case Indel.ontologyId: return new Indel()
-            default:
-                log.error("No feature type exists for ${ontologyId}")
-                return null
-        }
-    }
-
-
-    String convertJSONToOntologyId(JSONObject jsonCVTerm) {
-        String cvString = jsonCVTerm.getJSONObject(FeatureStringEnum.CV.value).getString(FeatureStringEnum.NAME.value)
-        String cvTermString = jsonCVTerm.getString(FeatureStringEnum.NAME.value)
-
-        if (cvString.equalsIgnoreCase(FeatureStringEnum.CV.value) || cvString.equalsIgnoreCase(FeatureStringEnum.SEQUENCE.value)) {
-            switch (cvTermString.toUpperCase()) {
-                case MRNA.cvTerm.toUpperCase(): return MRNA.ontologyId
-                case MiRNA.cvTerm.toUpperCase(): return MiRNA.ontologyId
-                case NcRNA.cvTerm.toUpperCase(): return NcRNA.ontologyId
-                case GuideRNA.cvTerm.toUpperCase(): return GuideRNA.ontologyId
-                case RNasePRNA.cvTerm.toUpperCase(): return RNasePRNA.ontologyId
-                case TelomeraseRNA.cvTerm.toUpperCase(): return TelomeraseRNA.ontologyId
-                case SrpRNA.cvTerm.toUpperCase(): return SrpRNA.ontologyId
-                case LncRNA.cvTerm.toUpperCase(): return LncRNA.ontologyId
-                case RNaseMRPRNA.cvTerm.toUpperCase(): return RNaseMRPRNA.ontologyId
-                case ScRNA.cvTerm.toUpperCase(): return ScRNA.ontologyId
-                case PiRNA.cvTerm.toUpperCase(): return PiRNA.ontologyId
-                case TmRNA.cvTerm.toUpperCase(): return TmRNA.ontologyId
-                case EnzymaticRNA.cvTerm.toUpperCase(): return EnzymaticRNA.ontologyId
-                case SnoRNA.cvTerm.toUpperCase(): return SnoRNA.ontologyId
-                case SnRNA.cvTerm.toUpperCase(): return SnRNA.ontologyId
-                case RRNA.cvTerm.toUpperCase(): return RRNA.ontologyId
-                case TRNA.cvTerm.toUpperCase(): return TRNA.ontologyId
-                case Transcript.cvTerm.toUpperCase(): return Transcript.ontologyId
-                case Gene.cvTerm.toUpperCase(): return Gene.ontologyId
-                case Exon.cvTerm.toUpperCase(): return Exon.ontologyId
-                case CDS.cvTerm.toUpperCase(): return CDS.ontologyId
-                case Intron.cvTerm.toUpperCase(): return Intron.ontologyId
-                case Pseudogene.cvTerm.toUpperCase(): return Pseudogene.ontologyId
-                case PseudogenicRegion.cvTerm.toUpperCase(): return PseudogenicRegion.ontologyId
-                case ProcessedPseudogene.cvTerm.toUpperCase(): return ProcessedPseudogene.ontologyId
-                case TransposableElement.alternateCvTerm.toUpperCase():
-                case TransposableElement.cvTerm.toUpperCase(): return TransposableElement.ontologyId
-                case Terminator.alternateCvTerm.toUpperCase():
-                case Terminator.cvTerm.toUpperCase(): return Terminator.ontologyId
-                case ShineDalgarnoSequence.alternateCvTerm.toUpperCase():
-                case ShineDalgarnoSequence.cvTerm.toUpperCase(): return ShineDalgarnoSequence.ontologyId
-                case RepeatRegion.alternateCvTerm.toUpperCase():
-                case RepeatRegion.cvTerm.toUpperCase(): return RepeatRegion.ontologyId
-                case InsertionArtifact.cvTerm.toUpperCase(): return InsertionArtifact.ontologyId
-                case DeletionArtifact.cvTerm.toUpperCase(): return DeletionArtifact.ontologyId
-                case SubstitutionArtifact.cvTerm.toUpperCase(): return SubstitutionArtifact.ontologyId
-                case Insertion.cvTerm.toUpperCase(): return Insertion.ontologyId
-                case Deletion.cvTerm.toUpperCase(): return Deletion.ontologyId
-                case Substitution.cvTerm.toUpperCase(): return Substitution.ontologyId
-                case StopCodonReadThrough.cvTerm.toUpperCase(): return StopCodonReadThrough.ontologyId
-                case NonCanonicalFivePrimeSpliceSite.cvTerm.toUpperCase(): return NonCanonicalFivePrimeSpliceSite.ontologyId
-                case NonCanonicalThreePrimeSpliceSite.cvTerm.toUpperCase(): return NonCanonicalThreePrimeSpliceSite.ontologyId
-                case NonCanonicalFivePrimeSpliceSite.alternateCvTerm.toUpperCase(): return NonCanonicalFivePrimeSpliceSite.ontologyId
-                case NonCanonicalThreePrimeSpliceSite.alternateCvTerm.toUpperCase(): return NonCanonicalThreePrimeSpliceSite.ontologyId
-                case SNV.cvTerm.toUpperCase(): return SNV.ontologyId
-                case SNP.cvTerm.toUpperCase(): return SNP.ontologyId
-                case MNV.cvTerm.toUpperCase(): return MNV.ontologyId
-                case MNP.cvTerm.toUpperCase(): return MNP.ontologyId
-                case Indel.cvTerm.toUpperCase(): return Indel.ontologyId
-                default:
-                    log.error("CV Term not known ${cvTermString} for CV ${FeatureStringEnum.SEQUENCE}")
-                    return null
-            }
-        } else {
-            log.error("CV not known ${cvString}")
-        }
-
-        return null
-
-    }
 
     @Transactional
     void updateGeneBoundaries(Gene gene) {
@@ -2893,7 +2764,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         start = System.currentTimeMillis()
         if (inputFeature.featureLocation) {
             def sequenceNodes = Feature.executeQuery("MATCH (f:Feature)-[fl:FEATURELOCATION]-(s:Sequence) where f.uniqueName=${inputFeature.uniqueName} return s limit 1")
-            println "sequence node ${sequenceNodes} and ${sequenceNodes.size()}"
+            log.debug "sequence node ${sequenceNodes} and ${sequenceNodes.size()}"
             Sequence sequence = sequenceNodes[0]  as Sequence
             if(sequence!=null){
                 jsonFeature.put(FeatureStringEnum.SEQUENCE.value, sequence.name)
@@ -3120,7 +2991,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     JSONObject generateJSONFeatureStringForType(String ontologyId) {
         if (ontologyId == null) return null;
         JSONObject jsonObject = new JSONObject();
-        def feature = generateFeatureForType(ontologyId)
+        def feature = FeatureTypeMapper.generateFeatureForType(ontologyId)
         String cvTerm = feature.cvTerm
 
         jsonObject.put(FeatureStringEnum.NAME.value, cvTerm)
@@ -3491,7 +3362,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
      */
     def associateFeatureToGene(Feature feature, Gene originalGene) {
         log.debug "associateFeatureToGene: ${feature.name} -> ${originalGene.name}"
-        if (!SINGLETON_FEATURE_TYPES.contains(feature.cvTerm)) {
+        if (!FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(feature.cvTerm)) {
             log.error("Feature type can not be associated with a gene with this method: ${feature.cvTerm}")
             return
         }
@@ -3561,7 +3432,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 //        log.debug "dissociateTranscriptFromGene: ${transcript.name} -> ${gene.name}"
         featureRelationshipService.removeFeatureRelationship(gene, transcript)
         Gene newGene
-        if (PSEUDOGENIC_FEATURE_TYPES.contains(gene.cvTerm)) {
+        if (FeatureTypeMapper.PSEUDOGENIC_FEATURE_TYPES.contains(gene.cvTerm)) {
             newGene = new Pseudogene(
                 uniqueName: nameService.generateUniqueName(),
                 name: nameService.generateUniqueName(gene)
@@ -4115,7 +3986,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         String topLevelFeatureType = null
         if (type == Transcript.cvTerm) {
             topLevelFeatureType = Pseudogene.cvTerm
-        } else if (SINGLETON_FEATURE_TYPES.contains(type)) {
+        } else if (FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(type)) {
             topLevelFeatureType = type
         } else {
             topLevelFeatureType = Gene.cvTerm
@@ -4162,7 +4033,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             }
         }
 
-        if (!SINGLETON_FEATURE_TYPES.contains(originalType) && RNA_FEATURE_TYPES.contains(type)) {
+        if (!FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(originalType) && FeatureTypeMapper.RNA_FEATURE_TYPES.contains(type)) {
             // *RNA to *RNA
             if (transcriptList.size() == 1) {
                 featureRelationshipService.deleteFeatureAndChildren(parentGene)
@@ -4218,7 +4089,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             }
             newGene.save(flush: true)
             newFeature = transcript
-        } else if (!SINGLETON_FEATURE_TYPES.contains(originalType) && SINGLETON_FEATURE_TYPES.contains(type)) {
+        } else if (!FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(originalType) && FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(type)) {
             // *RNA to singleton
             if (transcriptList.size() == 1) {
                 featureRelationshipService.deleteFeatureAndChildren(parentGene)
@@ -4233,7 +4104,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             currentFeatureJsonObject.get(FeatureStringEnum.LOCATION.value).strand = 0
             Feature singleton = addFeature(currentFeatureJsonObject, sequence, user, true)
             newFeature = singleton
-        } else if (SINGLETON_FEATURE_TYPES.contains(originalType) && SINGLETON_FEATURE_TYPES.contains(type)) {
+        } else if (FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(originalType) && FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(type)) {
             // singleton to singleton
             currentFeatureJsonObject.put(FeatureStringEnum.UNIQUENAME.value, uniqueName)
             featureRelationshipService.deleteFeatureAndChildren(feature)
@@ -4251,7 +4122,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     def addFeature(JSONObject jsonFeature, Sequence sequence, User user, boolean suppressHistory, boolean useName = false) {
         Feature returnFeature = null
 
-        if (RNA_FEATURE_TYPES.contains(jsonFeature.get(FeatureStringEnum.TYPE.value).name)) {
+        if (FeatureTypeMapper.RNA_FEATURE_TYPES.contains(jsonFeature.get(FeatureStringEnum.TYPE.value).name)) {
             Gene gene = jsonFeature.has(FeatureStringEnum.PARENT_ID.value) ? (Gene) Feature.findByUniqueName(jsonFeature.getString(FeatureStringEnum.PARENT_ID.value)) : null
             Transcript transcript = null
 
@@ -4390,7 +4261,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             setOwner(feature, user);
             feature.save(flush: true)
             if (jsonFeature.get(FeatureStringEnum.TYPE.value).name == Gene.cvTerm ||
-                PSEUDOGENIC_FEATURE_TYPES.contains(jsonFeature.get(FeatureStringEnum.TYPE.value).name)) {
+                FeatureTypeMapper.PSEUDOGENIC_FEATURE_TYPES.contains(jsonFeature.get(FeatureStringEnum.TYPE.value).name)) {
                 Transcript transcript = transcriptService.getTranscripts(feature).iterator().next()
                 setOwner(transcript, user);
                 removeExonOverlapsAndAdjacencies(transcript)

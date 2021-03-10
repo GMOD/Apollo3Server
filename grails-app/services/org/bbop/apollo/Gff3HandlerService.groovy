@@ -565,7 +565,7 @@ class Gff3HandlerService {
             attributes.put(FeatureStringEnum.EXPORT_PARENT.value, encodeString(neo4jParentFeature.uniqueName as String))
         }
         String type = featureService.getCvTermFromNeo4jFeature(neo4jFeature)
-        if (configWrapperService.exportSubFeatureAttrs() || type in (requestHandlingService.viewableAnnotationCvTermList + requestHandlingService.viewableAnnotationTranscriptCvTermList + requestHandlingService.viewableAlterationCvTermList)) {
+        if (configWrapperService.exportSubFeatureAttrs() || type in (FeatureTypeMapper.VIEWABLE_ANNOTATION_CV_TERM_LIST + FeatureTypeMapper.VIEWABLE_ANNOTATION_TRANSCRIPT_CV_TERM_LIST + FeatureTypeMapper.VIEWABLE_ALTERATION_CV_TERM_LIST)) {
             if (writeObject.attributesToExport.contains(FeatureStringEnum.SYNONYMS.value)) {
                 Iterator<FeatureSynonym> synonymIter = feature.featureSynonyms.iterator()
                 if (synonymIter.hasNext()) {
@@ -695,11 +695,11 @@ class Gff3HandlerService {
         if (feature.getName() != null && !isBlank(feature.getName()) && writeObject.attributesToExport.contains(FeatureStringEnum.NAME.value)) {
             attributes.put(FeatureStringEnum.EXPORT_NAME.value, encodeString(feature.getName()));
         }
-        if (!(feature.class.name in requestHandlingService.viewableAnnotationList + requestHandlingService.viewableAlterationList)) {
+        if (!(feature.class.name in FeatureTypeMapper.VIEWABLE_ANNOTATION_LIST + FeatureTypeMapper.viewableAlterationList)) {
             def parent = featureRelationshipService.getParentForFeature(feature)
             attributes.put(FeatureStringEnum.EXPORT_PARENT.value, encodeString(parent.uniqueName));
         }
-        if (configWrapperService.exportSubFeatureAttrs() || feature.class.name in requestHandlingService.viewableAnnotationList + requestHandlingService.viewableAnnotationTranscriptList + requestHandlingService.viewableAlterationList) {
+        if (configWrapperService.exportSubFeatureAttrs() || feature.class.name in FeatureTypeMapper.VIEWABLE_ANNOTATION_LIST + FeatureTypeMapper.VIEWABLE_ANNOTATION_TRANSCRIPT_LIST + FeatureTypeMapper.viewableAlterationList) {
             if (writeObject.attributesToExport.contains(FeatureStringEnum.SYNONYMS.value)) {
                 Iterator<FeatureSynonym> synonymIter = feature.featureSynonyms.iterator();
                 if (synonymIter.hasNext()) {

@@ -56,7 +56,7 @@ class TranscriptService {
 
     Collection<Exon> getSortedExons(Transcript transcript, boolean sortByStrand) {
         Collection<Exon> exons = getExons(transcript)
-        println "# of exons ${exons.size()}"
+        log.debug "# of exons ${exons.size()}"
         List<Exon> sortedExons = new LinkedList<Exon>(exons);
 //        sortedExons.each {
 //            println it.featureLocation

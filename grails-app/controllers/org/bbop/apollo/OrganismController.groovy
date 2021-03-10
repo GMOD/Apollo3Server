@@ -203,14 +203,10 @@ class OrganismController {
 //                render error as JSON
 //                return
 //            }
-            println "organism identifier ${organismJson}"
+            log.debug "organism identifier ${organismJson}"
 
             Organism organism = Organism.findByCommonName(organismJson.organism)
-            println "organism found? ${organism}"
-
-            Organism.all.each {
-                println "org: ${it}"
-            }
+            log.debug "organism found? ${organism}"
 
             if (!organism) {
                 organism = Organism.findById(organismJson.organism as Long)
@@ -1628,8 +1624,6 @@ class OrganismController {
         // admin only operation
         String commonDirectory = trackService.commonDataDirectory
         JSONObject returnObject = new JSONObject(["path":null])
-        println "return obje"
-        println returnObject.toString()
         if(commonDirectory.startsWith("/")){
             returnObject.path = commonDirectory
         }
@@ -1639,8 +1633,8 @@ class OrganismController {
                 File file = new File(dotPath).parentFile.parentFile.parentFile
                 dotPath = file.absolutePath
             }
-            println "dot path"
-            println dotPath
+            log.debug "dot path"
+            log.debug dotPath
             returnObject.path = dotPath  + File.separator +  commonDirectory
         }
         if(!(new File(returnObject.path).exists())){
@@ -1670,14 +1664,12 @@ class OrganismController {
                 File file = new File(dotPath).parentFile.parentFile.parentFile
                 dotPath = file.absolutePath
             }
-            println "dot path"
-            println dotPath
+            log.debug "dot path"
+            log.debug dotPath
             fullPath = dotPath  + File.separator +  commonDirectory
         }
 
         JSONObject returnObject = new JSONObject(["message":null])
-        println "return obje"
-        println returnObject.toString()
         def commonFilePath = new File(fullPath)
 
         if(!commonFilePath.exists()){
@@ -1695,7 +1687,6 @@ class OrganismController {
                 }
             }
             def organismsToSave = Organism.findAllByDirectoryInList(pathsToDelete)
-            println "organisms to save"
             organismsToSave.each { Organism organism ->
                 log.warn("Not deleting ${organism.commonName} ${organism.id} with ${organism.directory} because it is still in use")
                 pathsToDelete.remove(organism.directory)
@@ -1708,7 +1699,6 @@ class OrganismController {
         }
 
         returnObject.message = "${count} directories removed"
-        println returnObject.toString()
         render returnObject as JSON
     }
 }

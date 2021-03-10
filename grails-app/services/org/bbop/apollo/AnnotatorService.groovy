@@ -46,7 +46,7 @@ class AnnotatorService {
                     sequenceIntegerMap.put(it[0], it[1])
                 }
                 if (configWrapperService.getCountAnnotations()) {
-                    Feature.executeQuery("select o,count(distinct f) from Feature f left join f.parentFeatureRelationships pfr  join f.featureLocations fl join fl.sequence s join s.organism o  where f.childFeatureRelationships is empty and o in (:organismList) and f.class in (:viewableTypes) group by o", [organismList: organismList, viewableTypes: requestHandlingService.viewableAnnotationList]).each {
+                    Feature.executeQuery("select o,count(distinct f) from Feature f left join f.parentFeatureRelationships pfr  join f.featureLocations fl join fl.sequence s join s.organism o  where f.childFeatureRelationships is empty and o in (:organismList) and f.class in (:viewableTypes) group by o", [organismList: organismList, viewableTypes: FeatureTypeMapper.VIEWABLE_ANNOTATION_LIST]).each {
                         annotationCountMap.put(it[0], it[1])
                     }
                 } else {

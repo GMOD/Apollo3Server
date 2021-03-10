@@ -365,10 +365,7 @@ class UserController {
     ])
     @Transactional
     def getUser() {
-        println "input users ${params}"
         JSONObject dataObject = permissionService.handleInput(request, params)
-        println "data object ${dataObject as JSON}"
-        println "Users: ${User.count} -> ${User.all.username}"
         User user = User.findByUsername(dataObject.username)
         if (user) {
             render user as JSON
@@ -391,17 +388,15 @@ class UserController {
     @Transactional
     def createUser() {
         try {
-            println "Creating user ${params}"
+            log.debug "Creating user ${params}"
             JSONObject dataObject = permissionService.handleInput(request, params)
             // allow instructor to create user
-            println "A ${dataObject as JSON}"
 //            if (!permissionService.hasGlobalPermissions(dataObject, GlobalPermissionEnum.INSTRUCTOR)) {
 //                println "B"
 //                render status: HttpStatus.UNAUTHORIZED
 //                return
 //            }
             if (User.findByUsername(dataObject.email) != null) {
-                println "C"
                 JSONObject error = new JSONObject()
                 error.put(FeatureStringEnum.ERROR.value, "User already exists. Please enter a new username")
                 render error.toString()
@@ -416,40 +411,40 @@ class UserController {
                 , metadata: dataObject.metadata ? dataObject.metadata.toString() : null
                 , passwordHash: new Sha256Hash(dataObject.newPassword ?: dataObject.password).toHex()
             )
-            println "not yet saved, so saving now ${user}"
+            log.debug "not yet saved, so saving now ${user}"
             user.save(insert: true, failOnError: true)
-            println "created user ${user as JSON}"
+            log.debug "created user ${user as JSON}"
             // to support webservice, get current user from session or input object
             def currentUser = permissionService.getCurrentUser(dataObject)
-            println "current user ${currentUser}"
+            log.debug "current user ${currentUser}"
             // allow specify the metadata creator through webservice, if not specified, take current user as the creator
             if (!user.getMetaData(FeatureStringEnum.CREATOR.value)) {
                 log.debug "creator does not exist, set current user as the creator"
                 user.addMetaData(FeatureStringEnum.CREATOR.value, currentUser.id.toString())
             }
-            println "creator does not exist, set current user as the creator"
+            log.debug "creator does not exist, set current user as the creator"
             String roleString = dataObject.role ?: GlobalPermissionEnum.USER.name()
             Role role = Role.findByName(roleString.toUpperCase())
             if (!role) {
                 role = Role.findByName(GlobalPermissionEnum.USER.name())
             }
-            println "adding role: ${role}"
+            log.debug "adding role: ${role}"
             user.addToRoles(role)
             role.addToUsers(user)
             role.save(failOnError: true, flush: true)
-            println "role saved ${role}"
+            log.debug "role saved ${role}"
             user.save(flush: true)
-            println "re-saved user ${user}"
+            log.debug "re-saved user ${user}"
 
-            println "Added user ${user.username} with role ${role.name}"
+            log.debug "Added user ${user.username} with role ${role.name}"
             JSONObject jsonObject = user.properties
 //            jsonObject = user.properties
-            println "json object ${jsonObject as JSON}"
+            log.debug "json object ${jsonObject as JSON}"
             jsonObject.email = user.username
             jsonObject.username = user.username
             jsonObject.id = user.id
             jsonObject.userId = user.id
-            println "rendering json object "
+            log.debug "rendering json object "
             render jsonObject as JSON
         } catch (e) {
             log.error(e.toString())
@@ -585,7 +580,7 @@ class UserController {
     @Transactional
     def deleteUser() {
         try {
-            println "Removing user"
+            log.debug "Removing user"
             JSONObject dataObject = permissionService.handleInput(request, params)
             User user = null
             if (dataObject.has('userId')) {
@@ -627,9 +622,8 @@ class UserController {
 
             String query = "match (u:User)-[r]-() where (u.username = '${dataObject.userToDelete}' or u.id=${dataObject.userId ?: Math.random()}) delete u,r"
             def updates = User.executeUpdate(query)
-            println "updates ${updates}"
-
-            println "Removed user ${user.username}"
+            log.debug "updates ${updates}"
+            log.debug "Removed user ${user.username}"
             if (user) {
                 render user as JSON
             } else {
