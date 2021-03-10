@@ -1062,26 +1062,6 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         render jre as JSON
     }
 
-    private String getOntologyIdForType(String type) {
-        JSONObject cvTerm = new JSONObject()
-        if (type.toUpperCase() == Gene.cvTerm.toUpperCase()) {
-            JSONObject cvTermName = new JSONObject()
-            cvTermName.put(FeatureStringEnum.NAME.value, FeatureStringEnum.CV.value)
-            cvTerm.put(FeatureStringEnum.CV.value, cvTermName)
-            cvTerm.put(FeatureStringEnum.NAME.value, type)
-        } else {
-            JSONObject cvTermName = new JSONObject()
-            cvTermName.put(FeatureStringEnum.NAME.value, FeatureStringEnum.SEQUENCE.value)
-            cvTerm.put(FeatureStringEnum.CV.value, cvTermName)
-            cvTerm.put(FeatureStringEnum.NAME.value, type)
-        }
-        return featureService.convertJSONToOntologyId(cvTerm)
-    }
-
-    private List<FeatureType> getFeatureTypeListForType(String type) {
-        String ontologyId = getOntologyIdForType(type)
-        return FeatureType.findAllByOntologyId(ontologyId)
-    }
 
     @ApiOperation(value = "Get canned comments", nickname = "/getCannedComments", httpMethod = "POST")
     @ApiImplicitParams([
@@ -1098,7 +1078,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
 
         Organism organism = Organism.findById(inputObject.getLong(FeatureStringEnum.ORGANISM_ID.value))
         String type = inputObject.getString(FeatureStringEnum.TYPE.value)
-        List<FeatureType> featureTypeList = getFeatureTypeListForType(type)
+        List<FeatureType> featureTypeList = FeatureTypeMapper.getFeatureTypeListForType(type)
         render cannedCommentService.getCannedComments(organism, featureTypeList) as JSON
     }
 
@@ -1117,7 +1097,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
 
         Organism organism = Organism.findById(inputObject.getLong(FeatureStringEnum.ORGANISM_ID.value))
         String type = inputObject.getString(FeatureStringEnum.TYPE.value)
-        List<FeatureType> featureTypeList = getFeatureTypeListForType(type)
+        List<FeatureType> featureTypeList = FeatureTypeMapper.getFeatureTypeListForType(type)
         render cannedAttributeService.getCannedKeys(organism, featureTypeList) as JSON
     }
 
@@ -1136,7 +1116,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
 
         Organism organism = Organism.findById(inputObject.getLong(FeatureStringEnum.ORGANISM_ID.value))
         String type = inputObject.getString(FeatureStringEnum.TYPE.value)
-        List<FeatureType> featureTypeList = getFeatureTypeListForType(type)
+        List<FeatureType> featureTypeList = FeatureTypeMapper.getFeatureTypeListForType(type)
         render cannedAttributeService.getCannedValues(organism, featureTypeList) as JSON
     }
 
@@ -1160,7 +1140,7 @@ class AnnotationEditorController extends AbstractApolloController implements Ann
         if (inputObject.containsKey(FeatureStringEnum.TYPE.value)) {
             type = inputObject.getString(FeatureStringEnum.TYPE.value)
         }
-        List<FeatureType> featureTypeList = type ? getFeatureTypeListForType(type) : []
+        List<FeatureType> featureTypeList = type ? FeatureTypeMapper.getFeatureTypeListForType(type) : []
         log.debug "type ${type} ${featureTypeList}"
         render availableStatusService.getAvailableStatuses(organism, featureTypeList) as JSON
     }

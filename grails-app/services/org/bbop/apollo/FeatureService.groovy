@@ -1550,13 +1550,13 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         Feature returnFeature
         try {
             JSONObject type = jsonFeature.getJSONObject(FeatureStringEnum.TYPE.value);
-            String ontologyId = convertJSONToOntologyId(type)
+            String ontologyId = FeatureTypeMapper.convertJSONToOntologyId(type)
             if (!ontologyId) {
                 log.warn "Feature type not set for ${type}"
                 return null
             }
 
-            returnFeature = generateFeatureForType(ontologyId)
+            returnFeature = FeatureTypeMapper.generateFeatureForType(ontologyId)
             if (jsonFeature.has(FeatureStringEnum.ID.value)) {
                 returnFeature.setId(jsonFeature.getLong(FeatureStringEnum.ID.value));
             }
@@ -1901,125 +1901,6 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
 
 
-    // TODO: (perform on client side, slightly ugly)
-    Feature generateFeatureForType(String ontologyId) {
-        switch (ontologyId) {
-            case MRNA.ontologyId: return new MRNA()
-            case MiRNA.ontologyId: return new MiRNA()
-            case NcRNA.ontologyId: return new NcRNA()
-            case GuideRNA.ontologyId: return new GuideRNA()
-            case RNasePRNA.ontologyId: return new RNasePRNA()
-            case TelomeraseRNA.ontologyId: return new TelomeraseRNA()
-            case SrpRNA.ontologyId: return new SrpRNA()
-            case LncRNA.ontologyId: return new LncRNA()
-            case RNaseMRPRNA.ontologyId: return new RNaseMRPRNA()
-            case ScRNA.ontologyId: return new ScRNA()
-            case PiRNA.ontologyId: return new PiRNA()
-            case TmRNA.ontologyId: return new TmRNA()
-            case EnzymaticRNA.ontologyId: return new EnzymaticRNA()
-            case SnoRNA.ontologyId: return new SnoRNA()
-            case SnRNA.ontologyId: return new SnRNA()
-            case RRNA.ontologyId: return new RRNA()
-            case TRNA.ontologyId: return new TRNA()
-            case Exon.ontologyId: return new Exon()
-            case CDS.ontologyId: return new CDS()
-            case Intron.ontologyId: return new Intron()
-            case Gene.ontologyId: return new Gene()
-            case Pseudogene.ontologyId: return new Pseudogene()
-            case PseudogenicRegion.ontologyId: return new PseudogenicRegion()
-            case ProcessedPseudogene.ontologyId: return new ProcessedPseudogene()
-            case Transcript.ontologyId: return new Transcript()
-            case TransposableElement.ontologyId: return new TransposableElement()
-            case Terminator.ontologyId: return new Terminator()
-            case ShineDalgarnoSequence.ontologyId: return new ShineDalgarnoSequence()
-            case RepeatRegion.ontologyId: return new RepeatRegion()
-            case InsertionArtifact.ontologyId: return new InsertionArtifact()
-            case DeletionArtifact.ontologyId: return new DeletionArtifact()
-            case SubstitutionArtifact.ontologyId: return new SubstitutionArtifact()
-            case Insertion.ontologyId: return new Insertion()
-            case Deletion.ontologyId: return new Deletion()
-            case Substitution.ontologyId: return new Substitution()
-            case NonCanonicalFivePrimeSpliceSite.ontologyId: return new NonCanonicalFivePrimeSpliceSite()
-            case NonCanonicalThreePrimeSpliceSite.ontologyId: return new NonCanonicalThreePrimeSpliceSite()
-            case StopCodonReadThrough.ontologyId: return new StopCodonReadThrough()
-            case SNV.ontologyId: return new SNV()
-            case SNP.ontologyId: return new SNP()
-            case MNV.ontologyId: return new MNV()
-            case MNP.ontologyId: return new MNP()
-            case Indel.ontologyId: return new Indel()
-            default:
-                log.error("No feature type exists for ${ontologyId}")
-                return null
-        }
-    }
-
-
-    String convertJSONToOntologyId(JSONObject jsonCVTerm) {
-        String cvString = jsonCVTerm.getJSONObject(FeatureStringEnum.CV.value).getString(FeatureStringEnum.NAME.value)
-        String cvTermString = jsonCVTerm.getString(FeatureStringEnum.NAME.value)
-
-        if (cvString.equalsIgnoreCase(FeatureStringEnum.CV.value) || cvString.equalsIgnoreCase(FeatureStringEnum.SEQUENCE.value)) {
-            switch (cvTermString.toUpperCase()) {
-                case MRNA.cvTerm.toUpperCase(): return MRNA.ontologyId
-                case MiRNA.cvTerm.toUpperCase(): return MiRNA.ontologyId
-                case NcRNA.cvTerm.toUpperCase(): return NcRNA.ontologyId
-                case GuideRNA.cvTerm.toUpperCase(): return GuideRNA.ontologyId
-                case RNasePRNA.cvTerm.toUpperCase(): return RNasePRNA.ontologyId
-                case TelomeraseRNA.cvTerm.toUpperCase(): return TelomeraseRNA.ontologyId
-                case SrpRNA.cvTerm.toUpperCase(): return SrpRNA.ontologyId
-                case LncRNA.cvTerm.toUpperCase(): return LncRNA.ontologyId
-                case RNaseMRPRNA.cvTerm.toUpperCase(): return RNaseMRPRNA.ontologyId
-                case ScRNA.cvTerm.toUpperCase(): return ScRNA.ontologyId
-                case PiRNA.cvTerm.toUpperCase(): return PiRNA.ontologyId
-                case TmRNA.cvTerm.toUpperCase(): return TmRNA.ontologyId
-                case EnzymaticRNA.cvTerm.toUpperCase(): return EnzymaticRNA.ontologyId
-                case SnoRNA.cvTerm.toUpperCase(): return SnoRNA.ontologyId
-                case SnRNA.cvTerm.toUpperCase(): return SnRNA.ontologyId
-                case RRNA.cvTerm.toUpperCase(): return RRNA.ontologyId
-                case TRNA.cvTerm.toUpperCase(): return TRNA.ontologyId
-                case Transcript.cvTerm.toUpperCase(): return Transcript.ontologyId
-                case Gene.cvTerm.toUpperCase(): return Gene.ontologyId
-                case Exon.cvTerm.toUpperCase(): return Exon.ontologyId
-                case CDS.cvTerm.toUpperCase(): return CDS.ontologyId
-                case Intron.cvTerm.toUpperCase(): return Intron.ontologyId
-                case Pseudogene.cvTerm.toUpperCase(): return Pseudogene.ontologyId
-                case PseudogenicRegion.cvTerm.toUpperCase(): return PseudogenicRegion.ontologyId
-                case ProcessedPseudogene.cvTerm.toUpperCase(): return ProcessedPseudogene.ontologyId
-                case TransposableElement.alternateCvTerm.toUpperCase():
-                case TransposableElement.cvTerm.toUpperCase(): return TransposableElement.ontologyId
-                case Terminator.alternateCvTerm.toUpperCase():
-                case Terminator.cvTerm.toUpperCase(): return Terminator.ontologyId
-                case ShineDalgarnoSequence.alternateCvTerm.toUpperCase():
-                case ShineDalgarnoSequence.cvTerm.toUpperCase(): return ShineDalgarnoSequence.ontologyId
-                case RepeatRegion.alternateCvTerm.toUpperCase():
-                case RepeatRegion.cvTerm.toUpperCase(): return RepeatRegion.ontologyId
-                case InsertionArtifact.cvTerm.toUpperCase(): return InsertionArtifact.ontologyId
-                case DeletionArtifact.cvTerm.toUpperCase(): return DeletionArtifact.ontologyId
-                case SubstitutionArtifact.cvTerm.toUpperCase(): return SubstitutionArtifact.ontologyId
-                case Insertion.cvTerm.toUpperCase(): return Insertion.ontologyId
-                case Deletion.cvTerm.toUpperCase(): return Deletion.ontologyId
-                case Substitution.cvTerm.toUpperCase(): return Substitution.ontologyId
-                case StopCodonReadThrough.cvTerm.toUpperCase(): return StopCodonReadThrough.ontologyId
-                case NonCanonicalFivePrimeSpliceSite.cvTerm.toUpperCase(): return NonCanonicalFivePrimeSpliceSite.ontologyId
-                case NonCanonicalThreePrimeSpliceSite.cvTerm.toUpperCase(): return NonCanonicalThreePrimeSpliceSite.ontologyId
-                case NonCanonicalFivePrimeSpliceSite.alternateCvTerm.toUpperCase(): return NonCanonicalFivePrimeSpliceSite.ontologyId
-                case NonCanonicalThreePrimeSpliceSite.alternateCvTerm.toUpperCase(): return NonCanonicalThreePrimeSpliceSite.ontologyId
-                case SNV.cvTerm.toUpperCase(): return SNV.ontologyId
-                case SNP.cvTerm.toUpperCase(): return SNP.ontologyId
-                case MNV.cvTerm.toUpperCase(): return MNV.ontologyId
-                case MNP.cvTerm.toUpperCase(): return MNP.ontologyId
-                case Indel.cvTerm.toUpperCase(): return Indel.ontologyId
-                default:
-                    log.error("CV Term not known ${cvTermString} for CV ${FeatureStringEnum.SEQUENCE}")
-                    return null
-            }
-        } else {
-            log.error("CV not known ${cvString}")
-        }
-
-        return null
-
-    }
 
     @Transactional
     void updateGeneBoundaries(Gene gene) {
@@ -3118,7 +2999,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     JSONObject generateJSONFeatureStringForType(String ontologyId) {
         if (ontologyId == null) return null;
         JSONObject jsonObject = new JSONObject();
-        def feature = generateFeatureForType(ontologyId)
+        def feature = FeatureTypeMapper.generateFeatureForType(ontologyId)
         String cvTerm = feature.cvTerm
 
         jsonObject.put(FeatureStringEnum.NAME.value, cvTerm)

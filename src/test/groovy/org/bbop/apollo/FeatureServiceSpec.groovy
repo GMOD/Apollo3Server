@@ -59,7 +59,7 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
         JSONObject json = JSON.parse("{name:exon, cv:{name:sequence}}")
 
         then: "We should be able to infer the ontology ID"
-        String ontologyId = service.convertJSONToOntologyId(json)
+        String ontologyId = FeatureTypeMapper.convertJSONToOntologyId(json)
         assert ontologyId != null
         assert ontologyId == Exon.ontologyId
     }
