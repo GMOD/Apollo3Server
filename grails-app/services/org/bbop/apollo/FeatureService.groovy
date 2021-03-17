@@ -197,9 +197,14 @@ class FeatureService {
 //        }
 //        log.debug "output overlapping features ${features}"
 
+
         Organism organism = location.to.organism
-        log.debug "organism ${organism}"
-        log.debug "organism JSON ${organism as JSON}"
+//        String queryString = "MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o"
+//        println "ORGANISM QUERY STRING ${queryString}"
+//        Organism organism = Organism.executeQuery(queryString)[0] as Organism
+//        Organism organism = Organism.executeQuery("MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o")[0] as Organism
+        println "organism ${organism}"
+        println "organism JSON ${organism as JSON}"
 
         String neo4jFeatureString = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)\n" +
             "WHERE (o.commonName='${organism.commonName}' or o.id = ${organism.id})" +
@@ -288,12 +293,13 @@ class FeatureService {
 
     @Transactional
     def addOwnersByString(def username, Feature... features) {
+
         User owner = User.findByUsername(username as String)
         if (owner && features) {
-            log.debug "setting owner for feature ${features} to ${owner}"
-            features.each {
-                it.addToOwners(owner)
-            }
+            println "setting owner for feature ${features} to ${owner}"
+//            features.each {
+//                it.addToOwners(owner)
+//            }
         } else {
             log.warn "user ${owner} or feature ${features} is null so not setting"
         }
@@ -896,6 +902,11 @@ class FeatureService {
         int currentLength = 0;
         int currentCoordinate = localCoordinate;
         for (Exon exon : exons) {
+            println "exon ${exon}"
+//            println "feature location ${exon.featureLocation}"
+            FeatureLocation featureLocation = FeatureLocation.findByFrom(exon)
+            println "exon feature location ${featureLocation}"
+            println "exon feature location length ${featureLocation.calculateLength()}"
             int exonLength = exon.getLength();
             if (currentLength + exonLength >= localCoordinate) {
                 if (transcript.getFeatureLocation().getStrand() == Strand.NEGATIVE.value) {
@@ -3103,10 +3114,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     @Transactional
     def flipStrand(Feature feature) {
 
-//        for (FeatureLocation featureLocation in feature.featureLocations) {
+        for (FeatureLocation featureLocation in feature.featureLocations) {
         feature.featureLocation.strand = featureLocation.strand == Strand.POSITIVE.value ? Strand.NEGATIVE.value : Strand.POSITIVE.value
         feature.featureLocation.save(flush: true)
-//        }
+        }
 
         for (Feature childFeature : feature?.parentFeatureRelationships?.childFeature) {
             flipStrand(childFeature)
@@ -3230,15 +3241,18 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         List<Transcript> allTranscriptsForCurrentGene = transcriptService.getTranscripts(transcriptService.getGene(transcript))
         List<Transcript> allTranscripts = (allOverlappingTranscripts + allTranscriptsForCurrentGene).unique()
         List<Transcript> allSortedTranscripts
+
+        FeatureLocation featureLocation = FeatureLocation.findByFrom(transcript)
+
         // force null / 0 strand to be positive
         // when getting the up-most strand, make sure to put matching transcript strands BEFORE unmatching strands
-        if (transcript.strand != Strand.NEGATIVE.value) {
+        if (featureLocation.strand != Strand.NEGATIVE.value) {
             allSortedTranscripts = allTranscripts?.sort() { a, b ->
-                a.strand <=> b.strand ?: a.featureLocation.fmin <=> b.featureLocation.fmin ?: a.name <=> b.name
+                a.featureLocation.strand <=> b.featureLocation.strand ?: a.featureLocation.fmin <=> b.featureLocation.fmin ?: a.name <=> b.name
             }
         } else {
             allSortedTranscripts = allTranscripts?.sort() { a, b ->
-                b.strand <=> a.strand ?: b.featureLocation.fmax <=> a.featureLocation.fmax ?: a.name <=> b.name
+                b.featureLocation.strand <=> a.featureLocation.strand ?: b.featureLocation.fmax <=> a.featureLocation.fmax ?: a.name <=> b.name
             }
         }
 
@@ -3477,7 +3491,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
     def getOverlappingTranscripts(Transcript transcript) {
-        ArrayList<Transcript> overlappingTranscripts = getOverlappingTranscripts(transcript.featureLocation)
+        FeatureLocation featureLocation = FeatureLocation.executeQuery("MATCH (t:Transcript)-[fl:FEATURELOCATION]-(s:Sequence) where t.uniqueName = ${transcript.uniqueName} return fl ")[0] as FeatureLocation
+        ArrayList<Transcript> overlappingTranscripts = getOverlappingTranscripts(featureLocation)
         overlappingTranscripts.remove(transcript) // removing itself
         ArrayList<Transcript> transcriptsWithOverlapCriteria = new ArrayList<Transcript>()
         for (Transcript eachTranscript in overlappingTranscripts) {

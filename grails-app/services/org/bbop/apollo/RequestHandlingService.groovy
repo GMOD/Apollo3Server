@@ -1021,16 +1021,22 @@ class RequestHandlingService {
     def setReadthroughStopCodon(JSONObject inputObject) {
         JSONArray features = inputObject.getJSONArray(FeatureStringEnum.FEATURES.value)
         JSONObject transcriptJSONObject = features.getJSONObject(0)
+        String uniqueName = transcriptJSONObject.getString(FeatureStringEnum.UNIQUENAME.value)
 
-        Transcript transcript = Transcript.findByUniqueName(transcriptJSONObject.getString(FeatureStringEnum.UNIQUENAME.value))
+//        Transcript transcript = Transcript.findByUniqueName(transcriptJSONObject.getString(FeatureStringEnum.UNIQUENAME.value))
+        def transcriptList = Transcript.executeQuery("MATCH (t:Transcript)-[fl:FEATURELOCATION]-(s:Sequence) where t.uniqueName=${uniqueName} return t")
+        println transcriptList
+        Transcript transcript = transcriptList[0] as Transcript
+//        println "found transcript ${transcript} ${transcript as JSON}"
+        println "found transcript ${transcript}"
         JSONObject oldJsonObject = featureService.convertFeatureToJSON(transcript, false)
 
         boolean readThroughStopCodon = transcriptJSONObject.getBoolean(FeatureStringEnum.READTHROUGH_STOP_CODON.value)
         featureService.calculateCDS(transcript, readThroughStopCodon);
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.WRITE)
-
+//
         featureService.addOwnersByString(inputObject.username, transcript)
-        transcript.save(flush: true)
+//        transcript.save(flush: true)
         def transcriptsToUpdate = featureService.handleDynamicIsoformOverlap(transcript)
         if (transcriptsToUpdate.size() > 0) {
             JSONObject updateFeatureContainer = jsonWebUtilityService.createJSONFeatureContainer()

@@ -40,7 +40,7 @@ class Feature {
     static String ontologyId
     static String cvTerm
 
-    static fetchMode = [featureLocation:'eager']
+//    static fetchMode = [featureLocation:'eager']
 
 
     static hasMany = [
@@ -64,6 +64,7 @@ class Feature {
             provenances cascade: 'all-delete-orphan'
             name type: 'text'
             description type: 'text'
+//            featureLocation fetch:"eager", lazy:true
     }
 
 

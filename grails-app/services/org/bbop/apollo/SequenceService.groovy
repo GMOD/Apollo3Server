@@ -51,15 +51,28 @@ class SequenceService {
      */
     String getResiduesFromFeature(Feature feature) {
         String returnResidues = ""
-//        def orderedFeatureLocations = feature.featureLocations.sort { it.fmin }
-//        for (FeatureLocation featureLocation in feature.featureLocation) {
-        String residues = getResidueFromFeatureLocation(feature.featureLocation)
-        if (feature.featureLocation.strand == Strand.NEGATIVE.value) {
+        FeatureLocation featureLocation
+        try {
+//            featureLocation = feature.featureLocation
+            featureLocation = FeatureLocation.findByFrom(feature)
+        } catch (e) {
+            println(e)
+        }
+        if(!featureLocation){
+            println "E"
+            def featureLocations = FeatureLocation.executeQuery("MATCH (f:Feature)-[fl:FEATURELOCATION]-(s:Sequence) where f.uniqueName = ${feature.uniqueName} return fl")
+            println "feature locations ${featureLocations}"
+
+        }
+        println "through process"
+        println "output feature location ${featureLocation}"
+
+        String residues = getResidueFromFeatureLocation(featureLocation)
+        if (featureLocation.strand == Strand.NEGATIVE.value) {
             returnResidues += SequenceTranslationHandler.reverseComplementSequence(residues)
         } else {
             returnResidues += residues
         }
-//        }
 
         return returnResidues
     }
