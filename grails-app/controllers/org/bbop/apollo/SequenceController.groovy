@@ -32,20 +32,8 @@ class SequenceController {
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
     def sequenceService
-    def requestHandlingService
     def permissionService
-//    def preferenceService
     def reportService
-
-    def permissions() {}
-
-//    def beforeInterceptor = {
-//        if (params.action == "sequenceByName"
-//                || params.action == "sequenceByLocation"
-//        ) {
-//            response.setHeader("Access-Control-Allow-Origin", "*")
-//        }
-//    }
 
     @NotTransactional
     def setCurrentSequenceLocation(String name, Integer start, Integer end) {
@@ -310,7 +298,7 @@ class SequenceController {
             }
         }
 
-        Feature feature = Feature.findByUniqueName(featureName)
+        def feature = FeatureTypeMapper.castNeo4jFeature(Feature.executeQuery("MATCH (f:Feature) where f.uniqueName = ${featureName} return f")[0])
         if (!feature) {
             def features = Feature.findAllByName(featureName)
 
@@ -326,7 +314,9 @@ class SequenceController {
         }
 
         if (feature) {
+            println "feature found ${feature} for type ${type}"
             String sequenceString = sequenceService.getSequenceForFeature(feature, type)
+            println "sequence string returned '${sequenceString}'"
             if(sequenceString?.trim()){
                 render sequenceString
                 sequenceService.cacheRequest(sequenceString, organismString, sequenceName, featureName, type, paramMap)

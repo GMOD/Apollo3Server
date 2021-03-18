@@ -551,7 +551,8 @@ class SequenceService {
         // Method returns the sequence for a single feature
         // Directly called for FASTA Export
         String featureResidues = null
-        Organism organism = gbolFeature.featureLocation.to.organism
+//        Organism organism = gbolFeature.featureLocation.to.organism
+        Organism organism = Organism.executeQuery(" MATCH (f:Feature)--(s:Sequence)--(o:Organism) where f.uniqueName = ${gbolFeature.uniqueName} return o ")[0] as Organism
         TranslationTable translationTable = organismService.getTranslationTable(organism)
 
         if (type.equals(FeatureStringEnum.TYPE_PEPTIDE.value)) {
@@ -597,6 +598,8 @@ class SequenceService {
                 featureResidues = ""
             }
         } else if (type.equals(FeatureStringEnum.TYPE_CDS.value)) {
+            println "is CDS type "
+            println "class name for feature: ${gbolFeature.class.name}"
             if (gbolFeature.instanceOf(Transcript.class) && transcriptService.isProteinCoding((Transcript) gbolFeature)) {
                 featureResidues = featureService.getResiduesWithAlterationsAndFrameshifts(transcriptService.getCDS((Transcript) gbolFeature))
                 boolean hasStopCodonReadThrough = false

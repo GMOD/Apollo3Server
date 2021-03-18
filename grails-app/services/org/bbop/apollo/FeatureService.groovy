@@ -1302,13 +1302,15 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 //        }
     }
 
+    // TODO: implement
     List<SequenceAlterationArtifact> getFrameshiftsAsAlterations(Transcript transcript) {
         List<SequenceAlterationArtifact> frameshifts = new ArrayList<SequenceAlterationArtifact>();
         CDS cds = transcriptService.getCDS(transcript);
         if (cds == null) {
             return frameshifts;
         }
-        Sequence sequence = cds.getFeatureLocation().to
+//        Sequence sequence = cds.getFeatureLocation().to
+        Sequence sequence = Sequence.executeQuery("MATCH (f:Feature)--(s:Sequence) where f.uniqueName=${transcript.uniqueName} return s")[0] as Sequence
         List<Frameshift> frameshiftList = transcriptService.getFrameshifts(transcript)
         for (Frameshift frameshift : frameshiftList) {
             if (frameshift.isPlusFrameshift()) {
