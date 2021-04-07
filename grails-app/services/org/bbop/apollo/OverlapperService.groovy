@@ -203,9 +203,13 @@ class OverlapperService implements Overlapper{
 //            return false;
 //        }
 
-        throw new RuntimeException("Fix this here so that we can verify left and right")
+//        throw new RuntimeException("Fix this here so that we can verify left and right")
 
-        def featureLocations= FeatureLocation.executeQuery("MATCH (f1:Feature)-[fl1:FEATURELOCATION]-(s1:Sequence)--(o1:Organism), (f2:Feature)-[fl2:FEATURELOCATION]-(s1:Sequence)--(o1:Organism) where f1.uniqueName = ${leftFeature.uniqueName} and f2.uniqueName = ${rightFeature.uniqueName} return fl1,fl2")
+        // note that the query
+        // TODO: can add
+        // if compareStrand -> fl1.strand = fl2.strand
+        // and  (fl1.fmin <= fl2.fmin && fl1.fmax > fl2.fmin) || (fl1.fmin >= fl2.fmin && fl1.fmin < fl2.fmax)
+        def featureLocations= FeatureLocation.executeQuery("MATCH (f1:Feature)-[fl1:FEATURELOCATION]-(s:Sequence)--(o:Organism), (f2:Feature)-[fl2:FEATURELOCATION]-(s:Sequence) where f1.uniqueName = ${leftFeature.uniqueName} and f2.uniqueName = ${rightFeature.uniqueName}  return fl1,fl2")
         println "feature locations size: ${featureLocations.size()}"
         println "feature locations ${featureLocations}"
         if(featureLocations.size()==0) {

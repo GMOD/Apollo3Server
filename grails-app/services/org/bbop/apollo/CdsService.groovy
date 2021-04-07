@@ -154,17 +154,21 @@ class CdsService {
             if (!overlapperService.overlaps(exon,cds)) {
                 continue
             }
-            int fmin = exon.fmin < cds.fmin ? cds.fmin : exon.fmin
-            int fmax = exon.fmax > cds.fmax ? cds.fmax : exon.fmax
+            FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
+            FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
+            println "exon feature location ${exonFeatureLocation}"
+            println "cds feature location ${cdsFeatureLocation}"
+            int fmin = exonFeatureLocation.fmin < cdsFeatureLocation.fmin ? cdsFeatureLocation.fmin : exonFeatureLocation.fmin
+            int fmax = exonFeatureLocation.fmax > cdsFeatureLocation.fmax ? cdsFeatureLocation.fmax : exonFeatureLocation.fmax
             int localStart
             int localEnd
-            if (cds.getFeatureLocation().strand == Strand.NEGATIVE.value) {
-                localEnd = featureService.convertSourceCoordinateToLocalCoordinate((Feature) exon, fmin) + 1
-                localStart = featureService.convertSourceCoordinateToLocalCoordinate((Feature) exon, fmax) + 1
+            if (cdsFeatureLocation.strand == Strand.NEGATIVE.value) {
+                localEnd = featureService.convertSourceCoordinateToLocalCoordinate(exonFeatureLocation, fmin) + 1
+                localStart = featureService.convertSourceCoordinateToLocalCoordinate(exonFeatureLocation, fmax) + 1
             } 
             else {
-                localStart = featureService.convertSourceCoordinateToLocalCoordinate((Feature) exon, fmin)
-                localEnd = featureService.convertSourceCoordinateToLocalCoordinate((Feature) exon, fmax)
+                localStart = featureService.convertSourceCoordinateToLocalCoordinate(exonFeatureLocation, fmin)
+                localEnd = featureService.convertSourceCoordinateToLocalCoordinate(exonFeatureLocation, fmax)
             }
             residues += sequenceService.getResiduesFromFeature((Feature) exon).substring(localStart, localEnd)
         }

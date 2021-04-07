@@ -1950,12 +1950,22 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
     /** Convert source feature coordinate to local coordinate.
-     *
+     * @deprecated
      * @param sourceCoordinate - Coordinate to convert to local coordinate
      * @return Local coordinate, -1 if source coordinate is <= fmin or >= fmax
      */
     int convertSourceCoordinateToLocalCoordinate(Feature feature, int sourceCoordinate) {
+        // TODO:
         return convertSourceCoordinateToLocalCoordinate(feature.featureLocation.fmin, feature.featureLocation.fmax, Strand.getStrandForValue(feature.featureLocation.strand), sourceCoordinate)
+    }
+
+    /** Convert source feature coordinate to local coordinate.
+     * @deprecated
+     * @param sourceCoordinate - Coordinate to convert to local coordinate
+     * @return Local coordinate, -1 if source coordinate is <= fmin or >= fmax
+     */
+    int convertSourceCoordinateToLocalCoordinate(FeatureLocation featureLocation, int sourceCoordinate) {
+        return convertSourceCoordinateToLocalCoordinate(featureLocation.fmin, featureLocation.fmax, Strand.getStrandForValue(featureLocation.strand), sourceCoordinate)
     }
 
     int convertSourceCoordinateToLocalCoordinate(int fmin, int fmax, Strand strand, int sourceCoordinate) {

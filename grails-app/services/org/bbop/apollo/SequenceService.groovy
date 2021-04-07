@@ -35,7 +35,6 @@ class SequenceService {
     def grailsApplication
     def featureService
     def transcriptService
-    def requestHandlingService
     def exonService
     def cdsService
     def gff3HandlerService
@@ -52,12 +51,16 @@ class SequenceService {
     String getResiduesFromFeature(Feature feature) {
         String returnResidues = ""
         FeatureLocation featureLocation
+        println "A"
+        println "get residures from feature ${feature}"
         try {
 //            featureLocation = feature.featureLocation
             featureLocation = FeatureLocation.findByFrom(feature)
+            println "B"
         } catch (e) {
             println(e)
         }
+        println "C"
         if(!featureLocation){
             println "E"
             def featureLocations = FeatureLocation.executeQuery("MATCH (f:Feature)-[fl:FEATURELOCATION]-(s:Sequence) where f.uniqueName = ${feature.uniqueName} return fl")
@@ -68,11 +71,15 @@ class SequenceService {
         println "output feature location ${featureLocation}"
 
         String residues = getResidueFromFeatureLocation(featureLocation)
+        println "residues ${residues}"
         if (featureLocation.strand == Strand.NEGATIVE.value) {
             returnResidues += SequenceTranslationHandler.reverseComplementSequence(residues)
+            println "reverse ${residues}"
         } else {
             returnResidues += residues
+            println "not reverse ${residues}"
         }
+        println "return ${returnResidues}"
 
         return returnResidues
     }
