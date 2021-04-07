@@ -904,15 +904,15 @@ class FeatureService {
         for (Exon exon : exons) {
             println "exon ${exon}"
 //            println "feature location ${exon.featureLocation}"
-            FeatureLocation featureLocation = FeatureLocation.findByFrom(exon)
-            println "exon feature location ${featureLocation}"
-            println "exon feature location length ${featureLocation.calculateLength()}"
-            int exonLength = exon.getLength();
+            FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
+            println "exon feature location ${exonFeatureLocation}"
+            println "exon feature location length ${exonFeatureLocation.calculateLength()}"
+            int exonLength = exonFeatureLocation.calculateLength()
             if (currentLength + exonLength >= localCoordinate) {
                 if (transcript.getFeatureLocation().getStrand() == Strand.NEGATIVE.value) {
-                    sourceCoordinate = exon.getFeatureLocation().getFmax() - currentCoordinate - 1;
+                    sourceCoordinate = exonFeatureLocation.fmax - currentCoordinate - 1;
                 } else {
-                    sourceCoordinate = exon.getFeatureLocation().getFmin() + currentCoordinate;
+                    sourceCoordinate = exonFeatureLocation.fmin + currentCoordinate;
                 }
                 break;
             }

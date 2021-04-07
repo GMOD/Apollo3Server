@@ -610,9 +610,11 @@ class SequenceService {
             if (gbolFeature.instanceOf(Transcript.class) && transcriptService.isProteinCoding((Transcript) gbolFeature)) {
                 featureResidues = featureService.getResiduesWithAlterationsAndFrameshifts(transcriptService.getCDS((Transcript) gbolFeature))
                 boolean hasStopCodonReadThrough = false
+                println "calculating stop codon readhtrough"
                 if (cdsService.getStopCodonReadThrough(transcriptService.getCDS((Transcript) gbolFeature)).size() > 0) {
                     hasStopCodonReadThrough = true
                 }
+                println "has stop codon readthrough ${hasStopCodonReadThrough}"
                 String verifiedResidues = checkForInFrameStopCodon(featureResidues, 0, hasStopCodonReadThrough, translationTable)
                 featureResidues = verifiedResidues
             } else if (gbolFeature.instanceOf(Exon.class) && transcriptService.isProteinCoding(exonService.getTranscript((Exon) gbolFeature))) {
