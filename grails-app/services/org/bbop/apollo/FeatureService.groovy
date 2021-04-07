@@ -907,11 +907,13 @@ class FeatureService {
             println "exon ${exon}"
 //            println "feature location ${exon.featureLocation}"
             FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
+            FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
             println "exon feature location ${exonFeatureLocation}"
             println "exon feature location length ${exonFeatureLocation.calculateLength()}"
+
             int exonLength = exonFeatureLocation.calculateLength()
             if (currentLength + exonLength >= localCoordinate) {
-                if (transcript.getFeatureLocation().getStrand() == Strand.NEGATIVE.value) {
+                if (transcriptFeatureLocation.getStrand() == Strand.NEGATIVE.value) {
                     sourceCoordinate = exonFeatureLocation.fmax - currentCoordinate - 1;
                 } else {
                     sourceCoordinate = exonFeatureLocation.fmin + currentCoordinate;
@@ -1458,28 +1460,31 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         println "is an instance of an mRNA ${MRNA.class}"
 
-        if (featureTypeSerive) {
-//            if (transcript.instanceOf(MRNA.class)) {
-            log.debug "is an MRNA"
+        if (FeatureTypeMapper.hasOntologyId(transcript.cvTerm,MRNA.cvTerm,MRNA.alternateCvTerm)) {
+//        if (transcript.instanceOf(MRNA.class)) {
+            println "is an MRNA version 2"
             CDS cds = transcriptService.getCDS(transcript)
-            log.debug "cds ${cds}"
+            println "cds ${cds}"
             if (cds == null) {
-                log.debug "creating CDS "
+                println "creating CDS "
                 cds = transcriptService.createCDS(transcript);
-                log.debug "created a CDS ${cds}"
-                log.debug "created a CDS per location ${cds.featureLocation as JSON}"
+                println "created a CDS ${cds}"
+                println "created a CDS per location ${cds.featureLocation as JSON}"
                 transcriptService.setCDS(transcript, cds);
-                log.debug "set CDS ${cds} on transcript ${transcript}"
+                println "set CDS ${cds} on transcript ${transcript}"
             }
 
             int fmin = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStartIndex)
             log.debug "best fmin ${fmin}"
 
+            FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
+            FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
+
             int fmax = -1
             if (bestStopIndex >= 0) {
                 log.debug "bestStopIndex >= 0"
                 fmax = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStopIndex)
-                if (cds.strand == Strand.NEGATIVE.value) {
+                if (cdsFeatureLocation.strand == Strand.NEGATIVE.value) {
                     int tmp = fmin
                     fmin = fmax + 1
                     fmax = tmp + 1
@@ -1489,15 +1494,15 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 log.debug "bestStopIndex >=0 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cds.strand}"
             } else {
                 log.debug "bestStopIndex < 0"
-                fmax = transcript.strand == Strand.NEGATIVE.value ? transcript.fmin : transcript.fmax
-                if (cds.strand == Strand.NEGATIVE.value) {
+                fmax = transcriptFeatureLocation.strand == Strand.NEGATIVE.value ? transcriptFeatureLocation.fmin : transcriptFeatureLocation.fmax
+                if (cdsFeatureLocation.strand == Strand.NEGATIVE.value) {
                     int tmp = fmin
                     fmin = fmax
                     fmax = tmp + 1
                 }
                 setFmin(cds, fmin)
                 setFmax(cds, fmax)
-                log.debug "bestStopIndex < 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cds.strand}"
+                log.debug "bestStopIndex < 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cdsFeatureLocation.strand}"
             }
             log.debug "looking at strands for ${cds}"
 
@@ -1507,14 +1512,14 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
             Boolean fminPartial
             Boolean fmaxPartial
-            if (cds.featureLocation.strand == Strand.NEGATIVE.value) {
-                cds.featureLocation.setIsFminPartial(partialStop)
-                cds.featureLocation.setIsFmaxPartial(partialStart)
+            if (cdsFeatureLocation.strand == Strand.NEGATIVE.value) {
+                cdsFeatureLocation.setIsFminPartial(partialStop)
+                cdsFeatureLocation.setIsFmaxPartial(partialStart)
                 fminPartial = partialStop
                 fmaxPartial = partialStart
             } else {
-                cds.featureLocation.setIsFminPartial(partialStart)
-                cds.featureLocation.setIsFmaxPartial(partialStop)
+                cdsFeatureLocation.setIsFminPartial(partialStart)
+                cdsFeatureLocation.setIsFmaxPartial(partialStop)
                 fminPartial = partialStart
                 fmaxPartial = partialStop
             }
@@ -1533,7 +1538,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             // reload?
             cds = CDS.findByUniqueName(cds.uniqueName)
 
-            println "Final CDS fmin: ${cds.fmin} fmax: ${cds.fmax} for ${cds}"
+            println "Final CDS fmin: ${cdsFeatureLocation.fmin} fmax: ${cdsFeatureLocation.fmax} for ${cds}"
             println "setting the read through stop codon ${readThroughStopCodon}"
             cdsService.deleteStopCodonReadThrough(cds)
             println "deleted if existing sto codon read through ${readThroughStopCodon}"

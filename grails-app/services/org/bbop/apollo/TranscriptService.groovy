@@ -1,6 +1,6 @@
 package org.bbop.apollo
 
-import grails.converters.JSON
+
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.attributes.*
 import org.bbop.apollo.feature.*
@@ -11,7 +11,7 @@ import org.bbop.apollo.relationship.FeatureRelationship
 @Transactional(readOnly = true)
 class TranscriptService {
 
-    List<String> ontologyIds = [
+    List<String> transcriptOntologyIds = [
         Transcript.ontologyId, SnRNA.ontologyId, MRNA.ontologyId, SnoRNA.ontologyId,
         MiRNA.ontologyId, TRNA.ontologyId, NcRNA.ontologyId, RRNA.ontologyId,
         GuideRNA.ontologyId, RNasePRNA.ontologyId, TelomeraseRNA.ontologyId, SrpRNA.ontologyId, LncRNA.ontologyId,
@@ -156,7 +156,7 @@ class TranscriptService {
      * @return Collection of transcripts associated with this gene
      */
     Collection<Transcript> getTranscripts(Gene gene) {
-        return (Collection<Transcript>) featureRelationshipService.getChildrenForFeatureAndTypes(gene, ontologyIds as String[])
+        return (Collection<Transcript>) featureRelationshipService.getChildrenForFeatureAndTypes(gene, transcriptOntologyIds as String[])
     }
 
     List<Transcript> getTranscriptsSortedByFeatureLocation(Gene gene, boolean sortByStrand) {
@@ -299,7 +299,7 @@ class TranscriptService {
     }
 
     Transcript getParentTranscriptForFeature(Feature feature) {
-        return (Transcript) featureRelationshipService.getParentForFeature(feature, ontologyIds as String[])
+        return (Transcript) featureRelationshipService.getParentForFeature(feature, transcriptOntologyIds as String[])
     }
 
     @Transactional
@@ -563,7 +563,7 @@ class TranscriptService {
     }
 
     Transcript getTranscript(CDS cds) {
-        return (Transcript) featureRelationshipService.getParentForFeature(cds, ontologyIds as String[])
+        return (Transcript) featureRelationshipService.getParentForFeature(cds, transcriptOntologyIds as String[])
     }
 
 }
