@@ -796,26 +796,28 @@ class FeatureService {
 
     @Transactional
     def calculateCDS(Transcript transcript, boolean readThroughStopCodon) {
-        log.debug "calculating CDS"
+        println "calculating CDS"
         CDS cds = transcriptService.getCDS(transcript);
-        log.debug "got CDS ${cds} from transcript ${transcript}"
+        println "got CDS ${cds} from transcript ${transcript} ${readThroughStopCodon}"
         if (cds == null) {
-//            log.debug "cds is null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
+            println "cds is null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
             setLongestORF(transcript, readThroughStopCodon);
             return;
         }
         boolean manuallySetStart = cdsService.isManuallySetTranslationStart(cds);
         boolean manuallySetEnd = cdsService.isManuallySetTranslationEnd(cds);
-        log.debug "manually start and end ${manuallySetStart} ${manuallySetEnd}"
+        println "manually start and end ${manuallySetStart} ${manuallySetEnd}"
         if (manuallySetStart && manuallySetEnd) {
             return;
         }
+        FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
         if (!manuallySetStart && !manuallySetEnd) {
+            println "no manual start ot end"
             setLongestORF(transcript, readThroughStopCodon);
         } else if (manuallySetStart) {
-            setTranslationStart(transcript, cds.getFeatureLocation().getStrand().equals(-1) ? cds.getFmax() - 1 : cds.getFmin(), true, readThroughStopCodon);
+            setTranslationStart(transcript, cdsFeatureLocation.strand.equals(-1) ? cdsFeatureLocation.fmax - 1 : cds.fmin, true, readThroughStopCodon)
         } else {
-            setTranslationEnd(transcript, cds.getFeatureLocation().getStrand().equals(-1) ? cds.getFmin() : cds.getFmax() - 1, true);
+            setTranslationEnd(transcript, cdsFeatureLocation.strand.equals(-1) ? cds.fmin : cdsFeatureLocation.fmax - 1, true)
         }
     }
 
@@ -1399,9 +1401,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         TranslationTable translationTable = organismService.getTranslationTable(organism)
         String mrna = getResiduesWithAlterationsAndFrameshifts(transcript)
 
-        log.debug "set longest ORF ${organism}, ${translationTable} ${mrna?.size()} -> ${mrna}"
+        println "set longest ORF ${organism}, ${translationTable} ${mrna?.size()} -> ${mrna} and readthrough ${readThroughStopCodon}"
         if (!mrna) {
-            log.debug "mrna not found,m so returning nothing"
+            println "mrna not found, so returning nothing"
             return
         }
         String longestPeptide = ""
@@ -1452,9 +1454,12 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             bestStopIndex = stopIndex
         }
 
-        log.debug "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop}"
+        println "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop} readThroughStop ${readThroughStopCodon}"
 
-        if (transcript.instanceOf(MRNA.class)) {
+        println "is an instance of an mRNA ${MRNA.class}"
+
+        if (featureTypeSerive) {
+//            if (transcript.instanceOf(MRNA.class)) {
             log.debug "is an MRNA"
             CDS cds = transcriptService.getCDS(transcript)
             log.debug "cds ${cds}"
@@ -1519,30 +1524,39 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
             String inputQuery = "MATCH (t:Transcript)--(cds:CDS)-[fl:FEATURELOCATION]-(s) where t.uniqueName='${transcript.uniqueName}' and cds.uniqueName='${cds.uniqueName}' " +
                 " set fl.fmin=${fmin},fl.fmax=${fmax},fl.isMaxPartial=${fmaxPartial},fl.isMinPartial=${fminPartial} RETURN cds,fl "
-            log.debug "input query"
-            log.debug inputQuery
+            println "input query"
+            println inputQuery
             def returnValue = FeatureLocation.executeUpdate(inputQuery)
-            log.debug "${returnValue}"
+            println "${returnValue}"
 
             // re-query CDS
             // reload?
             cds = CDS.findByUniqueName(cds.uniqueName)
 
-            log.debug "Final CDS fmin: ${cds.fmin} fmax: ${cds.fmax} for ${cds}"
-
+            println "Final CDS fmin: ${cds.fmin} fmax: ${cds.fmax} for ${cds}"
+            println "setting the read through stop codon ${readThroughStopCodon}"
+            cdsService.deleteStopCodonReadThrough(cds)
+            println "deleted if existing sto codon read through ${readThroughStopCodon}"
             if (readThroughStopCodon) {
-                cdsService.deleteStopCodonReadThrough(cds)
+                println "deleting existing one"
                 String aa = SequenceTranslationHandler.translateSequence(getResiduesWithAlterationsAndFrameshifts(cds), translationTable, true, true);
                 int firstStopIndex = aa.indexOf(TranslationTable.STOP);
+                println "first stop index ${firstStopIndex} of ${TranslationTable.STOP} vs ${aa.length()}"
                 if (firstStopIndex < aa.length() - 1) {
+                    println "first stop is less than length -1 so creating the stop codon read through "
                     StopCodonReadThrough stopCodonReadThrough = cdsService.createStopCodonReadThrough(cds);
-                    cdsService.setStopCodonReadThrough(cds, stopCodonReadThrough);
+                    cdsService.setStopCodonReadThrough(cds, stopCodonReadThrough)
+
+                    println "it is now set ${stopCodonReadThrough}"
+                    println "retrieving ${cdsService.getStopCodonReadThrough(cds)}"
+
                     int offset = transcript.getStrand() == -1 ? -2 : 0;
                     setFmin(stopCodonReadThrough, convertModifiedLocalCoordinateToSourceCoordinate(cds, firstStopIndex * 3) + offset);
                     setFmax(stopCodonReadThrough, convertModifiedLocalCoordinateToSourceCoordinate(cds, firstStopIndex * 3) + 3 + offset);
                 }
-            } else {
-                cdsService.deleteStopCodonReadThrough(cds);
+            }
+            else {
+                println "no read through stop codon so not adding it back"
             }
             cdsService.setManuallySetTranslationStart(cds, false);
             cdsService.setManuallySetTranslationEnd(cds, false);

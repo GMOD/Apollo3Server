@@ -9,6 +9,7 @@ import org.bbop.apollo.alteration.SequenceAlterationInContext
 import org.bbop.apollo.feature.CDS
 import org.bbop.apollo.feature.Exon
 import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.StopCodonReadThrough
 import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.location.FeatureLocation
@@ -41,6 +42,7 @@ class SequenceService {
     def overlapperService
     def organismService
     def trackService
+    def featureRelationshipService
 
 
     /**
@@ -611,7 +613,15 @@ class SequenceService {
                 featureResidues = featureService.getResiduesWithAlterationsAndFrameshifts(transcriptService.getCDS((Transcript) gbolFeature))
                 boolean hasStopCodonReadThrough = false
                 println "calculating stop codon readhtrough"
-                if (cdsService.getStopCodonReadThrough(transcriptService.getCDS((Transcript) gbolFeature)).size() > 0) {
+                CDS foundCDS = transcriptService.getCDS((Transcript) gbolFeature)
+                println "found a CDS ${foundCDS}"
+                def stopCodonReadThroughs = cdsService.getStopCodonReadThrough(foundCDS)
+                def cdsChildren = featureRelationshipService.getChildrenForFeatureAndTypes(foundCDS)
+                println "# of cds children: ${cdsChildren.size()}"
+                cdsChildren.each { println it }
+
+                println "got a stopCodonReathrough: ${stopCodonReadThroughs}"
+                if (stopCodonReadThroughs.size()>0) {
                     hasStopCodonReadThrough = true
                 }
                 println "has stop codon readthrough ${hasStopCodonReadThrough}"

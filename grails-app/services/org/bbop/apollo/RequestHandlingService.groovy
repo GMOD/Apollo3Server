@@ -1032,6 +1032,7 @@ class RequestHandlingService {
         JSONObject oldJsonObject = featureService.convertFeatureToJSON(transcript, false)
 
         boolean readThroughStopCodon = transcriptJSONObject.getBoolean(FeatureStringEnum.READTHROUGH_STOP_CODON.value)
+        println "set readThroughStopCodon ${readThroughStopCodon}"
         featureService.calculateCDS(transcript, readThroughStopCodon);
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.WRITE)
 //
