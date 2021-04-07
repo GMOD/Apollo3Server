@@ -103,20 +103,24 @@ class CdsService {
     }
 
     StopCodonReadThrough createStopCodonReadThrough(CDS cds) {
+        FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
         String uniqueName = cds.getUniqueName() + FeatureStringEnum.STOP_CODON_READHTHROUGH_SUFFIX.value;
         StopCodonReadThrough stopCodonReadThrough = new StopCodonReadThrough(
                 uniqueName: uniqueName
                 ,name: uniqueName
         ).save(failOnError: true,flush: true)
         FeatureLocation featureLocation = new FeatureLocation(
-                to: cds.featureLocation.to
+                to: cdsFeatureLocation.to
                 , from: stopCodonReadThrough
-                ,fmin: cds.featureLocation.fmin
-                ,fmax: cds.featureLocation.fmax
+                ,fmin: cdsFeatureLocation.fmin
+                ,fmax: cdsFeatureLocation.fmax
+                ,strand: cdsFeatureLocation.strand
         ).save(failOnError: true,flush: true)
 
+        // explicitly set this?
+
         stopCodonReadThrough.setFeatureLocation(featureLocation)
-        stopCodonReadThrough.featureLocation.setStrand(cds.getStrand());
+//        stopCodonReadThrough.featureLocation.setStrand(cds.getStrand());
 
         stopCodonReadThrough.save(flush: true)
 
