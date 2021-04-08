@@ -103,6 +103,7 @@ class CdsService {
     }
 
     StopCodonReadThrough createStopCodonReadThrough(CDS cds) {
+        println "createing stop codon readthrough ${cds}"
         FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
         String uniqueName = cds.getUniqueName() + FeatureStringEnum.STOP_CODON_READHTHROUGH_SUFFIX.value;
         StopCodonReadThrough stopCodonReadThrough = new StopCodonReadThrough(
@@ -123,6 +124,11 @@ class CdsService {
 //        stopCodonReadThrough.featureLocation.setStrand(cds.getStrand());
 
         stopCodonReadThrough.save(flush: true)
+
+        def stopCodonsLinked = StopCodonReadThrough.executeQuery(" MATCH (  sc:StopCodonReadThrough )- [fl:FEATURELOCATION] - (s:Sequence) where sc.uniqueName = ${uniqueName}  return sc,fl,s")
+        println("stop codons linked ${stopCodonsLinked}")
+        def stopCodonsUnlinked = StopCodonReadThrough.executeQuery(" MATCH (  sc:StopCodonReadThrough ) where sc.uniqueName = ${uniqueName}  return sc")
+        println("stop codons un-linked ${stopCodonsUnlinked}")
 
         return stopCodonReadThrough;
     }

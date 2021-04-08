@@ -1458,7 +1458,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         println "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop} readThroughStop ${readThroughStopCodon}"
 
-        println "is an instance of an mRNA ${MRNA.class}"
+        println "is an instance of an mRNA ${MRNA.class} ${transcript.class} "
+        println "equality: ${transcript.instanceOf(MRNA.class)} vs ${FeatureTypeMapper.hasOntologyId(transcript.cvTerm,MRNA.cvTerm,MRNA.alternateCvTerm)}"
 
         if (FeatureTypeMapper.hasOntologyId(transcript.cvTerm,MRNA.cvTerm,MRNA.alternateCvTerm)) {
 //        if (transcript.instanceOf(MRNA.class)) {
@@ -1489,8 +1490,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                     fmin = fmax + 1
                     fmax = tmp + 1
                 }
-                setFmin(cds, fmin)
-                setFmax(cds, fmax)
+                cdsFeatureLocation.fmin = fmin
+                cdsFeatureLocation.fmax = fmax
                 log.debug "bestStopIndex >=0 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cds.strand}"
             } else {
                 log.debug "bestStopIndex < 0"
@@ -1500,15 +1501,15 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                     fmin = fmax
                     fmax = tmp + 1
                 }
-                setFmin(cds, fmin)
-                setFmax(cds, fmax)
+                cdsFeatureLocation.fmin = fmin
+                cdsFeatureLocation.fmax = fmax
                 log.debug "bestStopIndex < 0 setting fmin and famx to ${fmin} and ${fmax} respectively, ${cdsFeatureLocation.strand}"
             }
             log.debug "looking at strands for ${cds}"
 
 
             log.debug "cds ${cds}"
-            log.debug "result CDS locatin is ${cds.featureLocation as JSON}"
+            log.debug "result CDS locatin is ${cdsFeatureLocation as JSON}"
 
             Boolean fminPartial
             Boolean fmaxPartial
@@ -1524,7 +1525,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 fmaxPartial = partialStop
             }
 //
-//            cds.featureLocation.save(flush: true, failonError: true)
+            cdsFeatureLocation.save(flush: true, failonError: true)
 
 
             String inputQuery = "MATCH (t:Transcript)--(cds:CDS)-[fl:FEATURELOCATION]-(s) where t.uniqueName='${transcript.uniqueName}' and cds.uniqueName='${cds.uniqueName}' " +
@@ -1536,7 +1537,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
             // re-query CDS
             // reload?
-            cds = CDS.findByUniqueName(cds.uniqueName)
+//            cds = CDS.findByUniqueName(cds.uniqueName)
 
             println "Final CDS fmin: ${cdsFeatureLocation.fmin} fmax: ${cdsFeatureLocation.fmax} for ${cds}"
             println "setting the read through stop codon ${readThroughStopCodon}"
