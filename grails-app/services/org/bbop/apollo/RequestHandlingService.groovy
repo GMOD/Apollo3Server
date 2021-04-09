@@ -2644,7 +2644,7 @@ class RequestHandlingService {
             } else if (originalType in FeatureTypeMapper.SINGLETON_FEATURE_TYPES && type in FeatureTypeMapper.RNA_FEATURE_TYPES) {
                 log.error "B Not enough information available to change ${uniqueName} from ${originalType} -> ${type}."
             } else {
-                Feature newFeature = featureService.changeAnnotationType(inputObject, feature, sequence, user, type)
+                Feature newFeature = featureService.changeAnnotationType(feature, sequence, user, type)
                 JSONObject newFeatureJsonObject = featureService.convertFeatureToJSON(newFeature)
                 log.debug "New feature json object: ${newFeatureJsonObject.toString()}"
                 JSONArray oldFeatureJsonArray = new JSONArray()

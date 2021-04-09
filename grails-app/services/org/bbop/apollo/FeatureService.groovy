@@ -1,6 +1,7 @@
 package org.bbop.apollo
 
 import grails.converters.JSON
+import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.alteration.SequenceAlterationInContext
 import org.bbop.apollo.attributes.*
@@ -1400,26 +1401,13 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
  */
 
 
-    @Transactional
-    void setLongestORF(Transcript transcript, boolean readThroughStopCodon) {
-//        Organism organism = transcript.featureLocation.to.organism
-        Organism organism = Organism.executeQuery("MATCH (t:Transcript)-[]-(s:Sequence)-[]-(o:Organism) where t.uniqueName = ${transcript.uniqueName} return o limit 1")[0] as Organism
-        TranslationTable translationTable = organismService.getTranslationTable(organism)
-        String mrna = getResiduesWithAlterationsAndFrameshifts(transcript)
-
-        println "set longest ORF ${organism}, ${translationTable} ${mrna?.size()} -> ${mrna} and readthrough ${readThroughStopCodon}"
-        if (!mrna) {
-            println "mrna not found, so returning nothing"
-            return
-        }
+    @NotTransactional
+    def findLongestProtein(TranslationTable translationTable, String mrna,boolean readThroughStopCodon){
+        println "find longest protein ${mrna}"
+        int startIndex
         String longestPeptide = ""
         int bestStartIndex = -1
-        int bestStopIndex = -1
-        int startIndex = -1
-        int stopIndex = -1
         boolean partialStart = false
-        boolean partialStop = false
-
         if (mrna.length() > 3) {
             for (String startCodon : translationTable.getStartCodons()) {
                 // find the first start codon
@@ -1450,14 +1438,42 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             }
         }
 
+        return [
+             partialStart:partialStart,
+             longestPeptide:longestPeptide,
+             bestStartIndex:bestStartIndex,
+        ]
+    }
+
+
+    @Transactional
+    void setLongestORF(Transcript transcript, boolean readThroughStopCodon) {
+//        Organism organism = transcript.featureLocation.to.organism
+        Organism organism = Organism.executeQuery("MATCH (t:Transcript)-[]-(s:Sequence)-[]-(o:Organism) where t.uniqueName = ${transcript.uniqueName} return o limit 1")[0] as Organism
+        TranslationTable translationTable = organismService.getTranslationTable(organism)
+        String mrna = getResiduesWithAlterationsAndFrameshifts(transcript)
+
+        println "set longest ORF ${organism}, ${translationTable} ${mrna?.size()} -> ${mrna} and readthrough ${readThroughStopCodon}"
+        if (!mrna) {
+            println "mrna not found, so returning nothing"
+            return
+        }
+
+        def result = findLongestProtein(translationTable,mrna,readThroughStopCodon)
+        String longestPeptide = result['longestPeptide']
+        int bestStartIndex =  result['bestStartIndex'] as Integer
+        boolean partialStart = result['partialStart'] as Boolean
+
+
         // check for partial stop
+        boolean partialStop
+        int bestStopIndex
         if (!longestPeptide.substring(longestPeptide.length() - 1).equals(TranslationTable.STOP)) {
             partialStop = true
             bestStopIndex = -1
         } else {
-            stopIndex = bestStartIndex + (longestPeptide.length() * 3)
             partialStop = false
-            bestStopIndex = stopIndex
+            bestStopIndex = bestStartIndex + (longestPeptide.length() * 3)
         }
 
         println "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop} readThroughStop ${readThroughStopCodon}"
@@ -1474,7 +1490,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 println "creating CDS "
                 cds = transcriptService.createCDS(transcript);
                 println "created a CDS ${cds}"
-                println "created a CDS per location ${cds.featureLocation as JSON}"
+//                println "created a CDS per location ${cds.featureLocation as JSON}"
                 transcriptService.setCDS(transcript, cds);
                 println "set CDS ${cds} on transcript ${transcript}"
             }
@@ -4032,13 +4048,13 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
 
-    def changeAnnotationType(JSONObject inputObject, Feature feature, Sequence sequence, User user, String type) {
+    def changeAnnotationType(Feature feature, Sequence sequence, User user, String type) {
         String uniqueName = feature.uniqueName
         String originalType = feature.cvTerm
         JSONObject currentFeatureJsonObject = convertFeatureToJSON(feature)
         Feature newFeature = null
 
-        String topLevelFeatureType = null
+        String topLevelFeatureType
         if (type == Transcript.cvTerm) {
             topLevelFeatureType = Pseudogene.cvTerm
         } else if (FeatureTypeMapper.SINGLETON_FEATURE_TYPES.contains(type)) {

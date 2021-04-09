@@ -9,7 +9,10 @@ import org.bbop.apollo.feature.MRNA
 import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.sequence.SequenceTranslationHandler
+import org.bbop.apollo.sequence.StandardTranslationTable
 import org.bbop.apollo.sequence.Strand
+import org.bbop.apollo.sequence.TranslationTable
 import org.grails.web.json.JSONObject
 import spock.lang.Specification
 import spock.lang.Ignore
@@ -62,6 +65,37 @@ class FeatureServiceSpec extends Specification implements ServiceUnitTest<Featur
         String ontologyId = FeatureTypeMapper.convertJSONToOntologyId(json)
         assert ontologyId != null
         assert ontologyId == Exon.ontologyId
+    }
+
+    def "find the longest protein sequence"(){
+        given: "an mrna sequence"
+        String mrna = "GCTTTTCAAATATGCCAGTGAGAGCATATCGATTCTAGTGTAAGAAAGTTAACCAACGACTTCACACGAACGGTTTGTGAGTTACGTTTTCTTCGTTTAAAATAATCTGTTACAAATAATAGATAATGCTTTTCAAATATGCCAGTGAGAGCATATCGATTCTAGTGTAAGAAAGTTAACCAACGACTTCACACGAACGGTTTGTGAGTTACGTTTTCTTCGTTTAAAATAATCTGTTACAAATAATAGATAATATGGAATCTGCTATTGTTCATCTTGAACAAAGCGTGCAAAAGGCTGATGGAAAACTAGACATGATTGCATGGCAAATTGATGCTTTTGAAAAAGAATTTGAAGATCCTGGTAGTGAGATTTCTGTGCTTCGTCTATTACGGTCTGTTCATCAAGTCACAAAAGATTATCAGAACCTTCGGCAAGAAATATTGGAGGTTCAACAATTGCAAAAGCAACTTTCAGATTCCCTTAAAGCACAATTATCTCAAGTGCATGGACATTTTAACTTATTACGCAATAAAATAGTAGGACAAAATAAAAATCTACAATTAAAATAAGATTAAAATTTTTTATTTATATTTAAAGTATAATTTAAATATATTTTTTAAATTATACTTAATTTATAATTTTTTATTATAAAATTATTATTAATATTTTAAATCAAAAGTTATTAAAATAACAGATTAAAATTTTTTATTTATATTTAAAGTATAATTTAAATATATTTTTTAAATTATACTTAATTTATAATTTTTTATTATAAAATTATTATTAATATTTTAAATCAAAAGTTATTAAAATAACA"
+        TranslationTable translationTable = new StandardTranslationTable()
+
+        when: "we calculate the longest protein"
+        def result = service.findLongestProtein(translationTable,mrna,false)
+        String longestPeptide = result['longestPeptide']
+        int bestStartIndex =  result['bestStartIndex'] as Integer
+        boolean partialStart = result['partialStart'] as Boolean
+
+        then: "we should get good results"
+        assert !partialStart
+        String expectedCDS = "ATGGAATCTGCTATTGTTCATCTTGAACAAAGCGTGCAAAAGGCTGATGGAAAACTAGACATGATTGCATGGCAAATTGATGCTTTTGAAAAAGAATTTGAAGATCCTGGTAGTGAGATTTCTGTGCTTCGTCTATTACGGTCTGTTCATCAAGTCACAAAAGATTATCAGAACCTTCGGCAAGAAATATTGGAGGTTCAACAATTGCAAAAGCAACTTTCAGATTCCCTTAAAGCACAATTATCTCAAGTGCATGGACATTTTAACTTATTACGCAATAAAATAGTAGGACAAAATAAAAATCTACAATTAAAATAA"
+        assert longestPeptide == SequenceTranslationHandler.translateSequence(expectedCDS,translationTable,true,false)
+        assert bestStartIndex == 254
+
+        when: "we calculate the longest protein with the readthrough "
+        result = service.findLongestProtein(translationTable,mrna,true)
+        longestPeptide = result['longestPeptide']
+        bestStartIndex =  result['bestStartIndex'] as Integer
+        partialStart = result['partialStart'] as Boolean
+
+        then: "we should read through the start codon"
+        assert !partialStart
+        String expectedCDSWithReadThrough = "ATGGAATCTGCTATTGTTCATCTTGAACAAAGCGTGCAAAAGGCTGATGGAAAACTAGACATGATTGCATGGCAAATTGATGCTTTTGAAAAAGAATTTGAAGATCCTGGTAGTGAGATTTCTGTGCTTCGTCTATTACGGTCTGTTCATCAAGTCACAAAAGATTATCAGAACCTTCGGCAAGAAATATTGGAGGTTCAACAATTGCAAAAGCAACTTTCAGATTCCCTTAAAGCACAATTATCTCAAGTGCATGGACATTTTAACTTATTACGCAATAAAATAGTAGGACAAAATAAAAATCTACAATTAAAATAAGATTAA"
+        assert longestPeptide == SequenceTranslationHandler.translateSequence(expectedCDSWithReadThrough,translationTable,true,true)
+        assert bestStartIndex == 254
+
     }
 
 
