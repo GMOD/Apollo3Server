@@ -215,6 +215,7 @@ class FeatureTypeMapper {
             case Insertion.cvTerm.toUpperCase(): return internalNode as Insertion
             case Deletion.cvTerm.toUpperCase(): return internalNode as Deletion
             case Substitution.cvTerm.toUpperCase(): return internalNode as Substitution
+            case StopCodonReadThrough.alternateCvTerm.toUpperCase():
             case StopCodonReadThrough.cvTerm.toUpperCase(): return internalNode as StopCodonReadThrough
             case NonCanonicalFivePrimeSpliceSite.cvTerm.toUpperCase(): return internalNode as NonCanonicalFivePrimeSpliceSite
             case NonCanonicalThreePrimeSpliceSite.cvTerm.toUpperCase(): return internalNode as NonCanonicalThreePrimeSpliceSite
