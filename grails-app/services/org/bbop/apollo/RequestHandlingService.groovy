@@ -866,6 +866,7 @@ class RequestHandlingService {
             }
             useName = jsonTranscript.has(FeatureStringEnum.USE_NAME.value) ? jsonTranscript.getBoolean(FeatureStringEnum.USE_NAME.value) : false
             Transcript transcript = featureService.generateTranscript(jsonTranscript, sequence, suppressHistory, useCDS, useName)
+            println "generated transcript ${transcript} -> ${transcript.class.name} -> ${transcript.cvTerm}"
 
             // should automatically write to history
             transcript.save(flush: true)
@@ -1026,9 +1027,10 @@ class RequestHandlingService {
 //        Transcript transcript = Transcript.findByUniqueName(transcriptJSONObject.getString(FeatureStringEnum.UNIQUENAME.value))
         def transcriptList = Transcript.executeQuery("MATCH (t:Transcript)-[fl:FEATURELOCATION]-(s:Sequence) where t.uniqueName=${uniqueName} return t")
         println transcriptList
-        Transcript transcript = transcriptList[0] as Transcript
+        def transcript = FeatureTypeMapper.castNeo4jFeature(transcriptList[0])
+//        Transcript transcript =  as Transcript
 //        println "found transcript ${transcript} ${transcript as JSON}"
-        println "found transcript ${transcript}"
+        println "found transcript ${transcript} -> ${transcript.class.name} -> ${transcript.cvTerm} "
         JSONObject oldJsonObject = featureService.convertFeatureToJSON(transcript, false)
 
         boolean readThroughStopCodon = transcriptJSONObject.getBoolean(FeatureStringEnum.READTHROUGH_STOP_CODON.value)

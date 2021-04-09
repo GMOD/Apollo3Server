@@ -929,6 +929,8 @@ class FeatureService {
     int convertLocalCoordinateToSourceCoordinateForCDS(CDS cds, int localCoordinate) {
         // Method converts localCoordinate to sourceCoordinate in reference to the CDS
         Transcript transcript = transcriptService.getTranscript(cds)
+        FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
+        FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
         if (!transcript) {
             return convertLocalCoordinateToSourceCoordinate(cds, localCoordinate);
         }
@@ -938,31 +940,32 @@ class FeatureService {
             log.debug "FS::convertLocalCoordinateToSourceCoordinateForCDS() - No exons for given transcript"
             return convertLocalCoordinateToSourceCoordinate(cds, localCoordinate)
         }
-        if (transcript.strand == Strand.NEGATIVE.value) {
+        if (transcriptFeatureLocation.strand == Strand.NEGATIVE.value) {
             exons.reverse()
         }
         for (Exon exon : exons) {
+            FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
             if (!overlapperService.overlaps(cds, exon)) {
-                offset += exon.getLength();
+                offset += exonFeatureLocation.calculateLength();
                 continue;
             } else if (overlapperService.overlaps(cds, exon)) {
-                if (exon.fmin >= cds.fmin && exon.fmax <= cds.fmax) {
+                if (exonFeatureLocation.fmin >= cdsFeatureLocation.fmin && exonFeatureLocation.fmax <= cdsFeatureLocation.fmax) {
                     // exon falls within the boundaries of the CDS
                     continue
                 } else {
                     // exon doesn't overlap completely with the CDS
-                    if (exon.fmin < cds.fmin && exon.strand == Strand.POSITIVE.value) {
-                        offset += cds.fmin - exon.fmin
-                    } else if (exon.fmax > cds.fmax && exon.strand == Strand.NEGATIVE.value) {
-                        offset += exon.fmax - cds.fmax
+                    if (exonFeatureLocation.fmin < cdsFeatureLocation.fmin && exonFeatureLocation.strand == Strand.POSITIVE.value) {
+                        offset += cdsFeatureLocation.fmin - exonFeatureLocation.fmin
+                    } else if (exonFeatureLocation.fmax > cdsFeatureLocation.fmax && exonFeatureLocation.strand == Strand.NEGATIVE.value) {
+                        offset += exonFeatureLocation.fmax - cdsFeatureLocation.fmax
                     }
                 }
             }
 
-            if (exon.getFeatureLocation().getStrand() == Strand.NEGATIVE.value) {
-                offset += exon.getFeatureLocation().getFmax() - exon.getFeatureLocation().getFmax();
+            if (exonFeatureLocation.getStrand() == Strand.NEGATIVE.value) {
+                offset += exonFeatureLocation.getFmax() - exonFeatureLocation.getFmax();
             } else {
-                offset += exon.getFeatureLocation().getFmin() - exon.getFeatureLocation().getFmin();
+                offset += exonFeatureLocation.getFmin() - exonFeatureLocation.getFmin();
             }
             break;
         }
@@ -1027,8 +1030,9 @@ class FeatureService {
 //                        StopCodonReadThrough stopCodonReadThrough = cdsService.getStopCodonReadThrough(cds);
                         StopCodonReadThrough stopCodonReadThrough = (StopCodonReadThrough) featureRelationshipService.getChildForFeature(cds, StopCodonReadThrough.ontologyId)
                         if (stopCodonReadThrough == null) {
-                            stopCodonReadThrough = cdsService.createStopCodonReadThrough(cds);
-                            cdsService.setStopCodonReadThrough(cds, stopCodonReadThrough)
+                            stopCodonReadThrough = cdsService.createStopCodonReadOnCDS(cds)
+//                            stopCodonReadThrough = cdsService.createStopCodonReadThrough(cds);
+//                            cdsService.setStopCodonReadThrough(cds, stopCodonReadThrough)
 //                            cds.setStopCodonReadThrough(stopCodonReadThrough);
                             if (cds.strand == Strand.NEGATIVE.value) {
                                 stopCodonReadThrough.featureLocation.setFmin(convertModifiedLocalCoordinateToSourceCoordinate(transcript, i + 2));
@@ -1458,8 +1462,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
         println "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop} readThroughStop ${readThroughStopCodon}"
 
-        println "is an instance of an mRNA ${MRNA.class} ${transcript.class} "
-        println "equality: ${transcript.instanceOf(MRNA.class)} vs ${FeatureTypeMapper.hasOntologyId(transcript.cvTerm,MRNA.cvTerm,MRNA.alternateCvTerm)}"
+        println "is an instance of an mRNA ${MRNA.class} ${transcript.class} -> cvTerm: ${transcript.cvTerm} ${transcript.alternateCvTerm} "
+        println "equality 2: ${transcript.instanceOf(MRNA.class)} vs ${FeatureTypeMapper.hasOntologyId(transcript.cvTerm,MRNA.cvTerm,MRNA.alternateCvTerm)}"
 
         if (FeatureTypeMapper.hasOntologyId(transcript.cvTerm,MRNA.cvTerm,MRNA.alternateCvTerm)) {
 //        if (transcript.instanceOf(MRNA.class)) {
@@ -1550,13 +1554,14 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 println "first stop index ${firstStopIndex} of ${TranslationTable.STOP} vs ${aa.length()}"
                 if (firstStopIndex < aa.length() - 1) {
                     println "first stop is less than length -1 so creating the stop codon read through "
-                    StopCodonReadThrough stopCodonReadThrough = cdsService.createStopCodonReadThrough(cds);
-                    cdsService.setStopCodonReadThrough(cds, stopCodonReadThrough)
+                    StopCodonReadThrough stopCodonReadThrough = cdsService.createStopCodonReadOnCDS(cds);
+//                    StopCodonReadThrough stopCodonReadThrough = cdsService.createStopCodonReadThrough(cds);
+//                    cdsService.setStopCodonReadThrough(cds, stopCodonReadThrough)
 
                     println "it is now set ${stopCodonReadThrough}"
                     println "retrieving ${cdsService.getStopCodonReadThrough(cds)}"
 
-                    int offset = transcript.getStrand() == -1 ? -2 : 0;
+                    int offset = transcriptFeatureLocation.strand == -1 ? -2 : 0;
                     setFmin(stopCodonReadThrough, convertModifiedLocalCoordinateToSourceCoordinate(cds, firstStopIndex * 3) + offset);
                     setFmax(stopCodonReadThrough, convertModifiedLocalCoordinateToSourceCoordinate(cds, firstStopIndex * 3) + 3 + offset);
                 }
@@ -3786,14 +3791,17 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 }
             }
         } else {
-            List<Exon> exonList = feature.instanceOf(CDS ? transcriptService.getSortedExons(transcriptService.getTranscript(feature), true) : transcriptService.getSortedExons((Transcript) feature, true))
+            boolean isCDS = feature.instanceOf(CDS.class)
+            List<Exon> exonList = isCDS ? transcriptService.getSortedExons(transcriptService.getTranscript(feature), true) : transcriptService.getSortedExons((Transcript) feature, true)
             for (Exon exon : exonList) {
-                int exonFmin = exon.fmin
-                int exonFmax = exon.fmax
+                FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
+                int exonFmin = exonFeatureLocation.fmin
+                int exonFmax = exonFeatureLocation.fmax
 
                 for (SequenceAlterationArtifact eachSequenceAlteration : sequenceAlterations) {
-                    int alterationFmin = eachSequenceAlteration.fmin
-                    int alterationFmax = eachSequenceAlteration.fmax
+                    FeatureLocation eachSequenceAlterationFeatureLocation = FeatureLocation.findByFrom(eachSequenceAlteration)
+                    int alterationFmin = eachSequenceAlterationFeatureLocation.fmin
+                    int alterationFmax = eachSequenceAlterationFeatureLocation.fmax
                     SequenceAlterationInContext sa = new SequenceAlterationInContext()
                     if ((alterationFmin >= exonFmin && alterationFmin <= exonFmax) && (alterationFmax >= exonFmin && alterationFmax <= exonFmax)) {
                         // alteration is within exon
@@ -4100,6 +4108,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 transcript = addFeature(currentFeatureJsonObject, sequence, user, true)
                 setLongestORF(transcript)
             }
+            println "generated transcript for ${type} of class ${transcript.class.name} ${transcript.cvTerm}"
 
             Gene newGene = transcriptService.getGene(transcript)
             newGene.symbol = parentGeneSymbol
