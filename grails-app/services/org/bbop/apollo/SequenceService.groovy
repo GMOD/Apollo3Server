@@ -71,6 +71,7 @@ class SequenceService {
         }
         println "through process"
         println "output feature location ${featureLocation}"
+        println "output feature location data ${featureLocation as JSON}"
 
         String residues = getResidueFromFeatureLocation(featureLocation)
         println "residues ${residues}"
@@ -610,11 +611,17 @@ class SequenceService {
             println "is CDS type "
             println "class name for feature: ${gbolFeature.class.name}"
             if (gbolFeature.instanceOf(Transcript.class) && transcriptService.isProteinCoding((Transcript) gbolFeature)) {
-                featureResidues = featureService.getResiduesWithAlterationsAndFrameshifts(transcriptService.getCDS((Transcript) gbolFeature))
-                boolean hasStopCodonReadThrough = false
-                println "calculating stop codon readhtrough"
+                println "is MRNA so has CDS"
                 CDS foundCDS = transcriptService.getCDS((Transcript) gbolFeature)
+                println "calculating stop codon readhtrough"
                 println "found a CDS ${foundCDS}"
+                FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(foundCDS)
+                println "cds feature location ${cdsFeatureLocation as JSON}"
+                FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(gbolFeature)
+                println "transcript feature location ${transcriptFeatureLocation as JSON}"
+                println "transcript residues: " +featureService.getResiduesWithAlterationsAndFrameshifts(gbolFeature)
+                featureResidues = featureService.getResiduesWithAlterationsAndFrameshifts(foundCDS)
+                boolean hasStopCodonReadThrough = false
                 def stopCodonReadThroughs = cdsService.getStopCodonReadThrough(foundCDS)
                 def cdsChildren = featureRelationshipService.getChildrenForFeatureAndTypes(foundCDS)
                 println "# of cds children: ${cdsChildren.size()}"
@@ -626,9 +633,12 @@ class SequenceService {
                 }
                 println "has stop codon readthrough ${hasStopCodonReadThrough}"
                 String verifiedResidues = checkForInFrameStopCodon(featureResidues, 0, hasStopCodonReadThrough, translationTable)
+                println "input feature residues ${featureResidues}"
+                println "output verified residues ${verifiedResidues}"
                 featureResidues = verifiedResidues
+                println "returning feature CDS residue ${featureResidues}"
             } else if (gbolFeature.instanceOf(Exon.class) && transcriptService.isProteinCoding(exonService.getTranscript((Exon) gbolFeature))) {
-                log.debug "Fetching CDS sequence for selected exon: ${gbolFeature}"
+                println "Fetching CDS sequence for selected exon: ${gbolFeature}"
                 featureResidues = exonService.getCodingSequenceInPhase((Exon) gbolFeature, false)
                 boolean hasStopCodonReadThrough = false
                 def stopCodonReadThroughList = cdsService.getStopCodonReadThrough(transcriptService.getCDS(exonService.getTranscript((Exon) gbolFeature)))
@@ -640,6 +650,7 @@ class SequenceService {
                 int phase = exonService.getPhaseForExon((Exon) gbolFeature)
                 String verifiedResidues = checkForInFrameStopCodon(featureResidues, phase, hasStopCodonReadThrough, translationTable)
                 featureResidues = verifiedResidues
+                println "returning feature residue ${featureResidues}"
             } else {
                 featureResidues = ""
             }
@@ -671,6 +682,7 @@ class SequenceService {
             }
             featureResidues = getGenomicResiduesFromSequenceWithAlterations(gbolFeature.featureLocation.to, fmin, fmax, Strand.getStrandForValue(gbolFeature.strand))
         }
+        println "final feature residues ${featureResidues}"
         return featureResidues
     }
 
