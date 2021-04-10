@@ -102,31 +102,26 @@ class CdsService {
         return featureRelationshipService.getChildrenForFeatureAndTypes(cds,StopCodonReadThrough.ontologyId)
     }
 
-    StopCodonReadThrough createStopCodonReadThrough(CDS cds) {
+    StopCodonReadThrough createStopCodonReadOnCDS(CDS cds) {
+        log.debug "createing stop codon readthrough ${cds}"
+        FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
         String uniqueName = cds.getUniqueName() + FeatureStringEnum.STOP_CODON_READHTHROUGH_SUFFIX.value;
         StopCodonReadThrough stopCodonReadThrough = new StopCodonReadThrough(
                 uniqueName: uniqueName
                 ,name: uniqueName
-        ).save(failOnError: true,flush: true)
+        ).save(failOnError: true)
         FeatureLocation featureLocation = new FeatureLocation(
-                to: cds.featureLocation.to
+                to: cdsFeatureLocation.to
                 , from: stopCodonReadThrough
-                ,fmin: cds.featureLocation.fmin
-                ,fmax: cds.featureLocation.fmax
-        ).save(failOnError: true,flush: true)
+                ,fmin: cdsFeatureLocation.fmin
+                ,fmax: cdsFeatureLocation.fmax
+                ,strand: cdsFeatureLocation.strand
+        ).save(failOnError: true)
 
         stopCodonReadThrough.setFeatureLocation(featureLocation)
-        stopCodonReadThrough.featureLocation.setStrand(cds.getStrand());
+        stopCodonReadThrough.save(fllush:true)
 
-        stopCodonReadThrough.save(flush: true)
-
-        return stopCodonReadThrough;
-    }
-
-    def setStopCodonReadThrough(CDS cds, StopCodonReadThrough stopCodonReadThrough, boolean replace = true) {
-        if (replace) {
-            featureRelationshipService.setChildForType(cds,stopCodonReadThrough)
-        }
+        featureRelationshipService.setChildForType(cds,stopCodonReadThrough)
 
         FeatureRelationship fr = new FeatureRelationship(
                 from: cds
@@ -138,7 +133,10 @@ class CdsService {
 
         stopCodonReadThrough.save(failOnError: true)
         cds.save(flush: true,failOnError: true)
+        def returnedStopCodonReadThrough = getStopCodonReadThrough(cds)
+        log.debug "returnedStopCodonReadThrough ${returnedStopCodonReadThrough}"
 
+        return stopCodonReadThrough
     }
 
     def hasStopCodonReadThrough(CDS cds) {
@@ -154,17 +152,19 @@ class CdsService {
             if (!overlapperService.overlaps(exon,cds)) {
                 continue
             }
-            int fmin = exon.fmin < cds.fmin ? cds.fmin : exon.fmin
-            int fmax = exon.fmax > cds.fmax ? cds.fmax : exon.fmax
+            FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
+            FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
+            int fmin = exonFeatureLocation.fmin < cdsFeatureLocation.fmin ? cdsFeatureLocation.fmin : exonFeatureLocation.fmin
+            int fmax = exonFeatureLocation.fmax > cdsFeatureLocation.fmax ? cdsFeatureLocation.fmax : exonFeatureLocation.fmax
             int localStart
             int localEnd
-            if (cds.getFeatureLocation().strand == Strand.NEGATIVE.value) {
-                localEnd = featureService.convertSourceCoordinateToLocalCoordinate((Feature) exon, fmin) + 1
-                localStart = featureService.convertSourceCoordinateToLocalCoordinate((Feature) exon, fmax) + 1
+            if (cdsFeatureLocation.strand == Strand.NEGATIVE.value) {
+                localEnd = featureService.convertSourceCoordinateToLocalCoordinate(exonFeatureLocation, fmin) + 1
+                localStart = featureService.convertSourceCoordinateToLocalCoordinate(exonFeatureLocation, fmax) + 1
             } 
             else {
-                localStart = featureService.convertSourceCoordinateToLocalCoordinate((Feature) exon, fmin)
-                localEnd = featureService.convertSourceCoordinateToLocalCoordinate((Feature) exon, fmax)
+                localStart = featureService.convertSourceCoordinateToLocalCoordinate(exonFeatureLocation, fmin)
+                localEnd = featureService.convertSourceCoordinateToLocalCoordinate(exonFeatureLocation, fmax)
             }
             residues += sequenceService.getResiduesFromFeature((Feature) exon).substring(localStart, localEnd)
         }

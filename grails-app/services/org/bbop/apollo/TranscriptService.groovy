@@ -1,6 +1,6 @@
 package org.bbop.apollo
 
-import grails.converters.JSON
+
 import grails.gorm.transactions.Transactional
 import org.bbop.apollo.attributes.*
 import org.bbop.apollo.feature.*
@@ -11,7 +11,7 @@ import org.bbop.apollo.relationship.FeatureRelationship
 @Transactional(readOnly = true)
 class TranscriptService {
 
-    List<String> ontologyIds = [
+    List<String> transcriptOntologyIds = [
         Transcript.ontologyId, SnRNA.ontologyId, MRNA.ontologyId, SnoRNA.ontologyId,
         MiRNA.ontologyId, TRNA.ontologyId, NcRNA.ontologyId, RRNA.ontologyId,
         GuideRNA.ontologyId, RNasePRNA.ontologyId, TelomeraseRNA.ontologyId, SrpRNA.ontologyId, LncRNA.ontologyId,
@@ -55,19 +55,16 @@ class TranscriptService {
     }
 
     Collection<Exon> getSortedExons(Transcript transcript, boolean sortByStrand) {
-        Collection<Exon> exons = getExons(transcript)
-        log.debug "# of exons ${exons.size()}"
-        List<Exon> sortedExons = new LinkedList<Exon>(exons);
-//        sortedExons.each {
-//            println it.featureLocation
-//            println it.featureLocation as JSON
-//        }
-//        def inputQuery ="MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = '${sortedExons.first().uniqueName}' RETURN fl "
-//        def cypherLocations = FeatureLocation.executeQuery(inputQuery)
-//        println "cypher location ${cypherLocations}"
-//        def cypherExon = FeatureLocation.executeQuery("MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = ${sortedExons.first().uniqueName} RETURN fl LIMIT 1")?.first() as Exon
-//        println "cypher exon ${cypherExon}"
-        Collections.sort(sortedExons, new FeaturePositionComparator<Exon>(sortByStrand))
+        String queryString = "MATCH (t:Transcript)-[]->(exon:Exon)-[fl:FEATURELOCATION]-(s:Sequence) " +
+                "where t.uniqueName = '${transcript.uniqueName}' return exon order by fl.fmin, fl.fmax" +
+                " ${sortByStrand ? ', fl.strand': ''}"
+//        def exonsList =  Exon.executeQuery("MATCH (t:Transcript)-[]->(exon:Exon)-[fl:FEATURELOCATION]-(s:Sequence) " +
+//                "where t.uniqueName = '${transcript.uniqueName}' return exon order by fl.fmin, fl.fmax ${sortByStrand ? ', fl.strand': ''}")
+        def exonsList =  Exon.executeQuery(queryString)
+        List<Exon> sortedExons = new ArrayList<Exon>();
+        exonsList.each {
+            sortedExons.add(it as Exon)
+        }
         return sortedExons
     }
 
@@ -155,7 +152,7 @@ class TranscriptService {
      * @return Collection of transcripts associated with this gene
      */
     Collection<Transcript> getTranscripts(Gene gene) {
-        return (Collection<Transcript>) featureRelationshipService.getChildrenForFeatureAndTypes(gene, ontologyIds as String[])
+        return (Collection<Transcript>) featureRelationshipService.getChildrenForFeatureAndTypes(gene, transcriptOntologyIds as String[])
     }
 
     List<Transcript> getTranscriptsSortedByFeatureLocation(Gene gene, boolean sortByStrand) {
@@ -298,7 +295,7 @@ class TranscriptService {
     }
 
     Transcript getParentTranscriptForFeature(Feature feature) {
-        return (Transcript) featureRelationshipService.getParentForFeature(feature, ontologyIds as String[])
+        return (Transcript) featureRelationshipService.getParentForFeature(feature, transcriptOntologyIds as String[])
     }
 
     @Transactional
@@ -562,7 +559,7 @@ class TranscriptService {
     }
 
     Transcript getTranscript(CDS cds) {
-        return (Transcript) featureRelationshipService.getParentForFeature(cds, ontologyIds as String[])
+        return (Transcript) featureRelationshipService.getParentForFeature(cds, transcriptOntologyIds as String[])
     }
 
 }

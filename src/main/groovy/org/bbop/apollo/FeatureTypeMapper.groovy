@@ -162,7 +162,15 @@ class FeatureTypeMapper {
         def filteredLabels = labels.findAll { it != "Feature" && !it.contains("TranscriptRegion") && it != "SpliceSite" }
         if(filteredLabels.contains("MRNA")) return "MRNA"
         return filteredLabels.last()
+    }
 
+    static boolean hasOntologyId( String cvTerm,String[] names){
+        for(String name in names){
+            if(cvTerm.toUpperCase().contains(name.toUpperCase())){
+                return true
+            }
+        }
+        return false
     }
 
     static def castNeo4jFeature(InternalNode internalNode) {
@@ -207,6 +215,7 @@ class FeatureTypeMapper {
             case Insertion.cvTerm.toUpperCase(): return internalNode as Insertion
             case Deletion.cvTerm.toUpperCase(): return internalNode as Deletion
             case Substitution.cvTerm.toUpperCase(): return internalNode as Substitution
+            case StopCodonReadThrough.alternateCvTerm.toUpperCase():
             case StopCodonReadThrough.cvTerm.toUpperCase(): return internalNode as StopCodonReadThrough
             case NonCanonicalFivePrimeSpliceSite.cvTerm.toUpperCase(): return internalNode as NonCanonicalFivePrimeSpliceSite
             case NonCanonicalThreePrimeSpliceSite.cvTerm.toUpperCase(): return internalNode as NonCanonicalThreePrimeSpliceSite

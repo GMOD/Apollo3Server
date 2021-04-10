@@ -194,9 +194,11 @@ class FeatureRelationshipService {
     }
 
     // TODO: re-enable ?
-//    List<Frameshift> getFeaturePropertyForTypes(Transcript transcript, List<String> strings) {
+    List<Frameshift> getFeaturePropertyForTypes(Transcript transcript, List<String> strings) {
+        return Frameshift.executeQuery("MATCH (t:Transcript)--(f:Frameshit) where t.uniqueName = ${transcript.uniqueName} return f") as List<Frameshift>
+//        return []
 //        return (List<Frameshift>) FeatureProperty.findAllByFeaturesInListAndOntologyIdsInList([transcript], strings)
-//    }
+    }
 
     List<Feature> getChildren(Feature feature) {
         return getChildrenForFeatureAndTypes(feature)

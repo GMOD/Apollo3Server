@@ -194,14 +194,31 @@ class OverlapperService implements Overlapper{
     
     boolean overlaps(Feature leftFeature, Feature rightFeature, boolean compareStrands = true) {
         //log.debug("overlaps(Feature leftFeature, Feature rightFeature, boolean compareStrands)")
-        return overlaps(leftFeature.featureLocation, rightFeature.featureLocation, compareStrands)
+
+//        Sequence sequence1 = Sequence.executeQuery("MATCH (f:Feature)-[fl1:FEATURELOCATION]-(s:Sequence) where fl1.id=${leftFeatureLocation.id} return s")[0]  as Sequence
+//        Sequence sequence2 = Sequence.executeQuery("MATCH (f:Feature)-[fl2:FEATURELOCATION]-(s:Sequence) where fl2.id=${leftFeatureLocation.id} return s")[0]  as Sequence
+//        if (leftFeatureLocation.to != rightFeatureLocation.to) {
+//            return false;
+//        }
+
+        // note that the query
+        // TODO: can add
+        // if compareStrand -> fl1.strand = fl2.strand
+        // and  (fl1.fmin <= fl2.fmin && fl1.fmax > fl2.fmin) || (fl1.fmin >= fl2.fmin && fl1.fmin < fl2.fmax)
+        def featureLocations= FeatureLocation.executeQuery("MATCH (f1:Feature)-[fl1:FEATURELOCATION]-(s:Sequence)--(o:Organism), (f2:Feature)-[fl2:FEATURELOCATION]-(s:Sequence) where f1.uniqueName = ${leftFeature.uniqueName} and f2.uniqueName = ${rightFeature.uniqueName}  return fl1,fl2")
+        log.debug "feature locations size: ${featureLocations.size()}"
+        if(featureLocations.size()==0) {
+            return false
+        }
+
+        FeatureLocation leftFeatureLocation = featureLocations[0].fl1 as FeatureLocation
+        FeatureLocation rightFeatureLocation = featureLocations[0].fl2 as FeatureLocation
+
+        return overlaps(leftFeatureLocation, rightFeatureLocation, compareStrands)
     }
 
     boolean overlaps(FeatureLocation leftFeatureLocation, FeatureLocation rightFeatureLocation, boolean compareStrands = true) {
-        //log.debug("overlaps(FeatureLocation leftFeatureLocation, FeatureLocation rightFeatureLocation, boolean compareStrands)")
-        if (leftFeatureLocation.sequence != rightFeatureLocation.sequence) {
-            return false;
-        }
+        log.debug("overlaps(FeatureLocation leftFeatureLocation, FeatureLocation rightFeatureLocation, boolean compareStrands)")
         int thisFmin = leftFeatureLocation.getFmin();
         int thisFmax = leftFeatureLocation.getFmax();
         int thisStrand = leftFeatureLocation.getStrand();

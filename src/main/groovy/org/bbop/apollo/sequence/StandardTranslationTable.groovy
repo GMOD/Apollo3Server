@@ -5,7 +5,7 @@ package org.bbop.apollo.sequence
  */
 class StandardTranslationTable extends TranslationTable {
 
-    public StandardTranslationTable() {
+    StandardTranslationTable() {
         translationTable.put("TTT", "F");
         translationTable.put("TTC", "F");
         translationTable.put("TTA", "L");

@@ -9,6 +9,7 @@ import org.bbop.apollo.alteration.SequenceAlterationInContext
 import org.bbop.apollo.feature.CDS
 import org.bbop.apollo.feature.Exon
 import org.bbop.apollo.feature.Feature
+import org.bbop.apollo.feature.StopCodonReadThrough
 import org.bbop.apollo.feature.Transcript
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.location.FeatureLocation
@@ -35,13 +36,13 @@ class SequenceService {
     def grailsApplication
     def featureService
     def transcriptService
-    def requestHandlingService
     def exonService
     def cdsService
     def gff3HandlerService
     def overlapperService
     def organismService
     def trackService
+    def featureRelationshipService
 
 
     /**
@@ -51,16 +52,16 @@ class SequenceService {
      */
     String getResiduesFromFeature(Feature feature) {
         String returnResidues = ""
-//        def orderedFeatureLocations = feature.featureLocations.sort { it.fmin }
-//        for (FeatureLocation featureLocation in feature.featureLocation) {
-        String residues = getResidueFromFeatureLocation(feature.featureLocation)
-        if (feature.featureLocation.strand == Strand.NEGATIVE.value) {
+        FeatureLocation featureLocation = FeatureLocation.findByFrom(feature)
+//        if(!featureLocation){
+//            def featureLocations = FeatureLocation.executeQuery("MATCH (f:Feature)-[fl:FEATURELOCATION]-(s:Sequence) where f.uniqueName = ${feature.uniqueName} return fl")
+//        }
+        String residues = getResidueFromFeatureLocation(featureLocation)
+        if (featureLocation.strand == Strand.NEGATIVE.value) {
             returnResidues += SequenceTranslationHandler.reverseComplementSequence(residues)
         } else {
             returnResidues += residues
         }
-//        }
-
         return returnResidues
     }
 
@@ -538,7 +539,8 @@ class SequenceService {
         // Method returns the sequence for a single feature
         // Directly called for FASTA Export
         String featureResidues = null
-        Organism organism = gbolFeature.featureLocation.to.organism
+//        Organism organism = gbolFeature.featureLocation.to.organism
+        Organism organism = Organism.executeQuery(" MATCH (f:Feature)--(s:Sequence)--(o:Organism) where f.uniqueName = ${gbolFeature.uniqueName} return o ")[0] as Organism
         TranslationTable translationTable = organismService.getTranslationTable(organism)
 
         if (type.equals(FeatureStringEnum.TYPE_PEPTIDE.value)) {
@@ -585,15 +587,19 @@ class SequenceService {
             }
         } else if (type.equals(FeatureStringEnum.TYPE_CDS.value)) {
             if (gbolFeature.instanceOf(Transcript.class) && transcriptService.isProteinCoding((Transcript) gbolFeature)) {
-                featureResidues = featureService.getResiduesWithAlterationsAndFrameshifts(transcriptService.getCDS((Transcript) gbolFeature))
+                CDS foundCDS = transcriptService.getCDS((Transcript) gbolFeature)
+                FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(foundCDS)
+                FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(gbolFeature)
+                featureResidues = featureService.getResiduesWithAlterationsAndFrameshifts(foundCDS)
                 boolean hasStopCodonReadThrough = false
-                if (cdsService.getStopCodonReadThrough(transcriptService.getCDS((Transcript) gbolFeature)).size() > 0) {
+                def stopCodonReadThroughs = cdsService.getStopCodonReadThrough(foundCDS)
+                def cdsChildren = featureRelationshipService.getChildrenForFeatureAndTypes(foundCDS)
+                if (stopCodonReadThroughs.size()>0) {
                     hasStopCodonReadThrough = true
                 }
                 String verifiedResidues = checkForInFrameStopCodon(featureResidues, 0, hasStopCodonReadThrough, translationTable)
                 featureResidues = verifiedResidues
             } else if (gbolFeature.instanceOf(Exon.class) && transcriptService.isProteinCoding(exonService.getTranscript((Exon) gbolFeature))) {
-                log.debug "Fetching CDS sequence for selected exon: ${gbolFeature}"
                 featureResidues = exonService.getCodingSequenceInPhase((Exon) gbolFeature, false)
                 boolean hasStopCodonReadThrough = false
                 def stopCodonReadThroughList = cdsService.getStopCodonReadThrough(transcriptService.getCDS(exonService.getTranscript((Exon) gbolFeature)))

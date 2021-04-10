@@ -866,6 +866,7 @@ class RequestHandlingService {
             }
             useName = jsonTranscript.has(FeatureStringEnum.USE_NAME.value) ? jsonTranscript.getBoolean(FeatureStringEnum.USE_NAME.value) : false
             Transcript transcript = featureService.generateTranscript(jsonTranscript, sequence, suppressHistory, useCDS, useName)
+            println "generated transcript ${transcript} -> ${transcript.class.name} -> ${transcript.cvTerm}"
 
             // should automatically write to history
             transcript.save(flush: true)
@@ -1021,16 +1022,22 @@ class RequestHandlingService {
     def setReadthroughStopCodon(JSONObject inputObject) {
         JSONArray features = inputObject.getJSONArray(FeatureStringEnum.FEATURES.value)
         JSONObject transcriptJSONObject = features.getJSONObject(0)
+        String uniqueName = transcriptJSONObject.getString(FeatureStringEnum.UNIQUENAME.value)
 
-        Transcript transcript = Transcript.findByUniqueName(transcriptJSONObject.getString(FeatureStringEnum.UNIQUENAME.value))
+//        Transcript transcript = Transcript.findByUniqueName(transcriptJSONObject.getString(FeatureStringEnum.UNIQUENAME.value))
+        def transcriptList = Transcript.executeQuery("MATCH (t:Transcript)-[fl:FEATURELOCATION]-(s:Sequence) where t.uniqueName=${uniqueName} return t")
+        println transcriptList
+        def transcript = FeatureTypeMapper.castNeo4jFeature(transcriptList[0])
+        log.debug "found transcript ${transcript} -> ${transcript.class.name} -> ${transcript.cvTerm} "
         JSONObject oldJsonObject = featureService.convertFeatureToJSON(transcript, false)
 
         boolean readThroughStopCodon = transcriptJSONObject.getBoolean(FeatureStringEnum.READTHROUGH_STOP_CODON.value)
+        log.debug "set readThroughStopCodon ${readThroughStopCodon}"
         featureService.calculateCDS(transcript, readThroughStopCodon);
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.WRITE)
-
+//
         featureService.addOwnersByString(inputObject.username, transcript)
-        transcript.save(flush: true)
+//        transcript.save(flush: true)
         def transcriptsToUpdate = featureService.handleDynamicIsoformOverlap(transcript)
         if (transcriptsToUpdate.size() > 0) {
             JSONObject updateFeatureContainer = jsonWebUtilityService.createJSONFeatureContainer()
@@ -2635,7 +2642,7 @@ class RequestHandlingService {
             } else if (originalType in FeatureTypeMapper.SINGLETON_FEATURE_TYPES && type in FeatureTypeMapper.RNA_FEATURE_TYPES) {
                 log.error "B Not enough information available to change ${uniqueName} from ${originalType} -> ${type}."
             } else {
-                Feature newFeature = featureService.changeAnnotationType(inputObject, feature, sequence, user, type)
+                Feature newFeature = featureService.changeAnnotationType(feature, sequence, user, type)
                 JSONObject newFeatureJsonObject = featureService.convertFeatureToJSON(newFeature)
                 log.debug "New feature json object: ${newFeatureJsonObject.toString()}"
                 JSONArray oldFeatureJsonArray = new JSONArray()
