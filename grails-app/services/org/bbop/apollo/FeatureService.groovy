@@ -204,8 +204,8 @@ class FeatureService {
 //        println "ORGANISM QUERY STRING ${queryString}"
 //        Organism organism = Organism.executeQuery(queryString)[0] as Organism
 //        Organism organism = Organism.executeQuery("MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o")[0] as Organism
-        println "organism ${organism}"
-        println "organism JSON ${organism as JSON}"
+        log.debug "organism ${organism}"
+        log.debug "organism JSON ${organism as JSON}"
 
         String neo4jFeatureString = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)\n" +
             "WHERE (o.commonName='${organism.commonName}' or o.id = ${organism.id})" +
@@ -597,8 +597,6 @@ class FeatureService {
                 log.debug "no gene, CALCULATING CDS"
                 calculateCDS(transcript, readThroughStopCodon)
                 CDS calculatedCDS = transcriptService.getCDS(transcript)
-                println "final CDS ${calculatedCDS}"
-                println "final CDS location ${calculatedCDS.featureLocation as JSON}"
                 calculatedCDS.save(flush: true)
                 calculatedCDS.featureLocation.save(flush: true)
             } else {
@@ -797,11 +795,10 @@ class FeatureService {
 
     @Transactional
     def calculateCDS(Transcript transcript, boolean readThroughStopCodon) {
-        println "calculating CDS"
         CDS cds = transcriptService.getCDS(transcript);
-        println "got CDS ${cds} from transcript ${transcript} ${readThroughStopCodon}"
+        log.debug "got CDS ${cds} from transcript ${transcript} ${readThroughStopCodon}"
         if (cds == null) {
-            println "cds is null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
+            log.debug "cds is null, so calculating longest ORF, ${transcript as JSON} , ${readThroughStopCodon}"
             setLongestORF(transcript, readThroughStopCodon);
             return;
         }
@@ -813,7 +810,7 @@ class FeatureService {
         }
         FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
         if (!manuallySetStart && !manuallySetEnd) {
-            println "no manual start ot end"
+            log.debug "no manual start ot end"
             setLongestORF(transcript, readThroughStopCodon);
         } else if (manuallySetStart) {
             setTranslationStart(transcript, cdsFeatureLocation.strand.equals(-1) ? cdsFeatureLocation.fmax - 1 : cds.fmin, true, readThroughStopCodon)
@@ -905,12 +902,8 @@ class FeatureService {
         int currentLength = 0;
         int currentCoordinate = localCoordinate;
         for (Exon exon : exons) {
-            println "exon ${exon}"
-//            println "feature location ${exon.featureLocation}"
             FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
             FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
-            println "exon feature location ${exonFeatureLocation}"
-            println "exon feature location length ${exonFeatureLocation.calculateLength()}"
 
             int exonLength = exonFeatureLocation.calculateLength()
             if (currentLength + exonLength >= localCoordinate) {
@@ -1403,7 +1396,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
     @NotTransactional
     def findLongestProtein(TranslationTable translationTable, String mrna,boolean readThroughStopCodon){
-        println "find longest protein ${mrna}"
+        log.debug "find longest protein ${mrna}"
         int startIndex
         String longestPeptide = ""
         int bestStartIndex = -1
@@ -1453,9 +1446,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
         TranslationTable translationTable = organismService.getTranslationTable(organism)
         String mrna = getResiduesWithAlterationsAndFrameshifts(transcript)
 
-        println "set longest ORF ${organism}, ${translationTable} ${mrna?.size()} -> ${mrna} and readthrough ${readThroughStopCodon}"
+        log.debug "set longest ORF ${organism}, ${translationTable} ${mrna?.size()} -> ${mrna} and readthrough ${readThroughStopCodon}"
         if (!mrna) {
-            println "mrna not found, so returning nothing"
+            log.debug "mrna not found, so returning nothing"
             return
         }
 
@@ -1476,23 +1469,21 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             bestStopIndex = bestStartIndex + (longestPeptide.length() * 3)
         }
 
-        println "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop} readThroughStop ${readThroughStopCodon}"
+        log.debug "bestStartIndex: ${bestStartIndex} bestStopIndex: ${bestStopIndex}; partialStart: ${partialStart} partialStop: ${partialStop} readThroughStop ${readThroughStopCodon}"
 
-        println "is an instance of an mRNA ${MRNA.class} ${transcript.class} -> cvTerm: ${transcript.cvTerm} ${transcript.alternateCvTerm} "
-        println "equality 2: ${transcript.instanceOf(MRNA.class)} vs ${FeatureTypeMapper.hasOntologyId(transcript.cvTerm,MRNA.cvTerm,MRNA.alternateCvTerm)}"
+        log.debug "is an instance of an mRNA ${MRNA.class} ${transcript.class} -> cvTerm: ${transcript.cvTerm} ${transcript.alternateCvTerm} "
+        log.debug "equality 2: ${transcript.instanceOf(MRNA.class)} vs ${FeatureTypeMapper.hasOntologyId(transcript.cvTerm,MRNA.cvTerm,MRNA.alternateCvTerm)}"
 
         if (FeatureTypeMapper.hasOntologyId(transcript.cvTerm,MRNA.cvTerm,MRNA.alternateCvTerm)) {
 //        if (transcript.instanceOf(MRNA.class)) {
-            println "is an MRNA version 2"
             CDS cds = transcriptService.getCDS(transcript)
-            println "cds ${cds}"
+            log.debug "cds ${cds}"
             if (cds == null) {
-                println "creating CDS "
+                log.debug "creating CDS "
                 cds = transcriptService.createCDS(transcript);
-                println "created a CDS ${cds}"
-//                println "created a CDS per location ${cds.featureLocation as JSON}"
+                log.debug "created a CDS ${cds}"
                 transcriptService.setCDS(transcript, cds);
-                println "set CDS ${cds} on transcript ${transcript}"
+                log.debug "set CDS ${cds} on transcript ${transcript}"
             }
 
             int fmin = convertModifiedLocalCoordinateToSourceCoordinate(transcript, bestStartIndex)
@@ -1550,40 +1541,24 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
             String inputQuery = "MATCH (t:Transcript)--(cds:CDS)-[fl:FEATURELOCATION]-(s) where t.uniqueName='${transcript.uniqueName}' and cds.uniqueName='${cds.uniqueName}' " +
                 " set fl.fmin=${fmin},fl.fmax=${fmax},fl.isMaxPartial=${fmaxPartial},fl.isMinPartial=${fminPartial} RETURN cds,fl "
-            println "input query"
-            println inputQuery
             def returnValue = FeatureLocation.executeUpdate(inputQuery)
-            println "${returnValue}"
-
-            // re-query CDS
-            // reload?
-//            cds = CDS.findByUniqueName(cds.uniqueName)
-
-            println "Final CDS fmin: ${cdsFeatureLocation.fmin} fmax: ${cdsFeatureLocation.fmax} for ${cds}"
-            println "setting the read through stop codon ${readThroughStopCodon}"
+            log.debug "Final CDS fmin: ${cdsFeatureLocation.fmin} fmax: ${cdsFeatureLocation.fmax} for ${cds}"
+            log.debug "setting the read through stop codon ${readThroughStopCodon}"
             cdsService.deleteStopCodonReadThrough(cds)
-            println "deleted if existing sto codon read through ${readThroughStopCodon}"
             if (readThroughStopCodon) {
-                println "deleting existing one"
                 String aa = SequenceTranslationHandler.translateSequence(getResiduesWithAlterationsAndFrameshifts(cds), translationTable, true, true);
                 int firstStopIndex = aa.indexOf(TranslationTable.STOP);
-                println "first stop index ${firstStopIndex} of ${TranslationTable.STOP} vs ${aa.length()}"
+                log.debug "first stop index ${firstStopIndex} of ${TranslationTable.STOP} vs ${aa.length()}"
                 if (firstStopIndex < aa.length() - 1) {
-                    println "first stop is less than length -1 so creating the stop codon read through "
+                    log.debug "first stop is less than length -1 so creating the stop codon read through "
                     StopCodonReadThrough stopCodonReadThrough = cdsService.createStopCodonReadOnCDS(cds);
-//                    StopCodonReadThrough stopCodonReadThrough = cdsService.createStopCodonReadThrough(cds);
-//                    cdsService.setStopCodonReadThrough(cds, stopCodonReadThrough)
 
-                    println "it is now set ${stopCodonReadThrough}"
-                    println "retrieving ${cdsService.getStopCodonReadThrough(cds)}"
+                    log.debug "retrieving ${cdsService.getStopCodonReadThrough(cds)}"
 
                     int offset = transcriptFeatureLocation.strand == -1 ? -2 : 0;
                     setFmin(stopCodonReadThrough, convertModifiedLocalCoordinateToSourceCoordinate(cds, firstStopIndex * 3) + offset);
                     setFmax(stopCodonReadThrough, convertModifiedLocalCoordinateToSourceCoordinate(cds, firstStopIndex * 3) + 3 + offset);
                 }
-            }
-            else {
-                println "no read through stop codon so not adding it back"
             }
             cdsService.setManuallySetTranslationStart(cds, false);
             cdsService.setManuallySetTranslationEnd(cds, false);
@@ -4124,7 +4099,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 transcript = addFeature(currentFeatureJsonObject, sequence, user, true)
                 setLongestORF(transcript)
             }
-            println "generated transcript for ${type} of class ${transcript.class.name} ${transcript.cvTerm}"
+            log.debug "generated transcript for ${type} of class ${transcript.class.name} ${transcript.cvTerm}"
 
             Gene newGene = transcriptService.getGene(transcript)
             newGene.symbol = parentGeneSymbol

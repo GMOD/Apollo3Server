@@ -285,7 +285,7 @@ class SequenceController {
     @Transactional
     String sequenceByName(String organismString, String sequenceName, String featureName, String type) {
 
-        println "getting sequence by name"
+        log.debug "getting sequence by name"
         Boolean ignoreCache = params.ignoreCache != null ? Boolean.valueOf(params.ignoreCache) : false
         Map paramMap = new TreeMap<>()
         paramMap.put("name", featureName)
@@ -300,10 +300,10 @@ class SequenceController {
         }
 
         def feature = FeatureTypeMapper.castNeo4jFeature(Feature.executeQuery("MATCH (f:Feature) where f.uniqueName = ${featureName} return f")[0])
-        println "retrieving feature ${feature}"
+        log.debug "retrieving feature ${feature}"
         if (!feature) {
             def features = Feature.findAllByName(featureName)
-            println "found by features ${features}"
+            log.debug "found by features ${features}"
 
             for (int i = 0; i < features.size() && !feature; i++) {
                 Feature f = features.get(i)
@@ -317,9 +317,9 @@ class SequenceController {
         }
 
         if (feature) {
-            println "feature found ${feature} for type ${type}"
+            log.debug "feature found ${feature} for type ${type}"
             String sequenceString = sequenceService.getSequenceForFeature(feature, type)
-            println "sequence string returned '${sequenceString}'"
+            log.debug "sequence string returned '${sequenceString}'"
             if(sequenceString?.trim()){
                 render sequenceString
                 sequenceService.cacheRequest(sequenceString, organismString, sequenceName, featureName, type, paramMap)

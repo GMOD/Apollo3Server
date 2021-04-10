@@ -55,20 +55,16 @@ class TranscriptService {
     }
 
     Collection<Exon> getSortedExons(Transcript transcript, boolean sortByStrand) {
-//        Collection<Exon> exons = getExons(transcript)
         String queryString = "MATCH (t:Transcript)-[]->(exon:Exon)-[fl:FEATURELOCATION]-(s:Sequence) " +
                 "where t.uniqueName = '${transcript.uniqueName}' return exon order by fl.fmin, fl.fmax" +
                 " ${sortByStrand ? ', fl.strand': ''}"
-        println "query String: ${queryString}"
 //        def exonsList =  Exon.executeQuery("MATCH (t:Transcript)-[]->(exon:Exon)-[fl:FEATURELOCATION]-(s:Sequence) " +
 //                "where t.uniqueName = '${transcript.uniqueName}' return exon order by fl.fmin, fl.fmax ${sortByStrand ? ', fl.strand': ''}")
         def exonsList =  Exon.executeQuery(queryString)
-        println "# of exons ${exonsList.size()}"
         List<Exon> sortedExons = new ArrayList<Exon>();
         exonsList.each {
             sortedExons.add(it as Exon)
         }
-//        Collections.sort(sortedExons, new FeaturePositionComparator<Exon>(sortByStrand))
         return sortedExons
     }
 

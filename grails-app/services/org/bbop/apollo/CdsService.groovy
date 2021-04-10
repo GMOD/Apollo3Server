@@ -103,14 +103,13 @@ class CdsService {
     }
 
     StopCodonReadThrough createStopCodonReadOnCDS(CDS cds) {
-        println "createing stop codon readthrough ${cds}"
+        log.debug "createing stop codon readthrough ${cds}"
         FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
         String uniqueName = cds.getUniqueName() + FeatureStringEnum.STOP_CODON_READHTHROUGH_SUFFIX.value;
         StopCodonReadThrough stopCodonReadThrough = new StopCodonReadThrough(
                 uniqueName: uniqueName
                 ,name: uniqueName
         ).save(failOnError: true)
-        println "B"
         FeatureLocation featureLocation = new FeatureLocation(
                 to: cdsFeatureLocation.to
                 , from: stopCodonReadThrough
@@ -118,15 +117,11 @@ class CdsService {
                 ,fmax: cdsFeatureLocation.fmax
                 ,strand: cdsFeatureLocation.strand
         ).save(failOnError: true)
-        println "C"
 
         stopCodonReadThrough.setFeatureLocation(featureLocation)
-        println "D"
         stopCodonReadThrough.save(fllush:true)
-        println "E"
 
         featureRelationshipService.setChildForType(cds,stopCodonReadThrough)
-        println "F"
 
         FeatureRelationship fr = new FeatureRelationship(
                 from: cds
@@ -136,77 +131,12 @@ class CdsService {
         cds.addToParentFeatureRelationships(fr);
         stopCodonReadThrough.addToChildFeatureRelationships(fr)
 
-        println "G"
-
         stopCodonReadThrough.save(failOnError: true)
         cds.save(flush: true,failOnError: true)
-        println "H"
         def returnedStopCodonReadThrough = getStopCodonReadThrough(cds)
-        println "returnedStopCodonReadThrough ${returnedStopCodonReadThrough}"
-
-
+        log.debug "returnedStopCodonReadThrough ${returnedStopCodonReadThrough}"
 
         return stopCodonReadThrough
-    }
-
-
-    /**
-     * @deprecated
-     * @param cds
-     * @return
-     */
-    StopCodonReadThrough createStopCodonReadThrough(CDS cds) {
-        println "createing stop codon readthrough ${cds}"
-        FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
-        String uniqueName = cds.getUniqueName() + FeatureStringEnum.STOP_CODON_READHTHROUGH_SUFFIX.value;
-        StopCodonReadThrough stopCodonReadThrough = new StopCodonReadThrough(
-                uniqueName: uniqueName
-                ,name: uniqueName
-        ).save(failOnError: true,flush: true)
-        FeatureLocation featureLocation = new FeatureLocation(
-                to: cdsFeatureLocation.to
-                , from: stopCodonReadThrough
-                ,fmin: cdsFeatureLocation.fmin
-                ,fmax: cdsFeatureLocation.fmax
-                ,strand: cdsFeatureLocation.strand
-        ).save(failOnError: true,flush: true)
-
-        // explicitly set this?
-
-        stopCodonReadThrough.setFeatureLocation(featureLocation)
-//        stopCodonReadThrough.featureLocation.setStrand(cds.getStrand());
-
-        stopCodonReadThrough.save(flush: true)
-
-        def stopCodonsLinked = StopCodonReadThrough.executeQuery(" MATCH (  sc:StopCodonReadThrough )- [fl:FEATURELOCATION] - (s:Sequence) where sc.uniqueName = ${uniqueName}  return sc,fl,s")
-        println("stop codons linked ${stopCodonsLinked}")
-        def stopCodonsUnlinked = StopCodonReadThrough.executeQuery(" MATCH (  sc:StopCodonReadThrough ) where sc.uniqueName = ${uniqueName}  return sc")
-        println("stop codons un-linked ${stopCodonsUnlinked}")
-
-        return stopCodonReadThrough;
-    }
-
-    /**
-     * @deprecated
-     * @param cds
-     * @return
-     */
-    def setStopCodonReadThrough(CDS cds, StopCodonReadThrough stopCodonReadThrough, boolean replace = true) {
-        if (replace) {
-            featureRelationshipService.setChildForType(cds,stopCodonReadThrough)
-        }
-
-        FeatureRelationship fr = new FeatureRelationship(
-                from: cds
-                , to: stopCodonReadThrough
-                , rank: 0 // TODO: Do we need to rank the order of any other transcripts?
-        ).save(insert: true,failOnError: true)
-        cds.addToParentFeatureRelationships(fr);
-        stopCodonReadThrough.addToChildFeatureRelationships(fr)
-
-        stopCodonReadThrough.save(failOnError: true)
-        cds.save(flush: true,failOnError: true)
-
     }
 
     def hasStopCodonReadThrough(CDS cds) {
@@ -224,8 +154,6 @@ class CdsService {
             }
             FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
             FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(cds)
-            println "exon feature location ${exonFeatureLocation}"
-            println "cds feature location ${cdsFeatureLocation}"
             int fmin = exonFeatureLocation.fmin < cdsFeatureLocation.fmin ? cdsFeatureLocation.fmin : exonFeatureLocation.fmin
             int fmax = exonFeatureLocation.fmax > cdsFeatureLocation.fmax ? cdsFeatureLocation.fmax : exonFeatureLocation.fmax
             int localStart
