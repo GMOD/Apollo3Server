@@ -77,7 +77,19 @@ class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
 
         given: "a gene model with 1 mRNA, 3 exons, and UTRs"
         setup()
-        String jsonString = "{ ${testCredentials} \"operation\":\"add_transcript\",\"features\":[{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":735570},\"name\":\"GB40828-RA\",\"children\":[{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734733},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":735446,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734766},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734930,\"strand\":1,\"fmax\":735014},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":735245,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}},{\"location\":{\"fmin\":734733,\"strand\":1,\"fmax\":735446},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}],\"track\":\"Group1.10\"}"
+        String jsonString = "{" +
+                " ${testCredentials} \"operation\":\"add_transcript\"" +
+                ",\"features\":[" +
+                    "{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":735570},\"name\":\"GB40828-RA\"," +
+                "\"children\":[" +
+//                    "{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734733},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}" +
+                    ",{\"location\":{\"fmin\":734606,\"strand\":1,\"fmax\":734766},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}" +
+                ",{\"location\":{\"fmin\":735245,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}" +
+                ",{\"location\":{\"fmin\":735446,\"strand\":1,\"fmax\":735570},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}" +
+                ",{\"location\":{\"fmin\":734733,\"strand\":1,\"fmax\":735446},\"type\":{\"name\":\"CDS\",\"cv\":{\"name\":\"sequence\"}}}" +
+                ",{\"location\":{\"fmin\":734930,\"strand\":1,\"fmax\":735014},\"type\":{\"name\":\"exon\",\"cv\":{\"name\":\"sequence\"}}}" +
+                "],\"type\":{\"name\":\"mRNA\",\"cv\":{\"name\":\"sequence\"}}}" +
+                "],\"track\":\"Group1.10\"}"
         JSONObject jsonObject = JSON.parse(jsonString) as JSONObject
 
         when: "gene model is added"
