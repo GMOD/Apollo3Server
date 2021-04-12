@@ -1939,8 +1939,10 @@ class RequestHandlingService {
 
         JSONArray features = inputObject.getJSONArray(FeatureStringEnum.FEATURES.value)
         JSONObject jsonTranscript = features.getJSONObject(0)
+        println "sequence ${sequence} -> features ${features as JSON}"
 
         Transcript transcript = Transcript.findByUniqueName(jsonTranscript.getString(FeatureStringEnum.UNIQUENAME.value));
+        println "transcript found ${transcript}"
         featureService.addOwnersByString(inputObject.username, transcript)
         for (int i = 1; i < features.length(); ++i) {
             JSONObject jsonExon = features.getJSONObject(i)

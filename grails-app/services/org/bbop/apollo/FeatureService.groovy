@@ -198,23 +198,26 @@ class FeatureService {
 //        }
 //        log.debug "output overlapping features ${features}"
 
+        println "location: ${location}"
+        println "sequence: ${location.to}"
+        println "feature: ${location.from}"
 
-        Organism organism = location.to.organism
-//        String queryString = "MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o"
+//        Organism organism = location.to.organism
+        String queryString = "MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o"
 //        println "ORGANISM QUERY STRING ${queryString}"
-//        Organism organism = Organism.executeQuery(queryString)[0] as Organism
+        Organism organism = Organism.executeQuery(queryString)[0] as Organism
 //        Organism organism = Organism.executeQuery("MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o")[0] as Organism
-        log.debug "organism ${organism}"
-        log.debug "organism JSON ${organism as JSON}"
+        println "organism ${organism}"
+        println "organism JSON ${organism as JSON}"
 
         String neo4jFeatureString = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)\n" +
             "WHERE (o.commonName='${organism.commonName}' or o.id = ${organism.id})" +
             (compareStrands ? " AND fl.strand = ${location.strand} " : "") +
             " AND ( (fl.fmin <= ${location.fmin} AND fl.fmax > ${location.fmax}) OR ( fl.fmin <= ${location.fmax} AND fl.fmax >=${location.fmax} ) OR ( fl.fmin >=${location.fmax} AND fl.fmax <= ${location.fmax} ) )" +
             "RETURN f"
-        log.debug "neo4j String ${neo4jFeatureString}"
+        println "neo4j String ${neo4jFeatureString}"
         def neo4jFeatures = Feature.executeQuery(neo4jFeatureString)
-        log.debug "neo4j output features ${neo4jFeatures}"
+        println "neo4j output features ${neo4jFeatures}"
 
         List<Feature> features = new ArrayList<>()
         neo4jFeatures.each {
