@@ -2373,27 +2373,27 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
      * @return
      */
     JSONObject convertNeo4jFeatureToJSON(def neo4jObject, boolean includeSequence = false) {
-//        log.debug "converting features to json ${neo4jObject}"
+        println "converting features to json ${neo4jObject}"
         def neo4jFeature = neo4jObject.feature
-//        log.debug "feature ${neo4jFeature} "
-//        log.debug "feature as JSON ${neo4jFeature} "
+        println "feature ${neo4jFeature} "
+        println "feature as JSON ${neo4jFeature} "
         def neo4jLocation = neo4jObject.location
-//        log.debug "locaitons ${neo4jLocation} "
+        println "locaitons ${neo4jLocation} "
         def neo4jOwners = neo4jObject.owners
-//        log.debug "owners ${neo4jOwners} "
+        println "owners ${neo4jOwners} "
         def neo4jSequence = neo4jObject.sequence
 
         def neo4jChildren = neo4jObject.children
-//        log.debug "children ${neo4jChildren} "
+        println "children ${neo4jChildren} "
 
         def neo4jParent = neo4jObject.parent
-//        log.debug "parent ${neo4jParent} "
+        println "parent ${neo4jParent} "
 
 
         JSONObject jsonFeature = new JSONObject()
-//        log.debug "ID ${neo4jFeature.id()}"
-//        log.debug "labels ${neo4jFeature.labels().join(",")}"
-//        log.debug "keys ${neo4jFeature.keys().join(",")}"
+        println "ID ${neo4jFeature.id()}"
+        println "labels ${neo4jFeature.labels().join(",")}"
+        println "keys ${neo4jFeature.keys().join(",")}"
         if (neo4jFeature.id() != null) {
             jsonFeature.put(FeatureStringEnum.ID.value, neo4jFeature.id())
         }
@@ -2463,8 +2463,11 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
 
         durationInMilliseconds = System.currentTimeMillis() - start;
-//        log.debug"has a child ${neo4jChildren} . . ${neo4jChildren == null} ${neo4jChildren[0].feature}"
-        if (neo4jChildren != null && neo4jChildren[0].feature != null) {
+        println "neo4j children: ${neo4jChildren}"
+        println "neo4j children as JSON : ${neo4jChildren as JSON}"
+        println "has a child ${neo4jChildren} . . ${neo4jChildren == null} "
+//        if (neo4jChildren != null && neo4jChildren[0].feature != null) {
+        if (neo4jChildren != null ) {
 //            log.debug "finding children"
             JSONArray children = new JSONArray();
             jsonFeature.put(FeatureStringEnum.CHILDREN.value, children);

@@ -734,19 +734,23 @@ class RequestHandlingService {
 //            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
 //            "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child}), " +
 //            "owners: collect(distinct u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
-        log.debug "query output: ${query}"
+        println "query output: ${query}"
         def nodes = Feature.executeQuery(query).unique()
-        log.debug "actual returned nodes ${nodes} ${nodes.size()}"
+        println "actual returned nodes ${nodes} ${nodes.size()}"
+        println "return josn ${nodes as JSON}"
 //
 //
         JSONArray jsonFeatures = new JSONArray()
         nodes.each{
-            log.debug "forist node ${it} "
-            log.debug "class of it ${it.getClass()}"
+            println "forist node ${it} "
+            println "class of it ${it.getClass()}"
 //            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
 //        features.each { feature ->
 //            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
-            JSONObject jsonObject = featureService.convertNeo4jFeatureToJSON(it, false)
+//            JSONObject jsonObject = featureService.convertNeo4jFeatureToJSON(it, false)
+//            JSONObject jsonObject = featureService.convertNeo4jFeatureToJSON(it, false)
+            def feature = it.feature as Feature
+            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
             jsonFeatures.put(jsonObject)
         }
 //

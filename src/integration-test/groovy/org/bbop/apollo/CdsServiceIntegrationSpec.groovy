@@ -21,7 +21,9 @@ import org.bbop.apollo.user.Role
 import org.bbop.apollo.user.User
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
+import spock.lang.Ignore
 
+@Ignore
 @Integration
 @Rollback
 class CdsServiceIntegrationSpec extends AbstractIntegrationSpec{
