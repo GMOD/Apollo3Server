@@ -90,20 +90,32 @@ class ExonService {
     @Transactional
     void deleteExon(Transcript transcript, Exon exon) {
         // update transcript boundaries if necessary
-        if (exon.getFmin().equals(transcript.getFmin())) {
+        FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
+        FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
+        def exonFeatureLocationList2 = FeatureLocation.executeQuery("MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = ${exon.uniqueName} return fl")
+        println "exon FL list 2 ${exonFeatureLocationList2}"
+        def exonFeatureLocation2 = exonFeatureLocationList2[0] as FeatureLocation
+        println "exon FL 2 ${exonFeatureLocation2}"
+        println "delete exon ${transcript} -> ${exon}"
+        println "featureLocations ${transcriptFeatureLocation} -> ${exonFeatureLocation}"
+        if (exonFeatureLocation.getFmin().equals(transcriptFeatureLocation.getFmin())) {
             int fmin = Integer.MAX_VALUE;
             for (Exon e : transcriptService.getExons(transcript)) {
-                if (e.getFmin() < fmin) {
-                    fmin = e.getFmin();
+                println "exon ${exon}"
+                FeatureLocation exonFl = FeatureLocation.findByFrom(exon)
+                println "exon ${exonFl}"
+                if (exonFl.getFmin() < fmin) {
+                    fmin = exonFl.getFmin();
                 }
             }
             transcriptService.setFmin(transcript,fmin);
         }
-        if (exon.getFmax().equals(transcript.getFmax())) {
+        if (exonFeatureLocation.fmax.equals(transcriptFeatureLocation.fmax)) {
             int fmax = Integer.MIN_VALUE;
             for (Exon e : transcriptService.getExons(transcript)) {
-                if (e.getFmax() > fmax) {
-                    fmax = e.getFmax();
+                FeatureLocation exonFl = FeatureLocation.findByFrom(exon)
+                if (exonFl.getFmax() > fmax) {
+                    fmax = exonFl.getFmax();
                 }
             }
             transcriptService.setFmax(transcript,fmax);
@@ -111,7 +123,7 @@ class ExonService {
         // update gene boundaries if necessary
         transcriptService.updateGeneBoundaries(transcript);
 
-        transcript.save(flush: true)
+//        transcript.save(flush: true)
 
         FeatureLocation.executeUpdate("MATCH (e:Exon {uniqueName : ${exon.uniqueName}} )-[r]-(parent) delete e,r")
 //        transcript.save(flush: true)

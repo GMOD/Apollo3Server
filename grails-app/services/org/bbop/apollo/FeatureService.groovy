@@ -202,10 +202,10 @@ class FeatureService {
         println "sequence: ${location.to}"
         println "feature: ${location.from}"
 
-//        Organism organism = location.to.organism
-        String queryString = "MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o"
+        Organism organism = location.to.organism
+//        String queryString = "MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o"
 //        println "ORGANISM QUERY STRING ${queryString}"
-        Organism organism = Organism.executeQuery(queryString)[0] as Organism
+//        Organism organism = Organism.executeQuery(queryString)[0] as Organism
 //        Organism organism = Organism.executeQuery("MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o")[0] as Organism
         println "organism ${organism}"
         println "organism JSON ${organism as JSON}"
@@ -1958,14 +1958,18 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
 
+    @Deprecated
     @Transactional
     def setFmin(Feature feature, int fmin) {
-        feature.getFeatureLocation().setFmin(fmin);
+        FeatureLocation featureLocation = FeatureLocation.findByFrom(feature)
+        featureLocation.setFmin(fmin);
     }
 
+    @Deprecated
     @Transactional
     def setFmax(Feature feature, int fmax) {
-        feature.getFeatureLocation().setFmax(fmax);
+        FeatureLocation featureLocation = FeatureLocation.findByFrom(feature)
+        featureLocation.setFmax(fmax);
     }
 
     /** Convert source feature coordinate to local coordinate.
@@ -3271,7 +3275,11 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     def handleDynamicIsoformOverlap(Transcript transcript) {
         // Get all transcripts that overlap transcript and verify if they have the proper parent gene assigned
         ArrayList<Transcript> transcriptsToUpdate = new ArrayList<Transcript>()
+        println "handling dynamic isoform overlap"
+        println transcript
         List<Transcript> allOverlappingTranscripts = getOverlappingTranscripts(transcript)
+        println "allOverlappingTranscripts"
+        println allOverlappingTranscripts
         List<Transcript> allTranscriptsForCurrentGene = transcriptService.getTranscripts(transcriptService.getGene(transcript))
         List<Transcript> allTranscripts = (allOverlappingTranscripts + allTranscriptsForCurrentGene).unique()
         List<Transcript> allSortedTranscripts
@@ -3525,7 +3533,10 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
     def getOverlappingTranscripts(Transcript transcript) {
+        println "getting overlapping transcript ${transcript}"
         FeatureLocation featureLocation = FeatureLocation.executeQuery("MATCH (t:Transcript)-[fl:FEATURELOCATION]-(s:Sequence) where t.uniqueName = ${transcript.uniqueName} return fl ")[0] as FeatureLocation
+//        println "feature location returned ${featureLocation}"
+//        println "is FL on transcript ?  ${transcript.featureLocation} ? "
         ArrayList<Transcript> overlappingTranscripts = getOverlappingTranscripts(featureLocation)
         overlappingTranscripts.remove(transcript) // removing itself
         ArrayList<Transcript> transcriptsWithOverlapCriteria = new ArrayList<Transcript>()
