@@ -736,43 +736,16 @@ class RequestHandlingService {
 //            "owners: collect(distinct u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
         println "query output: ${query}"
         def nodes = Feature.executeQuery(query).unique()
-        println "actual returned nodes ${nodes} ${nodes.size()}"
-        println "return josn ${nodes as JSON}"
+        log.debug "actual returned nodes ${nodes} ${nodes.size()}"
+        log.debug "return json ${nodes as JSON}"
 //
 //
         JSONArray jsonFeatures = new JSONArray()
         nodes.each{
-            println "forist node ${it} "
-            println "class of it ${it.getClass()}"
-//            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
-//        features.each { feature ->
-//            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
-//            JSONObject jsonObject = featureService.convertNeo4jFeatureToJSON(it, false)
-//            JSONObject jsonObject = featureService.convertNeo4jFeatureToJSON(it, false)
             def feature = it.feature as Feature
             JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
             jsonFeatures.put(jsonObject)
         }
-//
-//        println "output size ${nodes.size()}"
-//        println "lazy returned features ${nodes as JSON}"
-//        inputObject.put(AnnotationEditorController.REST_FEATURES, jsonFeatures)
-//        log.debug "getFeatures ${System.currentTimeMillis() - start}ms"
-//        return inputObject
-
-//        def features = Feature.createCriteria().listDistinct {
-////            eq('featureLocation.sequence', sequence)
-////            'in'('class', viewableAnnotationTranscriptList + viewableAnnotationFeatureList + viewableSequenceAlterationList)
-//        }
-
-//        Feature.join()
-
-
-//        JSONArray jsonFeatures = new JSONArray()
-//        features.each { feature ->
-//            JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
-//            jsonFeatures.put(jsonObject)
-//        }
 
         inputObject.put(AnnotationEditorController.REST_FEATURES, jsonFeatures)
         log.debug "getFeatures ${System.currentTimeMillis() - start}ms"
@@ -1375,8 +1348,11 @@ class RequestHandlingService {
             returnString = returnString.substring(1, returnString.length() - 1)
         }
         try {
-            brokerMessagingTemplate.convertAndSend "/topic/AnnotationNotification/" + sequence.organism.id+ "/" + sequence.id, returnString
+            Organism organism = Organism.executeQuery(" MATCH (s:Sequence)--(o:Organism) where s.id=${sequence.id} return o")[0] as Organism
+            brokerMessagingTemplate.convertAndSend "/topic/AnnotationNotification/" + organism.id+ "/" + sequence.id, returnString
         } catch (e) {
+            log.error("sequence: ${sequence}")
+            log.error("organism: ${organism}")
             log.error("problem sending message: ${e}")
         }
     }
@@ -1939,8 +1915,10 @@ class RequestHandlingService {
 
         JSONArray features = inputObject.getJSONArray(FeatureStringEnum.FEATURES.value)
         JSONObject jsonTranscript = features.getJSONObject(0)
+        println "sequence ${sequence} -> features ${features as JSON}"
 
         Transcript transcript = Transcript.findByUniqueName(jsonTranscript.getString(FeatureStringEnum.UNIQUENAME.value));
+        println "transcript found ${transcript}"
         featureService.addOwnersByString(inputObject.username, transcript)
         for (int i = 1; i < features.length(); ++i) {
             JSONObject jsonExon = features.getJSONObject(i)
