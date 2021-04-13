@@ -15,7 +15,7 @@ import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import java.util.zip.GZIPOutputStream;
 
 
-public class FastaHandlerService {
+class FastaHandlerService {
 
     private File file;
     private PrintWriter out;
@@ -26,12 +26,12 @@ public class FastaHandlerService {
     def transcriptService
     def featurePropertyService
 
-    public enum Mode {
+    enum Mode {
         READ,
         WRITE
     }
     
-    public enum Format {
+    enum Format {
         TEXT,
         GZIP
     }
