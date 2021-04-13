@@ -29,7 +29,6 @@ class IOServiceController extends AbstractApolloController {
     def chadoHandlerService
     def permissionService
     def configWrapperService
-    def requestHandlingService
     def vcfHandlerService
     def trackService
     def fileService
@@ -42,10 +41,9 @@ class IOServiceController extends AbstractApolloController {
 
     def index() {}
 
-    def handleOperation(String track, String operation) {
+    def handleOperation(String operation) {
         log.debug "Requested parameterMap: ${request.parameterMap.keySet()}"
         log.debug "upstream params: ${params}"
-        JSONObject postObject = findPost()
         def mappedAction = underscoreToCamelCase(operation)
         forward action: "${mappedAction}", params: params
     }

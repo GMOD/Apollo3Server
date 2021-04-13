@@ -16,7 +16,6 @@ import org.bbop.apollo.sequence.Strand
 @Transactional(readOnly = true)
 class ExonService {
 
-//    CvTermService cvTermService
     def transcriptService
     def featureService
     def featureRelationshipService
@@ -30,7 +29,7 @@ class ExonService {
      *
      * @return Transcript that this Exon is associated with
      */
-    public Transcript getTranscript(Exon exon) {
+    Transcript getTranscript(Exon exon) {
 
         // this could be for any transcript, though
         return (Transcript) featureRelationshipService.getParentForFeature(exon,transcriptService.transcriptOntologyIds as String[])
