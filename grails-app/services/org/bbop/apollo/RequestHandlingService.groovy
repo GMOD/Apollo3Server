@@ -734,16 +734,16 @@ class RequestHandlingService {
 //            "WHERE (o.id=${sequence.organism.id} or o.commonName='${sequence.organism.commonName}') and s.name = '${sequence.name}'\n"  +
 //            "RETURN {sequence: s,feature: f,location: fl,children: collect(DISTINCT {location: cl,r1: fr,feature: child}), " +
 //            "owners: collect(distinct u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
-        println "query output: ${query}"
+        log.debug "query output: ${query}"
         def nodes = Feature.executeQuery(query).unique()
-        println "actual returned nodes ${nodes} ${nodes.size()}"
-        println "return json ${nodes as JSON}"
+        log.debug "actual returned nodes ${nodes} ${nodes.size()}"
+        log.debug "return json ${nodes as JSON}"
 //
 //
         JSONArray jsonFeatures = new JSONArray()
         nodes.each{
-            println "forist node ${it} "
-            println "class of it ${it.getClass()}"
+//            println "forist node ${it} "
+//            println "class of it ${it.getClass()}"
             def feature = it.feature as Feature
             JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
             jsonFeatures.put(jsonObject)
@@ -845,7 +845,7 @@ class RequestHandlingService {
             }
             useName = jsonTranscript.has(FeatureStringEnum.USE_NAME.value) ? jsonTranscript.getBoolean(FeatureStringEnum.USE_NAME.value) : false
             Transcript transcript = featureService.generateTranscript(jsonTranscript, sequence, suppressHistory, useCDS, useName)
-            println "generated transcript ${transcript} -> ${transcript.class.name} -> ${transcript.cvTerm}"
+            log.debug "generated transcript ${transcript} -> ${transcript.class.name} -> ${transcript.cvTerm}"
 
             // should automatically write to history
             transcript.save(flush: true)
@@ -1005,7 +1005,6 @@ class RequestHandlingService {
 
 //        Transcript transcript = Transcript.findByUniqueName(transcriptJSONObject.getString(FeatureStringEnum.UNIQUENAME.value))
         def transcriptList = Transcript.executeQuery("MATCH (t:Transcript)-[fl:FEATURELOCATION]-(s:Sequence) where t.uniqueName=${uniqueName} return t")
-        println transcriptList
         def transcript = FeatureTypeMapper.castNeo4jFeature(transcriptList[0])
         log.debug "found transcript ${transcript} -> ${transcript.class.name} -> ${transcript.cvTerm} "
         JSONObject oldJsonObject = featureService.convertFeatureToJSON(transcript, false)
@@ -1918,10 +1917,10 @@ class RequestHandlingService {
 
         JSONArray features = inputObject.getJSONArray(FeatureStringEnum.FEATURES.value)
         JSONObject jsonTranscript = features.getJSONObject(0)
-        println "sequence ${sequence} -> features ${features as JSON}"
+        log.debug "sequence ${sequence} -> features ${features as JSON}"
 
         Transcript transcript = Transcript.findByUniqueName(jsonTranscript.getString(FeatureStringEnum.UNIQUENAME.value));
-        println "transcript found ${transcript}"
+        log.debug "transcript found ${transcript}"
         featureService.addOwnersByString(inputObject.username, transcript)
         for (int i = 1; i < features.length(); ++i) {
             JSONObject jsonExon = features.getJSONObject(i)
