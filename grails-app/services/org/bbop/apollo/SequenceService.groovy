@@ -588,12 +588,9 @@ class SequenceService {
         } else if (type.equals(FeatureStringEnum.TYPE_CDS.value)) {
             if (gbolFeature.instanceOf(Transcript.class) && transcriptService.isProteinCoding((Transcript) gbolFeature)) {
                 CDS foundCDS = transcriptService.getCDS((Transcript) gbolFeature)
-                FeatureLocation cdsFeatureLocation = FeatureLocation.findByFrom(foundCDS)
-                FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(gbolFeature)
                 featureResidues = featureService.getResiduesWithAlterationsAndFrameshifts(foundCDS)
                 boolean hasStopCodonReadThrough = false
                 def stopCodonReadThroughs = cdsService.getStopCodonReadThrough(foundCDS)
-                def cdsChildren = featureRelationshipService.getChildrenForFeatureAndTypes(foundCDS)
                 if (stopCodonReadThroughs.size()>0) {
                     hasStopCodonReadThrough = true
                 }
@@ -622,25 +619,29 @@ class SequenceService {
                 featureResidues = ""
             }
         } else if (type.equals(FeatureStringEnum.TYPE_GENOMIC.value)) {
-            int fmin = gbolFeature.getFmin() - flank
-            int fmax = gbolFeature.getFmax() + flank
+            FeatureLocation featureLocation = FeatureLocation.findByFrom(gbolFeature)
+            int fmin = featureLocation.fmin  - flank
+            int fmax = featureLocation.fmax + flank
+//            // TODO: should be form the same query
+//            Sequence sequence = Sequence.executeQuery(" MATCH (f:Feature)--(s:Sequence)--(o:Organism) where f.uniqueName = ${gbolFeature.uniqueName} return o ")[0] as Organism
+            Sequence sequence = featureLocation.to
 
             if (flank > 0) {
                 if (fmin < 0) {
                     fmin = 0
                 }
-                if (fmin < gbolFeature.getFeatureLocation().sequence.start) {
-                    fmin = gbolFeature.getFeatureLocation().sequence.start
+                if (fmin < sequence.start) {
+                    fmin = sequence.start
                 }
-                if (fmax > gbolFeature.getFeatureLocation().sequence.length) {
-                    fmax = gbolFeature.getFeatureLocation().sequence.length
+                if (fmax > sequence.length) {
+                    fmax = sequence.length
                 }
-                if (fmax > gbolFeature.getFeatureLocation().sequence.end) {
-                    fmax = gbolFeature.getFeatureLocation().sequence.end
+                if (fmax > sequence.end) {
+                    fmax = sequence.end
                 }
 
             }
-            featureResidues = getGenomicResiduesFromSequenceWithAlterations(gbolFeature.featureLocation.to, fmin, fmax, Strand.getStrandForValue(gbolFeature.strand))
+            featureResidues = getGenomicResiduesFromSequenceWithAlterations(sequence, fmin, fmax, Strand.getStrandForValue(featureLocation.strand))
         }
         return featureResidues
     }
