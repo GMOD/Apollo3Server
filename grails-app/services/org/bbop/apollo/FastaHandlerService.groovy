@@ -78,15 +78,22 @@ class FastaHandlerService {
         if (mode != Mode.WRITE) {
             throw new IOException("Cannot write to file in READ mode");
         }
+        println "inputing features"
         while (iterator.hasNext()) {
             Feature feature = iterator.next();
+            println "doing feature"
+            println "feature ${feature}"
+            println "feature class name ${feature.class.name}"
             if(feature.class.name in [Gene.class.name, Pseudogene.class.name, PseudogenicRegion.class.name, ProcessedPseudogene.class.name]) {
+                println "is in feature"
                 def transcriptList = transcriptService.getTranscripts(feature)
+                println "transcript list ${transcriptList}"
                 for (Transcript transcript in transcriptList) {
                     writeFeature(transcript, seqType, metaDataToExport);
                 }
             }
             else {
+                println "write feature"
                 writeFeature(feature, seqType, metaDataToExport)
             }
         }

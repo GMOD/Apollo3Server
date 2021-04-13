@@ -100,7 +100,7 @@ class IOServiceController extends AbstractApolloController {
 
             def st = System.currentTimeMillis()
             def queryParams = [organism: organism]
-            def features
+            def features = []
 
             if (exportAllSequences) {
                 sequences = []
@@ -179,20 +179,26 @@ class IOServiceController extends AbstractApolloController {
                 println sequenceString
 
                 // TODO: note that "type" is being passed in for debugging only
-                String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Transcript), " +
-                    "(f)-[owner:OWNERS]-(u) " +
+//                String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Transcript), " +
+//                    "(f)-[owner:OWNERS]-(u) " +
+//                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}') " + (sequences ? "and s.name in ${sequenceString} " : " ")  +
+//                    "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Gene)-[gfr]->(f) " +
+//                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}') " + (sequences ? "and s.name in ${sequenceString} " : " ")  +
+//                    "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature)-[pl2:FEATURELOCATION]-(s) " +
+//                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}') " + (sequences ? "and s.name in ${sequenceString} " : " ")  +
+//                    "RETURN f"
+//                "RETURN {type: labels(f),sequence: s,feature: f,location: fl,children: collect(DISTINCT {type: labels(child), location: pl2,r1: fr,feature: child,sequence: s}), " +
+//                        "owners: collect(distinct u),parent: { type: labels(parent), location: pl,r2:gfr,feature:parent }}"
+
+                String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(g:Gene), " +
+                    "(g)-[owner:OWNERS]-(u) " +
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}') " + (sequences ? "and s.name in ${sequenceString} " : " ")  +
-                    "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Gene)-[gfr]->(f) " +
-                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}') " + (sequences ? "and s.name in ${sequenceString} " : " ")  +
-                    "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature)-[pl2:FEATURELOCATION]-(s) " +
-                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}') " + (sequences ? "and s.name in ${sequenceString} " : " ")  +
-                    "RETURN {type: labels(f),sequence: s,feature: f,location: fl,children: collect(DISTINCT {type: labels(child), location: pl2,r1: fr,feature: child,sequence: s}), " +
-                    "owners: collect(distinct u),parent: { type: labels(parent), location: pl,r2:gfr,feature:parent }}"
+                    "RETURN g"
 //
                 println "full genes query ${fullGenesQuery}"
 
 //
-                def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery).unique()
+                def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery)
                 println "neo4j nodes ${neo4jFeatureNodes as JSON}"
 
 
@@ -202,13 +208,17 @@ class IOServiceController extends AbstractApolloController {
                     "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequenceString} " : " ")  +
 //                  " AND TYPE(f) <> 'Gene' " +
                     " AND NOT (f)-[:FEATURERELATIONSHIP]-(:Feature) " +
-                    "RETURN {type: labels(f),sequence: s,feature: f,location: fl, owners: collect(distinct u)} "
+                    "RETURN f "
 
                 println "single level query ${singleLevelQuery}"
                 neo4jFeatureNodes += Feature.executeQuery(singleLevelQuery).unique()
-//
-                features = neo4jFeatureNodes
-                println "features ${features as JSON}"
+
+                neo4jFeatureNodes.each{
+                    features.add( it as Feature )
+                }
+//                features = neo4jFeatureNodes
+//                println "features ${features as JSON}"
+                println "features ${features}"
 
                 println "IOService query: ${System.currentTimeMillis() - st}ms"
 
