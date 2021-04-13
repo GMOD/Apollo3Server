@@ -9,14 +9,16 @@ import org.bbop.apollo.organism.Organism
 import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.relationship.FeatureRelationship
 import org.bbop.apollo.sequence.Strand
+import spock.lang.Ignore
 
+@Ignore
 @Integration
 @Rollback
 class ExonServiceIntegrationSpec extends AbstractIntegrationSpec{
     
     def exonService
 
-    void "merge to exons for a transcript"() {
+    void "merge 2 exons for a transcript"() {
 
         given: "we have 2 exons attached to the same transcript"
         setupDefaultUserOrg()

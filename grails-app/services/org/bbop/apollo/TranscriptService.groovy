@@ -161,21 +161,21 @@ class TranscriptService {
 
     @Transactional
     void setFmin(Transcript transcript, Integer fmin) {
-
-
-
-        transcript.getFeatureLocation().setFmin(fmin);
+        featureService.setFmin(transcript,fmin)
         Gene gene = getGene(transcript)
-        if (gene != null && fmin < gene.getFmin()) {
+        FeatureLocation geneFeatureLocation = FeatureLocation.findByFrom(gene)
+        if (gene != null && fmin < geneFeatureLocation.getFmin()) {
             featureService.setFmin(gene, fmin)
         }
     }
 
     @Transactional
     void setFmax(Transcript transcript, Integer fmax) {
-        transcript.getFeatureLocation().setFmax(fmax);
+        FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
+        transcriptFeatureLocation.setFmax(fmax);
         Gene gene = getGene(transcript)
-        if (gene != null && fmax > gene.getFmax()) {
+        FeatureLocation geneFeatureLocation = FeatureLocation.findByFrom(gene)
+        if (gene != null && fmax > geneFeatureLocation.getFmax()) {
             featureService.setFmax(gene, fmax);
         }
     }
@@ -189,18 +189,17 @@ class TranscriptService {
         int geneFmax = Integer.MIN_VALUE;
         int geneFmin = Integer.MAX_VALUE;
         for (Transcript t : getTranscripts(gene)) {
-            if (t.getFmin() < geneFmin) {
-                geneFmin = t.getFmin();
+            FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(t)
+            if (transcriptFeatureLocation.getFmin() < geneFmin) {
+                geneFmin = transcriptFeatureLocation.getFmin()
             }
-            if (t.getFmax() > geneFmax) {
-                geneFmax = t.getFmax();
+            if (transcriptFeatureLocation.getFmax() > geneFmax) {
+                geneFmax = transcriptFeatureLocation.getFmax()
             }
         }
         featureService.setFmin(gene, geneFmin)
         featureService.setFmax(gene, geneFmax)
 
-        // not sure if we want this if not actually saved
-//        gene.setLastUpdated(new Date());
     }
 
     List<String> getFrameShiftOntologyIds() {

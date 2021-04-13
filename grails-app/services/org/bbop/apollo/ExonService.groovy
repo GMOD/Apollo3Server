@@ -90,31 +90,33 @@ class ExonService {
     @Transactional
     void deleteExon(Transcript transcript, Exon exon) {
         // update transcript boundaries if necessary
-        if (exon.getFmin().equals(transcript.getFmin())) {
+        FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
+        FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
+        Integer exonFmin = exonFeatureLocation.fmin
+        Integer exonFmax = exonFeatureLocation.fmax
+        FeatureLocation.executeUpdate("MATCH (e:Exon {uniqueName : ${exon.uniqueName}} )-[r]-(parent) delete e,r")
+        if (exonFmin.equals(transcriptFeatureLocation.fmin)) {
             int fmin = Integer.MAX_VALUE;
             for (Exon e : transcriptService.getExons(transcript)) {
-                if (e.getFmin() < fmin) {
-                    fmin = e.getFmin();
+                FeatureLocation exonFl = FeatureLocation.findByFrom(e)
+                if (exonFl.getFmin() < fmin) {
+                    fmin = exonFl.getFmin();
                 }
             }
             transcriptService.setFmin(transcript,fmin);
         }
-        if (exon.getFmax().equals(transcript.getFmax())) {
+        if (exonFmax.equals(transcriptFeatureLocation.fmax)) {
             int fmax = Integer.MIN_VALUE;
             for (Exon e : transcriptService.getExons(transcript)) {
-                if (e.getFmax() > fmax) {
-                    fmax = e.getFmax();
+                FeatureLocation exonFl = FeatureLocation.findByFrom(e)
+                if (exonFl.getFmax() > fmax) {
+                    fmax = exonFl.getFmax();
                 }
             }
             transcriptService.setFmax(transcript,fmax);
         }
         // update gene boundaries if necessary
         transcriptService.updateGeneBoundaries(transcript);
-
-        transcript.save(flush: true)
-
-        FeatureLocation.executeUpdate("MATCH (e:Exon {uniqueName : ${exon.uniqueName}} )-[r]-(parent) delete e,r")
-//        transcript.save(flush: true)
     }
 
 
