@@ -198,26 +198,16 @@ class FeatureService {
 //        }
 //        log.debug "output overlapping features ${features}"
 
-        println "location: ${location}"
-        println "sequence: ${location.to}"
-        println "feature: ${location.from}"
-
         Organism organism = location.to.organism
-//        String queryString = "MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o"
-//        println "ORGANISM QUERY STRING ${queryString}"
-//        Organism organism = Organism.executeQuery(queryString)[0] as Organism
-//        Organism organism = Organism.executeQuery("MATCH (o:Organism)-[fl:FEATURELOCATION]-(s:Sequence) where fl = ${location} return o")[0] as Organism
-        println "organism ${organism}"
-        println "organism JSON ${organism as JSON}"
 
         String neo4jFeatureString = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature)\n" +
             "WHERE (o.commonName='${organism.commonName}' or o.id = ${organism.id})" +
             (compareStrands ? " AND fl.strand = ${location.strand} " : "") +
             " AND ( (fl.fmin <= ${location.fmin} AND fl.fmax > ${location.fmax}) OR ( fl.fmin <= ${location.fmax} AND fl.fmax >=${location.fmax} ) OR ( fl.fmin >=${location.fmax} AND fl.fmax <= ${location.fmax} ) )" +
             "RETURN f"
-        println "neo4j String ${neo4jFeatureString}"
+        log.debug "neo4j String ${neo4jFeatureString}"
         def neo4jFeatures = Feature.executeQuery(neo4jFeatureString)
-        println "neo4j output features ${neo4jFeatures}"
+        log.debug "neo4j output features ${neo4jFeatures}"
 
         List<Feature> features = new ArrayList<>()
         neo4jFeatures.each {
@@ -300,7 +290,7 @@ class FeatureService {
 
         User owner = User.findByUsername(username as String)
         if (owner && features) {
-            println "setting owner for feature ${features} to ${owner}"
+            log.debug "setting owner for feature ${features} to ${owner}"
 //            features.each {
 //                it.addToOwners(owner)
 //            }
@@ -807,7 +797,7 @@ class FeatureService {
         }
         boolean manuallySetStart = cdsService.isManuallySetTranslationStart(cds);
         boolean manuallySetEnd = cdsService.isManuallySetTranslationEnd(cds);
-        println "manually start and end ${manuallySetStart} ${manuallySetEnd}"
+        log.debug "manually start and end ${manuallySetStart} ${manuallySetEnd}"
         if (manuallySetStart && manuallySetEnd) {
             return;
         }
@@ -2380,27 +2370,27 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
      * @return
      */
     JSONObject convertNeo4jFeatureToJSON(def neo4jObject, boolean includeSequence = false) {
-        println "converting features to json ${neo4jObject}"
+        log.debug "converting features to json ${neo4jObject}"
         def neo4jFeature = neo4jObject.feature
-        println "feature ${neo4jFeature} "
-        println "feature as JSON ${neo4jFeature} "
+        log.debug "feature ${neo4jFeature} "
+        log.debug "feature as JSON ${neo4jFeature} "
         def neo4jLocation = neo4jObject.location
-        println "locaitons ${neo4jLocation} "
+        log.debug "locaitons ${neo4jLocation} "
         def neo4jOwners = neo4jObject.owners
-        println "owners ${neo4jOwners} "
+        log.debug "owners ${neo4jOwners} "
         def neo4jSequence = neo4jObject.sequence
 
         def neo4jChildren = neo4jObject.children
-        println "children ${neo4jChildren} "
+        log.debug "children ${neo4jChildren} "
 
         def neo4jParent = neo4jObject.parent
-        println "parent ${neo4jParent} "
+        log.debug "parent ${neo4jParent} "
 
 
         JSONObject jsonFeature = new JSONObject()
-        println "ID ${neo4jFeature.id()}"
-        println "labels ${neo4jFeature.labels().join(",")}"
-        println "keys ${neo4jFeature.keys().join(",")}"
+        log.debug "ID ${neo4jFeature.id()}"
+        log.debug "labels ${neo4jFeature.labels().join(",")}"
+        log.debug "keys ${neo4jFeature.keys().join(",")}"
         if (neo4jFeature.id() != null) {
             jsonFeature.put(FeatureStringEnum.ID.value, neo4jFeature.id())
         }
@@ -2470,9 +2460,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
 
 
         durationInMilliseconds = System.currentTimeMillis() - start;
-        println "neo4j children: ${neo4jChildren}"
-        println "neo4j children as JSON : ${neo4jChildren as JSON}"
-        println "has a child ${neo4jChildren} . . ${neo4jChildren == null} "
+        log.debug "neo4j children: ${neo4jChildren}"
+        log.debug "neo4j children as JSON : ${neo4jChildren as JSON}"
+        log.debug "has a child ${neo4jChildren} . . ${neo4jChildren == null} "
 //        if (neo4jChildren != null && neo4jChildren[0].feature != null) {
         if (neo4jChildren != null ) {
 //            log.debug "finding children"
@@ -3275,11 +3265,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     def handleDynamicIsoformOverlap(Transcript transcript) {
         // Get all transcripts that overlap transcript and verify if they have the proper parent gene assigned
         ArrayList<Transcript> transcriptsToUpdate = new ArrayList<Transcript>()
-        println "handling dynamic isoform overlap"
-        println transcript
         List<Transcript> allOverlappingTranscripts = getOverlappingTranscripts(transcript)
-        println "allOverlappingTranscripts"
-        println allOverlappingTranscripts
         List<Transcript> allTranscriptsForCurrentGene = transcriptService.getTranscripts(transcriptService.getGene(transcript))
         List<Transcript> allTranscripts = (allOverlappingTranscripts + allTranscriptsForCurrentGene).unique()
         List<Transcript> allSortedTranscripts
@@ -3533,10 +3519,8 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
     }
 
     def getOverlappingTranscripts(Transcript transcript) {
-        println "getting overlapping transcript ${transcript}"
+        log.debug "getting overlapping transcript ${transcript}"
         FeatureLocation featureLocation = FeatureLocation.executeQuery("MATCH (t:Transcript)-[fl:FEATURELOCATION]-(s:Sequence) where t.uniqueName = ${transcript.uniqueName} return fl ")[0] as FeatureLocation
-//        println "feature location returned ${featureLocation}"
-//        println "is FL on transcript ?  ${transcript.featureLocation} ? "
         ArrayList<Transcript> overlappingTranscripts = getOverlappingTranscripts(featureLocation)
         overlappingTranscripts.remove(transcript) // removing itself
         ArrayList<Transcript> transcriptsWithOverlapCriteria = new ArrayList<Transcript>()

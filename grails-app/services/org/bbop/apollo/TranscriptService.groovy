@@ -162,7 +162,6 @@ class TranscriptService {
     @Transactional
     void setFmin(Transcript transcript, Integer fmin) {
         featureService.setFmin(transcript,fmin)
-//        transcript.getFeatureLocation().setFmin(fmin);
         Gene gene = getGene(transcript)
         FeatureLocation geneFeatureLocation = FeatureLocation.findByFrom(gene)
         if (gene != null && fmin < geneFeatureLocation.getFmin()) {
