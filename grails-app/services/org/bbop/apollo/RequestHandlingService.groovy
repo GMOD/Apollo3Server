@@ -742,6 +742,8 @@ class RequestHandlingService {
 //
         JSONArray jsonFeatures = new JSONArray()
         nodes.each{
+            log.debug "forist node ${it} "
+            log.debug "class of it ${it.getClass()}"
             def feature = it.feature as Feature
             JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
             jsonFeatures.put(jsonObject)
