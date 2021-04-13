@@ -736,14 +736,14 @@ class RequestHandlingService {
 //            "owners: collect(distinct u),parent: { location: collect(pl),r2:gfr,feature:parent }}"
         println "query output: ${query}"
         def nodes = Feature.executeQuery(query).unique()
-        log.debug "actual returned nodes ${nodes} ${nodes.size()}"
-        log.debug "return json ${nodes as JSON}"
+        println "actual returned nodes ${nodes} ${nodes.size()}"
+        println "return json ${nodes as JSON}"
 //
 //
         JSONArray jsonFeatures = new JSONArray()
         nodes.each{
-            log.debug "forist node ${it} "
-            log.debug "class of it ${it.getClass()}"
+            println "forist node ${it} "
+            println "class of it ${it.getClass()}"
             def feature = it.feature as Feature
             JSONObject jsonObject = featureService.convertFeatureToJSON(feature, false)
             jsonFeatures.put(jsonObject)
@@ -1350,11 +1350,12 @@ class RequestHandlingService {
             returnString = returnString.substring(1, returnString.length() - 1)
         }
         try {
-            Organism organism = Organism.executeQuery(" MATCH (s:Sequence)--(o:Organism) where s.id=${sequence.id} return o")[0] as Organism
-            brokerMessagingTemplate.convertAndSend "/topic/AnnotationNotification/" + organism.id+ "/" + sequence.id, returnString
+//            Organism organism = Organism.executeQuery(" MATCH (s:Sequence)--(o:Organism) where s.id=${sequence.id} return o")[0] as Organism
+//            brokerMessagingTemplate.convertAndSend "/topic/AnnotationNotification/" + organism.id+ "/" + sequence.id, returnString
+            brokerMessagingTemplate.convertAndSend "/topic/AnnotationNotification/" + sequence.organism.id+ "/" + sequence.id, returnString
         } catch (e) {
-            log.error("sequence: ${sequence}")
-            log.error("organism: ${organism}")
+//            log.error("sequence: ${sequence}")
+//            log.error("organism: ${organism}")
             log.error("problem sending message: ${e}")
         }
     }
