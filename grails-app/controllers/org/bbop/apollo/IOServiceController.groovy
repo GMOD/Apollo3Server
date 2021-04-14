@@ -100,7 +100,7 @@ class IOServiceController extends AbstractApolloController {
 
             def st = System.currentTimeMillis()
             def queryParams = [organism: organism]
-            def features
+            def features = []
 
             if (exportAllSequences) {
                 sequences = []
@@ -165,38 +165,62 @@ class IOServiceController extends AbstractApolloController {
 
                 // query transcripts
 
+                String sequenceString
+                println "input sequence string"
+                println sequences
+                if(sequences && sequences instanceof JSONArray){
+                    sequenceString = "["  +  sequences.collect{  return "\"${it}\"" }.join(",") + "]"
+                }
+                else
+                if(sequences && sequences instanceof String){
+                    sequenceString = sequences
+                }
+                println "output sequence string"
+                println sequenceString
+
                 // TODO: note that "type" is being passed in for debugging only
-                String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Transcript)," +
-                    "(f)-[owner:OWNERS]-(u)\n" +
-                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
-                    "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Gene)-[gfr]->(f) " +
-                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
-                    "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature)-[pl2:FEATURELOCATION]-(s) " +
-                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
-                    "RETURN {type: labels(f),sequence: s,feature: f,location: fl,children: collect(DISTINCT {type: labels(child), location: pl2,r1: fr,feature: child,sequence: s}), " +
-                    "owners: collect(distinct u),parent: { type: labels(parent), location: pl,r2:gfr,feature:parent }}"
+//                String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Transcript), " +
+//                    "(f)-[owner:OWNERS]-(u) " +
+//                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}') " + (sequences ? "and s.name in ${sequenceString} " : " ")  +
+//                    "OPTIONAL MATCH (o)--(s)-[cl:FEATURELOCATION]-(parent:Gene)-[gfr]->(f) " +
+//                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}') " + (sequences ? "and s.name in ${sequenceString} " : " ")  +
+//                    "OPTIONAL MATCH (o)--(s)-[pl:FEATURELOCATION]-(f)-[fr]->(child:Feature)-[pl2:FEATURELOCATION]-(s) " +
+//                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}') " + (sequences ? "and s.name in ${sequenceString} " : " ")  +
+//                    "RETURN f"
+//                "RETURN {type: labels(f),sequence: s,feature: f,location: fl,children: collect(DISTINCT {type: labels(child), location: pl2,r1: fr,feature: child,sequence: s}), " +
+//                        "owners: collect(distinct u),parent: { type: labels(parent), location: pl,r2:gfr,feature:parent }}"
+
+                String fullGenesQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(g:Gene), " +
+                    "(g)-[owner:OWNERS]-(u) " +
+                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}') " + (sequences ? "and s.name in ${sequenceString} " : " ")  +
+                    "RETURN g"
 //
-                log.debug "full genes query ${fullGenesQuery}"
+                println "full genes query ${fullGenesQuery}"
 
 //
-                def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery).unique()
-                log.debug "neo4j nodes ${neo4jFeatureNodes as JSON}"
+                def neo4jFeatureNodes = Feature.executeQuery(fullGenesQuery)
+                println "neo4j nodes ${neo4jFeatureNodes as JSON}"
 
 
                 // TODO: query single-level (RR, etc.), excluding if a parent or child feature relationship
                 // TODO: must exclude prior
-                String singleLevelQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature),(f)-[owner:OWNERS]-(u)\n" +
-                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequences}" : "")  +
-//                    " AND TYPE(f) <> 'Gene' " +
+                String singleLevelQuery = "MATCH (o:Organism)-[r:SEQUENCES]-(s:Sequence)-[fl:FEATURELOCATION]-(f:Feature),(f)-[owner:OWNERS]-(u) " +
+                    "WHERE (o.id=${organism.id} or o.commonName='${organism.commonName}')" + (sequences ? "and s.name in ${sequenceString} " : " ")  +
+//                  " AND TYPE(f) <> 'Gene' " +
                     " AND NOT (f)-[:FEATURERELATIONSHIP]-(:Feature) " +
-                    "RETURN {type: labels(f),sequence: s,feature: f,location: fl, owners: collect(distinct u)}"
+                    "RETURN f "
 
-                log.debug "single level query ${singleLevelQuery}"
+                println "single level query ${singleLevelQuery}"
                 neo4jFeatureNodes += Feature.executeQuery(singleLevelQuery).unique()
-//
-                features = neo4jFeatureNodes
 
-                log.debug "IOService query: ${System.currentTimeMillis() - st}ms"
+                neo4jFeatureNodes.each{
+                    features.add( FeatureTypeMapper.castNeo4jFeature(it))
+                }
+//                features = neo4jFeatureNodes
+//                println "features ${features as JSON}"
+                println "features ${features}"
+
+                println "IOService query: ${System.currentTimeMillis() - st}ms"
 
             }
 
@@ -206,6 +230,7 @@ class IOServiceController extends AbstractApolloController {
                     'in'('name', sequences)
                 }
             }
+            println "sequenceList ${sequenceList}"
 
             outputFile = File.createTempFile("Annotations", "." + typeOfExport.toLowerCase())
             String fileName
@@ -245,8 +270,12 @@ class IOServiceController extends AbstractApolloController {
                 // call vcfHandlerService
                 vcfHandlerService.writeVariantsToText(organism, features, outputFile.path, grailsApplication.config.apollo.gff3.source as String)
             } else if (typeOfExport == FeatureStringEnum.TYPE_FASTA.getValue()) {
+                println "output fasta sequence"
+
                 String singleSequenceName = (sequences.class != JSONArray.class) ? sequences : null
                 singleSequenceName = (singleSequenceName == null && sequences.class == JSONArray.class && sequences.size() == 1) ? sequences[0] : null
+
+
                 if (!exportAllSequences && singleSequenceName) {
                     String regionString = (region && adapter == FeatureStringEnum.HIGHLIGHTED_REGION.value) ? region : ""
                     fileName = "Annotations-${regionString}." + sequenceType + "." + typeOfExport.toLowerCase() + (format == "gzip" ? ".gz" : "")
@@ -269,7 +298,9 @@ class IOServiceController extends AbstractApolloController {
                     genomicSequence += Splitter.fixedLength(FastaHandlerService.NUM_RESIDUES_PER_LINE).split(sequenceService.getGenomicResiduesFromSequenceWithAlterations(sequence, min, max, Strand.POSITIVE)).join("\n")
                     outputFile.text = genomicSequence
                 } else {
+                    println "write output features ${features}"
                     fastaHandlerService.writeFeatures(features, sequenceType, ["name"] as Set, outputFile.path, FastaHandlerService.Mode.WRITE, FastaHandlerService.Format.TEXT, region)
+                    println "finished writing"
                 }
             } else if (typeOfExport == FeatureStringEnum.TYPE_CHADO.getValue()) {
                 if (sequences) {
@@ -301,7 +332,9 @@ class IOServiceController extends AbstractApolloController {
                 , path: outputFile.path
                 , fileName: fileName
             )
-            log.debug "${uuidString}"
+            println "${uuidString}"
+            println "output ${output}"
+            println "jsonObject ${outputFile}"
             fileMap.put(uuidString, downloadFile)
 
             if (output == "file") {
