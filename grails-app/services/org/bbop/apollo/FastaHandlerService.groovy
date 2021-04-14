@@ -9,6 +9,8 @@ import org.bbop.apollo.feature.ProcessedPseudogene
 import org.bbop.apollo.feature.Pseudogene
 import org.bbop.apollo.feature.PseudogenicRegion
 import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.Strand
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 
@@ -101,6 +103,7 @@ class FastaHandlerService {
     
     void writeFeature(Feature feature, String seqType, Set<String> metaDataToExport) {
         String seq = sequenceService.getSequenceForFeature(feature, seqType, 0)
+        FeatureLocation featureLocation = FeatureLocation.findByFrom(feature)
         int featureLength = seq.length()
         if (featureLength == 0) {
             // no sequence returned by getSequenceForFeature()
@@ -110,15 +113,15 @@ class FastaHandlerService {
 
         String strand
 
-        if (feature.getStrand() == Strand.POSITIVE.getValue()) {
+        if (featureLocation.getStrand() == Strand.POSITIVE.getValue()) {
             strand = Strand.POSITIVE.getDisplay()
-        } else if (feature.getStrand() == Strand.NEGATIVE.getValue()) {
+        } else if (featureLocation.getStrand() == Strand.NEGATIVE.getValue()) {
             strand = Strand.NEGATIVE.getDisplay()
         } else {
             strand = "."
         }
         //int featureLength = sequenceService.getResiduesFromFeature(feature).length()
-        String defline = String.format(">%s (%s) %d residues [%s:%d-%d %s strand] [%s]", feature.getUniqueName(), feature.cvTerm, featureLength, feature.getFeatureLocation().getSequence().name, feature.fmin + 1, feature.fmax, strand, seqType);
+        String defline = String.format(">%s (%s) %d residues [%s:%d-%d %s strand] [%s]", feature.getUniqueName(), feature.cvTerm, featureLength, featureLocation.to.name, featureLocation.fmin + 1, featureLocation.fmax, strand, seqType);
         if (!metaDataToExport.isEmpty()) {
             boolean first = true;
             if (metaDataToExport.contains("name") && feature.getName() != null) {

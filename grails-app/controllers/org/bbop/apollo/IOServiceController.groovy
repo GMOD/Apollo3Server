@@ -214,7 +214,7 @@ class IOServiceController extends AbstractApolloController {
                 neo4jFeatureNodes += Feature.executeQuery(singleLevelQuery).unique()
 
                 neo4jFeatureNodes.each{
-                    features.add( it as Feature )
+                    features.add( FeatureTypeMapper.castNeo4jFeature(it))
                 }
 //                features = neo4jFeatureNodes
 //                println "features ${features as JSON}"
