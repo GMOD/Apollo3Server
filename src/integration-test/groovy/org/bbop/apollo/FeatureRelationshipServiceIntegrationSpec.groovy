@@ -7,7 +7,9 @@ import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.feature.MRNA
 import org.bbop.apollo.relationship.FeatureRelationship
+import spock.lang.Ignore
 
+@Ignore
 @Integration
 @Rollback
 class FeatureRelationshipServiceIntegrationSpec extends AbstractIntegrationSpec{

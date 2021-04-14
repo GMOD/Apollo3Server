@@ -69,6 +69,7 @@ class AbstractIntegrationSpec extends Specification {
             directory: "src/integration-test/groovy/resources/sequences/honeybee-Group1.10/"
             , commonName: "sampleAnimal"
             , id: 12313
+            , uniqueName: "sampleAnimal"
             , genus: "Sample"
             , species: "animal"
         ).save(failOnError: true, flush: true)
@@ -78,6 +79,7 @@ class AbstractIntegrationSpec extends Specification {
             , seqChunkSize: 20000
             , start: 0
             , end: 1405242
+            , uniqueName: UUID.randomUUID().toString()
             , organism: organism
 //            , organismId: organism.id
             , name: "Group1.10"
