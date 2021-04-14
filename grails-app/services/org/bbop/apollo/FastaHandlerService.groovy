@@ -9,13 +9,15 @@ import org.bbop.apollo.feature.ProcessedPseudogene
 import org.bbop.apollo.feature.Pseudogene
 import org.bbop.apollo.feature.PseudogenicRegion
 import org.bbop.apollo.feature.Transcript
+import org.bbop.apollo.location.FeatureLocation
+import org.bbop.apollo.organism.Sequence
 import org.bbop.apollo.sequence.Strand
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 
 import java.util.zip.GZIPOutputStream;
 
 
-public class FastaHandlerService {
+class FastaHandlerService {
 
     private File file;
     private PrintWriter out;
@@ -26,12 +28,12 @@ public class FastaHandlerService {
     def transcriptService
     def featurePropertyService
 
-    public enum Mode {
+    enum Mode {
         READ,
         WRITE
     }
     
-    public enum Format {
+    enum Format {
         TEXT,
         GZIP
     }
@@ -78,15 +80,22 @@ public class FastaHandlerService {
         if (mode != Mode.WRITE) {
             throw new IOException("Cannot write to file in READ mode");
         }
+        println "inputing features"
         while (iterator.hasNext()) {
             Feature feature = iterator.next();
+            println "doing feature"
+            println "feature ${feature}"
+            println "feature class name ${feature.class.name}"
             if(feature.class.name in [Gene.class.name, Pseudogene.class.name, PseudogenicRegion.class.name, ProcessedPseudogene.class.name]) {
+                println "is in feature"
                 def transcriptList = transcriptService.getTranscripts(feature)
+                println "transcript list ${transcriptList}"
                 for (Transcript transcript in transcriptList) {
                     writeFeature(transcript, seqType, metaDataToExport);
                 }
             }
             else {
+                println "write feature"
                 writeFeature(feature, seqType, metaDataToExport)
             }
         }
@@ -94,6 +103,7 @@ public class FastaHandlerService {
     
     void writeFeature(Feature feature, String seqType, Set<String> metaDataToExport) {
         String seq = sequenceService.getSequenceForFeature(feature, seqType, 0)
+        FeatureLocation featureLocation = FeatureLocation.findByFrom(feature)
         int featureLength = seq.length()
         if (featureLength == 0) {
             // no sequence returned by getSequenceForFeature()
@@ -103,15 +113,15 @@ public class FastaHandlerService {
 
         String strand
 
-        if (feature.getStrand() == Strand.POSITIVE.getValue()) {
+        if (featureLocation.getStrand() == Strand.POSITIVE.getValue()) {
             strand = Strand.POSITIVE.getDisplay()
-        } else if (feature.getStrand() == Strand.NEGATIVE.getValue()) {
+        } else if (featureLocation.getStrand() == Strand.NEGATIVE.getValue()) {
             strand = Strand.NEGATIVE.getDisplay()
         } else {
             strand = "."
         }
         //int featureLength = sequenceService.getResiduesFromFeature(feature).length()
-        String defline = String.format(">%s (%s) %d residues [%s:%d-%d %s strand] [%s]", feature.getUniqueName(), feature.cvTerm, featureLength, feature.getFeatureLocation().getSequence().name, feature.fmin + 1, feature.fmax, strand, seqType);
+        String defline = String.format(">%s (%s) %d residues [%s:%d-%d %s strand] [%s]", feature.getUniqueName(), feature.cvTerm, featureLength, featureLocation.to.name, featureLocation.fmin + 1, featureLocation.fmax, strand, seqType);
         if (!metaDataToExport.isEmpty()) {
             boolean first = true;
             if (metaDataToExport.contains("name") && feature.getName() != null) {

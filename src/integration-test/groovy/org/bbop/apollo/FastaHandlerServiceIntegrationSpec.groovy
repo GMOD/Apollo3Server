@@ -9,6 +9,7 @@ import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.feature.MRNA
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 
+
 @Integration
 @Rollback
 class FastaHandlerServiceIntegrationSpec extends AbstractIntegrationSpec{
