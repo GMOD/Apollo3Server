@@ -8,8 +8,10 @@ import org.bbop.apollo.feature.Exon
 import org.bbop.apollo.feature.Gene
 import org.bbop.apollo.feature.MRNA
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import spock.lang.Ignore
 
 
+@Ignore
 @Integration
 @Rollback
 class FastaHandlerServiceIntegrationSpec extends AbstractIntegrationSpec{
