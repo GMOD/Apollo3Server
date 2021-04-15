@@ -164,7 +164,6 @@ class Gff3HandlerService {
     void writeFeatures(WriteObject writeObject, Collection<Feature> features, String source) throws IOException {
         Map<Sequence, Collection<Feature>> featuresBySource = new HashMap<Sequence, Collection<Feature>>();
         println("writing features " + features)
-//        Organism organism = Organism.executeQuery(" MATCH (s:Sequence)--(f:Feature) where f.uniqueName = ${features.first().uniqueName} return o limit 1")[0] as Organism
         for (Feature feature : features) {
             // TODO: do this in a singlq query
             Sequence sequence = Sequence.executeQuery(" MATCH (s:Sequence)--(f:Feature) where f.uniqueName = ${feature.uniqueName} return s limit 1")[0] as Sequence
@@ -499,17 +498,20 @@ class Gff3HandlerService {
 
     private void convertToEntry(WriteObject writeObject, Feature feature, String source, Collection<GFF3Entry> gffEntries) {
 
-        //log.debug "converting feature to ${feature.name} entry of # of entries ${gffEntries.size()}"
+        println "converting feature to ${feature.name} entry of # of entries ${gffEntries.size()}"
 
-        String seqId = feature.featureLocation.to.name
-        String type = featureService.getCvTermFromFeature(feature);
-        int start = feature.getFmin() + 1;
-        int end = feature.getFmax().equals(feature.getFmin()) ? feature.getFmax() + 1 : feature.getFmax();
+        def results = Sequence.executeQuery("MATCH (s:Sequence)-[fl:FEATURELOCATION]-(f:Feature) where f.uniqueName = ${feature.uniqueName} return s.name as sequenceName ,fl limit 1 ")[0]
+        FeatureLocation featureLocation = results.fl as FeatureLocation
+        String seqId = results.sequenceName as String
+//        String type = featureService.getCvTermFromFeature(feature);
+        String type = feature.cvTerm
+        int start = featureLocation.getFmin() + 1;
+        int end = featureLocation.getFmax().equals(featureLocation.getFmin()) ? featureLocation.getFmax() + 1 : featureLocation.getFmax()
         String score = ".";
         String strand;
-        if (feature.getStrand() == Strand.POSITIVE.getValue()) {
+        if (featureLocation.getStrand() == Strand.POSITIVE.getValue()) {
             strand = Strand.POSITIVE.getDisplay()
-        } else if (feature.getStrand() == Strand.NEGATIVE.getValue()) {
+        } else if (featureLocation.getStrand() == Strand.NEGATIVE.getValue()) {
             strand = Strand.NEGATIVE.getDisplay()
         } else {
             strand = "."
@@ -518,7 +520,10 @@ class Gff3HandlerService {
         GFF3Entry entry = new GFF3Entry(seqId, source, type, start, end, score, strand, phase);
         entry.setAttributes(extractAttributes(writeObject, feature));
         gffEntries.add(entry);
+        println "writing out feature ${feature}"
         if (featureService.typeHasChildren(feature)) {
+            println "feature has children ${feature}"
+            println "children ${featureRelationshipService.getChildren(feature) }"
             for (Feature child : featureRelationshipService.getChildren(feature)) {
                 if (child.instanceOf(CDS.class)) {
                     convertToEntry(writeObject, (CDS) child, source, gffEntries);
@@ -533,13 +538,16 @@ class Gff3HandlerService {
     private void convertToEntry(WriteObject writeObject, CDS cds, String source, Collection<GFF3Entry> gffEntries) {
         //log.debug "converting CDS to ${cds.name} entry of # of entries ${gffEntries.size()}"
 
-        String seqId = cds.featureLocation.to.name
+        def result = Sequence.executeQuery("MATCH (s:Sequence)-[fl:FEATURELOCATION]-(f:CDS) where f.uniqueName = ${cds.uniqueName} return fl, s.name as sequenceName ")[0]
+//        String seqId = cds.featureLocation.to.name
+        String seqId = result.sequenceName as String
+        FeatureLocation cdsFeatureLocation = result.fl as FeatureLocation
         String type = cds.cvTerm
         String score = ".";
         String strand;
-        if (cds.getStrand() == 1) {
+        if (cdsFeatureLocation.getStrand() == 1) {
             strand = "+";
-        } else if (cds.getStrand() == -1) {
+        } else if (cdsFeatureLocation.getStrand() == -1) {
             strand = "-";
         } else {
             strand = ".";
@@ -551,8 +559,9 @@ class Gff3HandlerService {
             if (!overlapperService.overlaps(exon, cds)) {
                 continue;
             }
-            int fmin = exon.getFmin() < cds.getFmin() ? cds.getFmin() : exon.getFmin();
-            int fmax = exon.getFmax() > cds.getFmax() ? cds.getFmax() : exon.getFmax();
+            FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
+            int fmin = exonFeatureLocation.getFmin() < cdsFeatureLocation.getFmin() ? cdsFeatureLocation.getFmin() : exonFeatureLocation.getFmin();
+            int fmax = exonFeatureLocation.getFmax() > cdsFeatureLocation.getFmax() ? cdsFeatureLocation.getFmax() : exonFeatureLocation.getFmax();
             String phase;
             if (length % 3 == 0) {
                 phase = "0";
@@ -776,9 +785,10 @@ class Gff3HandlerService {
                 String productString = geneProductService.convertGeneProductsToGff3String(feature.geneProducts)
                 attributes.put(FeatureStringEnum.GENE_PRODUCT.value, encodeString(productString))
             }
-            if (writeObject.attributesToExport.contains(FeatureStringEnum.STATUS.value) && feature.getStatus() != null) {
-                attributes.put(FeatureStringEnum.STATUS.value, encodeString(feature.getStatus().value));
-            }
+            // TODO: implement
+//            if (writeObject.attributesToExport.contains(FeatureStringEnum.STATUS.value) && feature.getStatus() != null) {
+//                attributes.put(FeatureStringEnum.STATUS.value, encodeString(feature.getStatus().value));
+//            }
             if (writeObject.attributesToExport.contains(FeatureStringEnum.SYMBOL.value) && feature.getSymbol() != null && !isBlank(feature.getSymbol())) {
                 attributes.put(FeatureStringEnum.SYMBOL.value, encodeString(feature.getSymbol()));
             }
