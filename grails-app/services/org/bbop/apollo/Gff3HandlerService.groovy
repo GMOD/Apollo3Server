@@ -341,22 +341,23 @@ class Gff3HandlerService {
     }
 
     // NOTE: taking in list as we can have multiple gff3 entires created here because we split the CDS across exons
-    private void calculateChildGFF3Entry(WriteObject writeObject, def childNeo4jEntry,def parentNeo4jEntry,String source,String seqId,Collection<GFF3Entry> gffEntries,def owners){
-        Feature childFeature = childNeo4jEntry.feature as Feature
-        FeatureLocation featureLocation = childNeo4jEntry.location as FeatureLocation
-        log.debug "incoming feature location ${featureLocation as JSON}"
-        int start = featureLocation.getFmin()
-        int end = featureLocation.fmax.equals(featureLocation.fmin) ? featureLocation.fmax + 1 : featureLocation.fmax
+    private void calculateChildGFF3Entry(WriteObject writeObject, Feature childFeature,Feature parentFeature,String source,String seqId,Collection<GFF3Entry> gffEntries,def owners){
+//        Feature childFeature = childNeo4jEntry.feature as Feature
+        FeatureLocation childFeatureLocation = FeatureLocation.findByFrom(childFeature)
+        log.debug "incoming feature location ${childFeatureLocation as JSON}"
+        int start = childFeatureLocation.getFmin()
+        int end = childFeatureLocation.fmax.equals(childFeatureLocation.fmin) ? childFeatureLocation.fmax + 1 : childFeatureLocation.fmax
         String score = "."
         String strand
-        if (featureLocation.getStrand() == Strand.POSITIVE.getValue()) {
+        if (childFeatureLocation.getStrand() == Strand.POSITIVE.getValue()) {
             strand = Strand.POSITIVE.getDisplay()
-        } else if (featureLocation.getStrand() == Strand.NEGATIVE.getValue()) {
+        } else if (childFeatureLocation.getStrand() == Strand.NEGATIVE.getValue()) {
             strand = Strand.NEGATIVE.getDisplay()
         } else {
             strand = "."
         }
-        String type = featureService.getCvTermFromNeo4jFeature(childNeo4jEntry.feature)
+//        String type = featureService.getCvTermFromNeo4jFeature(childFeature)
+        String type = childFeature.cvTerm
         log.debug "type: ${type}"
 
 
@@ -424,14 +425,14 @@ class Gff3HandlerService {
                 length += fmax - fmin;
                 log.debug "adding for type: ${type}"
                 GFF3Entry entry = new GFF3Entry(seqId, source, type, fmin+1 , fmax, score, strand, phase);
-                entry.setAttributes(extractNeo4jAttributes(writeObject,childNeo4jEntry.feature,parentNeo4jEntry.feature,owners))
+                entry.setAttributes(extractNeo4jAttributes(writeObject,childFeature,parentFeature,owners))
                 gffEntries.add(entry);
             }
         }
         else {
             String phase = ".";
             GFF3Entry entry = new GFF3Entry(seqId, source, type, start+1, end, score, strand, phase);
-            entry.setAttributes(extractNeo4jAttributes(writeObject, childNeo4jEntry.feature,parentNeo4jEntry.feature,owners))
+            entry.setAttributes(extractNeo4jAttributes(writeObject, childFeature,parentFeature,owners))
             gffEntries.add(entry);
         }
 
@@ -581,7 +582,8 @@ class Gff3HandlerService {
         if (neo4jParentFeature!=null) {
             attributes.put(FeatureStringEnum.EXPORT_PARENT.value, encodeString(neo4jParentFeature.uniqueName as String))
         }
-        String type = featureService.getCvTermFromNeo4jFeature(neo4jFeature)
+//        String type = featureService.getCvTermFromNeo4jFeature(neo4jFeature)
+        String type = neo4jFeature.cvTerm
         if (configWrapperService.exportSubFeatureAttrs() || type in (FeatureTypeMapper.VIEWABLE_ANNOTATION_CV_TERM_LIST + FeatureTypeMapper.VIEWABLE_ANNOTATION_TRANSCRIPT_CV_TERM_LIST + FeatureTypeMapper.VIEWABLE_ALTERATION_CV_TERM_LIST)) {
             if (writeObject.attributesToExport.contains(FeatureStringEnum.SYNONYMS.value)) {
                 Iterator<FeatureSynonym> synonymIter = feature.featureSynonyms.iterator()
