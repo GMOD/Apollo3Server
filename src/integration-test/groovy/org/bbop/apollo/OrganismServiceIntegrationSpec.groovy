@@ -16,6 +16,7 @@ import org.bbop.apollo.relationship.FeatureRelationship
 import org.grails.web.json.JSONObject
 import spock.lang.Ignore
 
+@Ignore
 @Integration
 @Rollback
 class OrganismServiceIntegrationSpec extends AbstractIntegrationSpec{
