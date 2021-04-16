@@ -10,11 +10,11 @@ import io.swagger.v3.oas.annotations.info.License
 
 @OpenAPIDefinition(
     info = @Info(
-        title = "myapp",
-        version = "1.0",
+        title = "Apollo",
+        version = "3.0.0",
         description = "my api",
         license = @License(name = "Apache 2.0", url = "http://foo.bar"),
-        contact = @Contact(url = "http://something.com", name = "something", email = "something")
+        contact = @Contact(url = "https://github.com/GMOD/Apollo3Server/issues", name = "Raise issue", email = "nathandunn@lbl.gov")
     )
 )
 @CompileStatic

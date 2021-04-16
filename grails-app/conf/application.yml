@@ -130,7 +130,7 @@ environments:
                 jdbcInterceptors: ConnectionState
                 defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
 
-micronaut:
+grails:
     router:
         static-resources:
             swagger:

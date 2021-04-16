@@ -12,7 +12,6 @@ class JsonWebUtilityService {
   def featureService
 
   @NotTransactional
-
   JSONObject createJSONFeatureContainer(JSONObject... features) throws JSONException {
     JSONObject jsonFeatureContainer = new JSONObject()
     JSONArray jsonFeatures = new JSONArray()

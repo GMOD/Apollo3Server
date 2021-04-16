@@ -62,7 +62,8 @@ configurations {
 // In this section you declare the dependencies for your production and test code
 dependencies {
     // START added dependencies
-    compileOnly "io.micronaut:micronaut-inject-groovy" // used to commpile 
+    compileOnly "io.micronaut:micronaut-inject-groovy" // used to pull in micronaut libraries
+    compileOnly "io.micronaut:micronaut-inject-java" // used to pull in micronaut libraries
     annotationProcessor "io.micronaut.configuration:micronaut-openapi:1.4.0"
     compile "io.swagger.core.v3:swagger-annotations:2.1.1"
     compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.0"
