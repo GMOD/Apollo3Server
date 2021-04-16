@@ -136,7 +136,7 @@ class OrganismService {
                         it[1]
                     }
                     log.debug "uniqueNames ${uniqueNames.size()}"
-                    Feature.withNewTransaction{
+//                    Feature.withNewTransaction{
                         def features = Feature.findAllByIdInList(ids)
                         features.each { f ->
                             f.delete()
@@ -148,7 +148,7 @@ class OrganismService {
                         organism.save(flush: true)
                         count += featureList.size()
                         log.info "${count} / ${featurePairs.size()}  =  ${100 * count / featurePairs.size()}% "
-                    }
+//                    }
                     log.info "deleted ${featurePairs.size()}"
                 }
                 endTime = System.currentTimeMillis()
