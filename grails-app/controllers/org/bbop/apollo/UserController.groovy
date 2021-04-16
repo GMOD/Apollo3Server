@@ -421,7 +421,6 @@ class UserController {
 
 //            render new JSONObject() as JSON
             JSONObject jsonObject = user.properties
-//            jsonObject = user.properties
             log.debug "json object ${jsonObject as JSON}"
             jsonObject.email = user.username
             jsonObject.username = user.username
@@ -601,13 +600,22 @@ class UserController {
             UserTrackPermission.deleteAll(UserTrackPermission.findAllByUser(user))
             UserOrganismPermission.deleteAll(UserOrganismPermission.findAllByUser(user))
 //            UserOrganismPreference.deleteAll(UserOrganismPreference.findAllByUser(user))
-            user.delete(flush: true)
 
             log.info "Removed user ${user.username}"
 
-            render new JSONObject() as JSON
+//            render new JSONObject() as JSON
+            JSONObject jsonObject = user.properties
+            log.debug "json object ${jsonObject as JSON}"
+            jsonObject.email = user.username
+            jsonObject.username = user.username
+            jsonObject.id = user.id
+            jsonObject.userId = user.id
+            log.debug "rendering json object "
+            render jsonObject as JSON
+            
+            user.delete(flush: true)
         } catch (e) {
-            log.error(e)
+            log.error(e.toString())
             JSONObject jsonObject = new JSONObject()
             jsonObject.put(FeatureStringEnum.ERROR.value, "Failed to delete the user " + e.message)
             render jsonObject as JSON
