@@ -662,28 +662,29 @@ class FeatureService {
     @Transactional
     def addTranscriptToGene(Gene gene, Transcript transcript) {
         removeExonOverlapsAndAdjacencies(transcript);
+        FeatureLocation geneFeatureLocation = FeatureLocation.findByFrom(gene)
+        FeatureLocation transcriptFeatureLocation = transcript.featureLocation
         // no feature location, set location to transcript's
-        if (gene.featureLocation == null) {
-            FeatureLocation transcriptFeatureLocation = transcript.featureLocation
+        if (geneFeatureLocation == null) {
             FeatureLocation featureLocation = new FeatureLocation()
 //            featureLocation.properties = transcriptFeatureLocation.properties
             featureLocation.strand = transcriptFeatureLocation.strand
             featureLocation.fmin = transcriptFeatureLocation.fmin
             featureLocation.fmax = transcriptFeatureLocation.fmax
 //            featureLocation.id = null
-            featureLocation.to = transcript.featureLocation.to
+            featureLocation.to = transcriptFeatureLocation.to
             featureLocation.from = gene
             featureLocation.save(flush: true)
-            gene.featureLocation = featureLocation
+            geneFeatureLocation = featureLocation
             gene.save(flush: true)
 //            gene.addToFeatureLocations(featureLocation);
         } else {
             // if the transcript's bounds are beyond the gene's bounds, need to adjust the gene's bounds
-            if (transcript.getFeatureLocation().getFmin() < gene.getFeatureLocation().getFmin()) {
-                gene.featureLocation.setFmin(transcript.featureLocation.fmin);
+            if (transcriptFeatureLocation().getFmin() < geneFeatureLocation().getFmin()) {
+                geneFeatureLocation.setFmin(transcriptFeatureLocation.fmin);
             }
-            if (transcript.getFeatureLocation().getFmax() > gene.getFeatureLocation().getFmax()) {
-                gene.featureLocation.setFmax(transcript.featureLocation.fmax);
+            if (transcriptFeatureLocation().getFmax() > geneFeatureLocation().getFmax()) {
+                geneFeatureLocation.setFmax(transcriptFeatureLocation.fmax);
             }
         }
 

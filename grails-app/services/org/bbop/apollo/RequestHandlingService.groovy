@@ -1995,15 +1995,18 @@ class RequestHandlingService {
                         JSONObject newFeatureJsonObject = featureService.convertFeatureToJSON(newFeature)
                         JSONObject jsonObject = newFeatureJsonObject
 
-                        featureService.addOwnersByString(inputObject.username, newFeature)
-                        if (!suppressHistory) {
-                            featureEventService.addNewFeatureEvent(FeatureOperation.ADD_FEATURE, newFeature.name, newFeature.uniqueName, inputObject, newFeatureJsonObject, user)
-                        }
+//                        featureService.addOwnersByString(inputObject.username, newFeature)
+                        featureService.setOwner(newFeature,user)
+
+                        // TODO: re-add history
+//                        if (!suppressHistory) {
+//                            featureEventService.addNewFeatureEvent(FeatureOperation.ADD_FEATURE, newFeature.name, newFeature.uniqueName, inputObject, newFeatureJsonObject, user)
+//                        }
                         returnObject.getJSONArray(FeatureStringEnum.FEATURES.value).put(jsonObject);
                     }
                 }
             } else {
-                // jsonFeature is of type transposable_element or repeat_region
+                // jsonFeature is of type transposable_element or repeat_region or other single_feature type
                 Feature newFeature = featureService.addFeature(jsonFeature, sequence, user, suppressHistory, true)
                 JSONObject newFeatureJsonObject = featureService.convertFeatureToJSON(newFeature)
                 JSONObject jsonObject = newFeatureJsonObject

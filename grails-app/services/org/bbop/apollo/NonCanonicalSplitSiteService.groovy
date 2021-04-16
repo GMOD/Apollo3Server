@@ -85,12 +85,12 @@ class NonCanonicalSplitSiteService {
 
     void findNonCanonicalAcceptorDonorSpliceSites(Transcript transcript) {
 
-        transcript.attach()
+//        transcript.attach()
 
         deleteAllNonCanonicalFivePrimeSpliceSites(transcript)
         deleteAllNonCanonicalThreePrimeSpliceSites(transcript)
 
-        FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
+        FeatureLocation transcriptFeatureLocation = FeatureLocation.executeQuery(" MATCH (t:Transcript)-[fl:FEATURELOCATION]-(s:Sequence) where t.uniqueName = ${transcript.uniqueName} return fl " )[0] as FeatureLocation
 
         List<Exon> exons = transcriptService.getSortedExons(transcript, true)
         int fmin = transcriptFeatureLocation.fmin
@@ -100,7 +100,7 @@ class NonCanonicalSplitSiteService {
 
         String residues = sequenceService.getGenomicResiduesFromSequenceWithAlterations(sequence, fmin, fmax, strand);
 
-        if (transcript.getStrand() == -1) {
+        if (transcriptFeatureLocation.getStrand() == -1) {
             residues = residues.reverse()
         }
 
@@ -108,7 +108,8 @@ class NonCanonicalSplitSiteService {
         sequenceAlterationList.addAll(featureService.getAllSequenceAlterationsForFeature(transcript))
 
         for (Exon exon : exons) {
-            FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
+//            FeatureLocation exonFeatureLocation = FeatureLocation.findByFrom(exon)
+            FeatureLocation exonFeatureLocation = FeatureLocation.executeQuery(" MATCH (e:Exon)-[fl:FEATURELOCATION]-(s:Sequence) where e.uniqueName = ${exon.uniqueName} return fl " )[0] as FeatureLocation
             int fivePrimeSpliceSitePosition = -1;
             int threePrimeSpliceSitePosition = -1;
             boolean validFivePrimeSplice = false;
@@ -136,7 +137,7 @@ class NonCanonicalSplitSiteService {
                     }
                     if (local1 >= 0 && local2 < residues.length()) {
                         String acceptorSpliceSiteSequence = residues.substring(local1, local2)
-                        acceptorSpliceSiteSequence = transcript.getStrand() == -1 ? acceptorSpliceSiteSequence.reverse() : acceptorSpliceSiteSequence
+                        acceptorSpliceSiteSequence = transcriptFeatureLocation.getStrand() == -1 ? acceptorSpliceSiteSequence.reverse() : acceptorSpliceSiteSequence
                         if (acceptorSpliceSiteSequence.toLowerCase() == acceptor) {
                             validThreePrimeSplice = true
                         } else {
