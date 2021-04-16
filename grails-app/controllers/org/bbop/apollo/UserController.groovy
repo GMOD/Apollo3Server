@@ -612,7 +612,6 @@ class UserController {
             jsonObject.userId = user.id
             log.debug "rendering json object "
             render jsonObject as JSON
-            
             user.delete(flush: true)
         } catch (e) {
             log.error(e.toString())
