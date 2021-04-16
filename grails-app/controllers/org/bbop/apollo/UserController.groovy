@@ -346,6 +346,22 @@ class UserController {
         render new JSONObject() as JSON
     }
 
+
+//    @ApiOperation(value = "Get user", nickname = "/getUser", httpMethod = "POST")
+//    @ApiImplicitParams([
+//            @ApiImplicitParam(name = "username", type = "email", paramType = "query", example = "Email of the user to add")
+//    ])
+    @Transactional
+    def getUser() {
+        JSONObject dataObject = permissionService.handleInput(request, params)
+        User user = User.findByUsername(dataObject.username)
+        if (user) {
+            render user as JSON
+        } else {
+            render status: HttpStatus.NOT_FOUND
+        }
+    }
+
     // @ApiOperation(value = "Create user", nickname = "/user/createUser", httpMethod = "POST")
     // @ApiImplicitParams([
             // @ApiImplicitParam(name = "username", type = "email", paramType = "query")
@@ -403,7 +419,16 @@ class UserController {
 
             log.info "Added user ${user.username} with role ${role.name}"
 
-            render new JSONObject() as JSON
+//            render new JSONObject() as JSON
+            JSONObject jsonObject = user.properties
+//            jsonObject = user.properties
+            log.debug "json object ${jsonObject as JSON}"
+            jsonObject.email = user.username
+            jsonObject.username = user.username
+            jsonObject.id = user.id
+            jsonObject.userId = user.id
+            log.debug "rendering json object "
+            render jsonObject as JSON
         } catch (e) {
             log.error(e.fillInStackTrace())
             JSONObject jsonObject = new JSONObject()
@@ -582,7 +607,7 @@ class UserController {
 
             render new JSONObject() as JSON
         } catch (e) {
-            log.error(e.fillInStackTrace())
+            log.error(e)
             JSONObject jsonObject = new JSONObject()
             jsonObject.put(FeatureStringEnum.ERROR.value, "Failed to delete the user " + e.message)
             render jsonObject as JSON
