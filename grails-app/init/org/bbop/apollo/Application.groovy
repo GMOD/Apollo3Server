@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.info.License
 
 @OpenAPIDefinition(
     info = @Info(
-        title = "my app",
+        title = "myapp",
         version = "1.0",
         description = "my api",
         license = @License(name = "Apache 2.0", url = "http://foo.bar"),
