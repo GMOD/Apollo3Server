@@ -7,6 +7,8 @@ import org.grails.web.json.JSONObject
 
 class MetricsController {
 
+    def grailsResourceLocator
+
     //{
     //  "version" : "3.0.0",
     //  "gauges" : { },
@@ -34,30 +36,7 @@ class MetricsController {
     }
 
     def api(){
-//        println servletContext.getRealPath("classes")
-//        println servletContext.getRealPath("/classes")
-//        println servletContext.getRealPath("/META-INF")
-//        println servletContext.getRealPath("/swagger")
-//        println servletContext.getRealPath("META-INF")
-        println "A"
-        String realPath = servletContext.getRealPath("/apollo-3.0.0.yml")
-        println "B.5 ${realPath}"
-//        println "context path: ${servletContext.getContextPath()}"
-        def resource = servletContext.getContext("classpath:META-INF/swagger/apollo-3.0.0.yml")
-//        def resource = servletContext.getRealPath("../groovy/main/META-INF/swagger/apollo-3.0.0.yml")
-//                ./build/classes/groovy/main/META-INF/swagger/apollo-3.0.0.yml
-        println "C.3"
-        println resource
-        println "D.5"
-        def ymlFile = resource.
-        println "E.5"
-        println ymlFile
-        println "F"
-        File file = new File(realPath)
-        println "file exists ${file.exists()}"
-        String textFile = file.text
-
-//        render 'swagger/apollo-3.0.0.yml'
-        render textFile
+        def r1 = grailsResourceLocator.findResourceForURI('classpath:apollo-3.0.0.yml')
+        render r1.inputStream.text
     }
 }

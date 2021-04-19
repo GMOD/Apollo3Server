@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import htsjdk.samtools.reference.FastaSequenceIndexCreator
+import io.micronaut.http.annotation.Controller
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -35,6 +36,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND
     title = "Organism Services: Methods for managing organisms"
 )
 )
+@Controller("/organism")
 @Transactional(readOnly = true)
 class OrganismController {
 

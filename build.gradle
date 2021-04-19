@@ -67,6 +67,8 @@ dependencies {
     annotationProcessor "io.micronaut.configuration:micronaut-openapi:1.4.0"
     compile "io.swagger.core.v3:swagger-annotations:2.1.1"
     compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.0"
+    compile group: 'io.micronaut', name: 'http-client', version: '1.0.0.RC2'
+
 
 
 //    runtime 'mysql:mysql-connector-java:5.1.49'
@@ -187,6 +189,10 @@ tasks.withType(Test) {
 //    systemProperty "webdriver.gecko.driver", System.getProperty('webdriver.gecko.driver')
 }
 
+tasks.withType(GroovyCompile) {
+    groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
+    groovyOptions.forkOptions.jvmArgs.add('-Dmicronaut.openapi.views.spec=rapidoc.enabled=true,swagger-ui.enabled=true,swagger-ui.theme=flattop')
+}
 war {
     def userDir = System.getProperty("user.dir")
     String apolloFilePath = userDir + '/apollo.yml'
