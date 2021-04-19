@@ -793,28 +793,37 @@ class RequestHandlingService {
         def transcriptJSONList = []
         for (int i = 0; i < featuresArray.size(); i++) {
             JSONObject jsonTranscript = featuresArray.getJSONObject(i)
+            println "B.1 ${jsonTranscript}"
             jsonTranscript = permissionService.copyRequestValues(inputObject, jsonTranscript)
             if (jsonTranscript.has(FeatureStringEnum.USE_CDS.value)) {
                 useCDS = jsonTranscript.getBoolean(FeatureStringEnum.USE_CDS.value)
             }
+            println "B.2 ${jsonTranscript}"
             useName = jsonTranscript.has(FeatureStringEnum.USE_NAME.value) ? jsonTranscript.getBoolean(FeatureStringEnum.USE_NAME.value) : false
             Transcript transcript = featureService.generateTranscript(jsonTranscript, sequence, suppressHistory, useCDS, useName)
+            println "B.3 ${transcript}"
 
             // should automatically write to history
             transcript.save(flush: true)
+            println "B.4"
             transcriptList.add(transcript)
 
             Gene gene = transcriptService.getGene(transcript)
+            println "B.5: ${gene}"
             inputObject.put(FeatureStringEnum.NAME.value, gene.name)
 
             if (!suppressHistory) {
+                println "B.6:"
                 featureService.addOwnersByString(inputObject.username, gene, transcript)
                 def json = featureService.convertFeatureToJSON(transcript)
+                println "B.7:"
                 featureEventService.addNewFeatureEventWithUser(FeatureOperation.ADD_TRANSCRIPT, transcriptService.getGene(transcript).name, transcript.uniqueName, inputObject, json, permissionService.getCurrentUser(inputObject))
+                println "B.8"
                 transcriptJSONList += json
             }
         }
 
+        println "C"
 
         returnObject.put(FeatureStringEnum.FEATURES.value, transcriptJSONList as JSONArray)
 
@@ -827,6 +836,8 @@ class RequestHandlingService {
 
             fireAnnotationEvent(annotationEvent)
         }
+
+        println "D: ${returnObject as JSON}"
 
         return returnObject
     }
@@ -1971,7 +1982,7 @@ class RequestHandlingService {
      */
 //    { "track": "Group1.3", "features": [ { "uniquename": "179e77b9-9329-4633-9f9e-888e3cf9b76a" } ], "operation": "delete_feature" }:
     def deleteFeature(JSONObject inputObject) {
-//        println "in delete feature ${inputObject as JSON}"
+        println "in delete feature ${inputObject as JSON}"
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.WRITE)
 
 

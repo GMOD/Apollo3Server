@@ -190,12 +190,15 @@ class FeatureService {
 
   @Transactional
   def generateTranscript(JSONObject jsonTranscript, Sequence sequence, boolean suppressHistory, boolean useCDS , boolean useName = false) {
-    log.debug "jsonTranscript: ${jsonTranscript.toString()}"
+    println "jsonTranscript: ${jsonTranscript.toString()}"
+    println "input sequence ${sequence}"
     Gene gene = jsonTranscript.has(FeatureStringEnum.PARENT_ID.value) ? (Gene) Feature.findByUniqueName(jsonTranscript.getString(FeatureStringEnum.PARENT_ID.value)) : null;
+    println "input gene ${gene}"
     Transcript transcript = null
     boolean readThroughStopCodon = false
 
     User owner = permissionService.getCurrentUser(jsonTranscript)
+    println "owner ${owner}"
     // if the gene is set, then don't process, just set the transcript for the found gene
     if (gene) {
       // Scenario I - if 'parent_id' attribute is given then find the gene
@@ -246,15 +249,16 @@ class FeatureService {
       }
 
       if (!createGeneFromJSON) {
-        log.debug "Gene from parent_id doesn't exist; trying to find overlapping isoform"
+        println "Gene from parent_id doesn't exist; trying to find overlapping isoform"
         // Scenario II - find an overlapping isoform and if present, add current transcript to its gene
         FeatureLocation featureLocation = convertJSONToFeatureLocation(jsonTranscript.getJSONObject(FeatureStringEnum.LOCATION.value), sequence)
+        println "has a feature location ${featureLocation}"
         Collection<Feature> overlappingFeatures = getOverlappingFeatures(featureLocation).findAll() {
           it = Feature.get(it.id)
           it instanceof Gene
         }
 
-        log.debug "overlapping genes: ${overlappingFeatures.name}"
+        println "overlapping genes: ${overlappingFeatures.name}"
         List<Feature> overlappingFeaturesToCheck = new ArrayList<Feature>()
         overlappingFeatures.each {
           if (!checkForComment(it, MANUALLY_ASSOCIATE_TRANSCRIPT_TO_GENE) && !checkForComment(it, MANUALLY_DISSOCIATE_TRANSCRIPT_FROM_GENE)) {
@@ -265,11 +269,11 @@ class FeatureService {
         for (Feature eachFeature : overlappingFeaturesToCheck) {
           // get the proper object instead of its proxy, due to lazy loading
           Feature feature = Feature.get(eachFeature.id)
-          log.debug "evaluating overlap of feature ${feature.name} of class ${feature.class.name}"
+          println "evaluating overlap of feature ${feature.name} of class ${feature.class.name}"
 
           if (!gene && feature instanceof Gene && !(feature instanceof Pseudogene)) {
             Gene tmpGene = (Gene) feature;
-            log.debug "found an overlapping gene ${tmpGene}"
+            println "found an overlapping gene ${tmpGene}"
             // removing name from transcript JSON since its naming will be based off of the overlapping gene
             Transcript tmpTranscript
             if (jsonTranscript.has(FeatureStringEnum.NAME.value)) {
@@ -316,7 +320,7 @@ class FeatureService {
             }
 
             if (tmpTranscript && tmpGene && overlapperService.overlaps(tmpTranscript, tmpGene)) {
-              log.debug "There is an overlap, adding to an existing gene"
+              println "There is an overlap, adding to an existing gene"
               transcript = tmpTranscript;
               gene = tmpGene;
               addTranscriptToGene(gene, transcript)
@@ -386,7 +390,7 @@ class FeatureService {
       }
     }
     if (gene == null) {
-      log.debug "gene is null"
+      println "gene is null"
       // Scenario III - create a de-novo gene
       JSONObject jsonGene = new JSONObject();
       if (jsonTranscript.has(FeatureStringEnum.PARENT.value)) {
@@ -401,6 +405,7 @@ class FeatureService {
         jsonGene.put(FeatureStringEnum.TYPE.value, convertCVTermToJSON(FeatureStringEnum.CV.value, cvTermString));
       }
 
+      println "setting unique gene name "
       String geneName = null
       if (jsonGene.has(FeatureStringEnum.NAME.value)) {
         geneName = jsonGene.get(FeatureStringEnum.NAME.value)
@@ -419,19 +424,24 @@ class FeatureService {
         geneName = jsonTranscript.getString(FeatureStringEnum.GENE_NAME.value)
       }
       jsonGene.put(FeatureStringEnum.NAME.value, geneName)
+      println "SET unique gene name ${geneName}"
 
       gene = (Gene) convertJSONToFeature(jsonGene, sequence);
+      println "converted gene ${gene}"
       updateNewGsolFeatureAttributes(gene, sequence);
+      println "update attrs ${gene}"
 
       if (gene.getFmin() < 0 || gene.getFmax() < 0) {
         throw new AnnotationException("Feature cannot have negative coordinates");
       }
       transcript = transcriptService.getTranscripts(gene).iterator().next();
+      println "got transcript ${transcript}"
       CDS cds = transcriptService.getCDS(transcript)
       if (cds) {
         readThroughStopCodon = cdsService.getStopCodonReadThrough(cds) ? true : false
       }
 
+      println "calc cds ${cds}"
       if (!useCDS || cds == null) {
         calculateCDS(transcript, readThroughStopCodon)
       } else {
@@ -452,7 +462,11 @@ class FeatureService {
         transcript.name = jsonTranscript.getString(FeatureStringEnum.NAME.value)
       }
 
+      println "output . . . calculating NonCanonical"
+
       nonCanonicalSplitSiteService.findNonCanonicalAcceptorDonorSpliceSites(transcript);
+
+      println "done . . Calculated NonCanonical ${transcript}"
       gene.save(insert: true)
       transcript.save(flush: true)
 

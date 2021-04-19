@@ -26,6 +26,10 @@ endpoints:
     jmx:
         enabled: true
 
+# TODO: this is a workaround that should be removed and flushing / transactions can be done within each method
+hibernate:
+    allow_update_outside_transaction: true
+
 ---
 grails:
     mime:
