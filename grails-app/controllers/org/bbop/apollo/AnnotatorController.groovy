@@ -719,17 +719,60 @@ class AnnotatorController {
         render annotatorService.getAppState(params.get(FeatureStringEnum.CLIENT_TOKEN.value).toString()) as JSON
     }
 
+//    @ApiOperation(value = "Update common path and return system info", nickname = "/updateCommonPath", httpMethod = "POST")
+//    @ApiImplicitParams([
+//            @ApiImplicitParam(name = "directory", required = true, type = "string",example = "Relative or absolute common path directory")
+//    ])
     @Transactional
-    String updateCommonPath(String directory) {
+    String updateCommonPath() {
+        def input = request.JSON
+        String directory = input.directory
         log.debug "Updating the common path for ${directory}"
         JSONObject returnObject = new JSONObject()
 
         try {
             String returnString = trackService.updateCommonDataDirectory(directory) as String
-            log.info "Returning common data directory ${returnString}"
+            log.debug "Returning common data directory ${returnString}"
             if (returnString) {
                 returnObject.error = returnString
             }
+            render getSystemInfo()
+            return
+        } catch (e) {
+            returnObject.error = e.getMessage()
+        }
+        render returnObject as JSON
+    }
+
+//    @ApiOperation(value = "Get system info", nickname = "/getSystemInfo", httpMethod = "GET")
+//    @ApiImplicitParams([
+//            @ApiImplicitParam(name = "directory", type = "new relative or absolute common path directory")
+//    ])
+    @Transactional(readOnly  = true )
+    String getSystemInfo() {
+        log.debug "Getting the common data path"
+        JSONObject returnObject = new JSONObject()
+
+        try {
+            String returnString = trackService.getCommonDataDirectory()
+            log.debug "Returning common data directory ${returnString}"
+            if (returnString) {
+                returnObject.error = returnString
+            }
+            File file = new File(returnString)
+            returnObject.put("relativePath",returnString)
+            returnObject.put("absolutePath",file.absolutePath)
+            returnObject.put("absolute",file.absolute)
+            returnObject.put("exists",file.exists())
+            returnObject.put("writable",file.canWrite())
+            returnObject.put("readable",file.canRead())
+            returnObject.put("directory",file.isDirectory())
+            returnObject.put("executable",file.canExecute())
+            returnObject.put("freeSpace",file.getFreeSpace())
+            returnObject.put("totalSpace",file.getTotalSpace())
+            returnObject.put("usableSpace",file.getUsableSpace())
+            returnObject.put("root",new File("").absolutePath)
+            returnObject.put("realPath",servletContext.getRealPath("/"))
         } catch (e) {
             returnObject.error = e.getMessage()
         }
