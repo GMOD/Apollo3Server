@@ -337,11 +337,13 @@ class OrganismController {
 
                 if (directory.mkdirs() && directory.setWritable(true)) {
 
+                    println "A"
                     if (organismDataFile) {
                         println "Successfully created directory ${directory.absolutePath}"
                         println "file type is ${organismDataFile.getClass().getCanonicalName()}"
                         println "original name ${organismDataFile.getOriginalFilename()} is empty ? ${organismDataFile.empty} ${organismDataFile}"
 //            File archiveFile = new File(organismDataFile.getOriginalFilename())
+                        println "B"
                         File archiveFile = File.createTempFile("archive", ".tar.gz")
                         println "1 archive file ${archiveFile} "
                         println "2 archive file${archiveFile.absolutePath}, ${archiveFile.exists()} ${archiveFile.size()}"
@@ -371,7 +373,9 @@ class OrganismController {
                         }
                     } else if (sequenceDataFile) {
 
+                        println "C ${sequenceDataFile.originalFilename}"
                         SequenceTypeEnum sequenceTypeEnum = SequenceTypeEnum.getSequenceTypeForFile(sequenceDataFile.getOriginalFilename())
+                        println "D ${sequenceTypeEnum}"
                         if (sequenceTypeEnum == null) {
                             returnObject.put("error", "Bad file input: " + sequenceDataFile.originalFilename)
                             render returnObject
@@ -383,7 +387,8 @@ class OrganismController {
                             File rawDirectory = new File(directory.absolutePath + "/seq")
                             assert rawDirectory.mkdir()
                             assert rawDirectory.setWritable(true)
-                            File archiveFile = new File(rawDirectory.absolutePath + File.separator + organismName + "." + sequenceTypeEnum.suffix)
+                            File archiveFile = new File(rawDirectory.absolutePath + File.separator + organismName + ".fa" )
+                            println "output path: ${archiveFile.absolutePath}"
                             sequenceDataFile.transferTo(archiveFile)
                             organism.directory = directory.absolutePath
 
@@ -398,10 +403,10 @@ class OrganismController {
                                 oldFile.renameTo(newFile)
                             }
 
-                            println "search db file : ${searchDatabaseDataFile.name} ${searchDatabaseDataFile.size} ${searchDatabaseDataFile.originalFilename} ${searchDatabaseDataFile.contentType}"
 
 
                             if (searchDatabaseDataFile != null && searchDatabaseDataFile.size > 0) {
+                                println "search db file : ${searchDatabaseDataFile.name} ${searchDatabaseDataFile.size} ${searchDatabaseDataFile.originalFilename} ${searchDatabaseDataFile.contentType}"
                                 File searchDirectory = new File(directory.absolutePath + "/search")
                                 assert searchDirectory.mkdir()
                                 assert searchDirectory.setWritable(true)
@@ -1568,6 +1573,8 @@ class OrganismController {
                     id                        : organism.id,
                     commonName                : organism.commonName,
                     blatdb                    : organism.blatdb,
+                    genomeFasta               : organism.genomeFasta,
+                    genomeFastaIndex          : organism.genomeFastaIndex,
                     directory                 : organism.directory,
                     annotationCount           : annotationCount,
                     sequences                 : sequenceCount,
@@ -1638,5 +1645,91 @@ class OrganismController {
         }
     }
 
+    /**
+     * TODO: admin access
+     * @return
+     */
+//    @ApiOperation(value ="Get common track directory")
+    def getCommonTrackDirectory() {
+        // admin only operation
+        String commonDirectory = trackService.commonDataDirectory
+        JSONObject returnObject = new JSONObject(["path":null])
+        if(commonDirectory.startsWith("/")){
+            returnObject.path = commonDirectory
+        }
+        else{
+            String dotPath = servletContext.getRealPath("/")
+            if(dotPath.contains("src/main/webapp")){
+                File file = new File(dotPath).parentFile.parentFile.parentFile
+                dotPath = file.absolutePath
+            }
+            log.debug "dot path"
+            log.debug dotPath
+            returnObject.path = dotPath  + File.separator +  commonDirectory
+        }
+        if(!(new File(returnObject.path).exists())){
+            String errorString = "path does not exist for ${commonDirectory} with resolved path ${returnObject.path}"
+            log.error(errorString)
+            returnObject.path = errorString
+        }
+        render returnObject as JSON
+    }
+
+    /**
+     * TODO: admin access
+     * @return
+     */
+//    @ApiOperation(value ="Removes empty common tracks")
+    def removeEmptyCommonTracks() {
+        // admin only operation
+        String commonDirectory = trackService.commonDataDirectory
+        int count = 0
+        String fullPath
+        if(commonDirectory.startsWith("/")){
+            fullPath = commonDirectory
+        }
+        else{
+            String dotPath = servletContext.getRealPath("/")
+            if(dotPath.contains("src/main/webapp")){
+                File file = new File(dotPath).parentFile.parentFile.parentFile
+                dotPath = file.absolutePath
+            }
+            log.debug "dot path"
+            log.debug dotPath
+            fullPath = dotPath  + File.separator +  commonDirectory
+        }
+
+        JSONObject returnObject = new JSONObject(["message":null])
+        def commonFilePath = new File(fullPath)
+
+        if(!commonFilePath.exists()){
+            String errorString = "path does not exist for ${commonDirectory} with resolved path ${returnObject.path}"
+            log.error(errorString)
+            returnObject.error = errorString
+            response.status = 500
+        }
+        else{
+            // for each directory i
+            List<String> pathsToDelete =[]
+            commonFilePath.listFiles().each { File file ->
+                if(file.isDirectory()){
+                    pathsToDelete.add(file.absolutePath)
+                }
+            }
+            def organismsToSave = Organism.findAllByDirectoryInList(pathsToDelete)
+            organismsToSave.each { Organism organism ->
+                log.warn("Not deleting ${organism.commonName} ${organism.id} with ${organism.directory} because it is still in use")
+                pathsToDelete.remove(organism.directory)
+            }
+
+            pathsToDelete.each {String it ->
+                assert new File(it).deleteDir()
+                ++count
+            }
+        }
+
+        returnObject.message = "${count} directories removed"
+        render returnObject as JSON
+    }
 
 }

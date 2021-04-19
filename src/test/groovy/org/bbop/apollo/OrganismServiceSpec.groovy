@@ -2,6 +2,7 @@ package org.bbop.apollo
 
 import grails.testing.services.ServiceUnitTest
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
+import org.bbop.apollo.gwt.shared.track.SequenceTypeEnum
 import spock.lang.Specification
 
 /**
