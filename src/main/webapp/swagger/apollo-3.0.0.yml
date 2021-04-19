@@ -1,14 +1,14 @@
 openapi: 3.0.1
 info:
   title: Apollo
-  description: my api
+  description: Web Apollo Server
   contact:
     name: Raise issue
     url: https://github.com/GMOD/Apollo3Server/issues
     email: nathandunn@lbl.gov
   license:
-    name: Apache 2.0
-    url: http://foo.bar
+    name: Modified BSD License
+    url: https://raw.githubusercontent.com/GMOD/Apollo3Server/master/LICENSE.md
   version: 3.0.0
 paths:
   /organism/organism/deleteOrganism:
