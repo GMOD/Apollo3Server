@@ -12,8 +12,8 @@ import io.swagger.v3.oas.annotations.info.License
     info = @Info(
         title = "Apollo",
         version = "3.0.0",
-        description = "my api",
-        license = @License(name = "Apache 2.0", url = "http://foo.bar"),
+        description = "Web Apollo Server",
+        license = @License(name = "Modified BSD License", url = "https://raw.githubusercontent.com/GMOD/Apollo3Server/master/LICENSE.md"),
         contact = @Contact(url = "https://github.com/GMOD/Apollo3Server/issues", name = "Raise issue", email = "nathandunn@lbl.gov")
     )
 )

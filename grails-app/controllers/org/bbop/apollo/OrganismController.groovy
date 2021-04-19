@@ -4,13 +4,16 @@ import grails.converters.JSON
 import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import htsjdk.samtools.reference.FastaSequenceIndexCreator
+import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Post
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.parameters.RequestBody
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
 import org.bbop.apollo.gwt.shared.PermissionEnum
@@ -68,6 +71,8 @@ class OrganismController {
 //        // , @ApiImplicitParam(name = "id", type = "string or number", paramType = "query", example = "Pass an Organism ID or commonName that corresponds to the organism to be removed")
 //        // , @ApiImplicitParam(name = "organism", type = "string or number", paramType = "query", example = "Pass an Organism ID or commonName that corresponds to the organism to be removed")
 //    ])
+    @Post(uri="/organism/deleteOrganism",produces = MediaType.APPLICATION_JSON)
+    @ApiResponse(content = @Content(mediaType="application/json"))
     @Transactional
     def deleteOrganism() {
 

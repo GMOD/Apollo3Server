@@ -10,3 +10,18 @@ info:
     name: Apache 2.0
     url: http://foo.bar
   version: 3.0.0
+paths:
+  /organism/organism/deleteOrganism:
+    post:
+      summary: Remove an organism
+      operationId: deleteOrganism
+      parameters: []
+      requestBody:
+        description: Organism to delete
+        content:
+          application/json: {}
+        required: true
+      responses:
+        default:
+          content:
+            application/json: {}
