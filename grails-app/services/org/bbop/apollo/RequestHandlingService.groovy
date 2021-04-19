@@ -771,11 +771,11 @@ class RequestHandlingService {
         JSONArray featuresArray = inputObject.getJSONArray(FeatureStringEnum.FEATURES.value)
         JSONObject returnObject = jsonWebUtilityService.createJSONFeatureContainer()
 
-//        println "addTranscript ${inputObject.toString()}"
+        println "addTranscript ${inputObject.toString()}"
         Sequence sequence = permissionService.checkPermissions(inputObject, PermissionEnum.WRITE)
-//        println "sequence: ${sequence}"
-//        println "organism: ${sequence.organism}"
-//        println "number of features: ${featuresArray?.size()}"
+        println "sequence: ${sequence}"
+        println "organism: ${sequence.organism}"
+        println "number of features: ${featuresArray?.size()}"
 
         boolean useName = false
         boolean useCDS = configWrapperService.useCDS()

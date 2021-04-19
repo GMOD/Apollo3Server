@@ -78,6 +78,8 @@ class OrganismController {
 
         try {
             JSONObject organismJson = permissionService.handleInput(request, params)
+
+            // TODO: handle write permissions
             println "deleteOrganism ${organismJson}"
             println "organism ID: ${organismJson.id}"
             // backporting a bug here:
@@ -210,6 +212,7 @@ class OrganismController {
     @NotTransactional
     def deleteOrganismFeatures() {
         JSONObject organismJson = permissionService.handleInput(request, params)
+        println "input organism json ${organismJson as JSON}"
         if (organismJson.username == "" || organismJson.organism == "" || organismJson.password == "") {
             def error = ['error': 'Empty fields in request JSON']
             render error as JSON
