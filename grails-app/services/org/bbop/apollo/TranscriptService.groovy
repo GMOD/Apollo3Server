@@ -28,7 +28,12 @@ class TranscriptService {
      * @return CDS associated with this transcript
      */
     CDS getCDS(Transcript transcript) {
-        return (CDS) featureRelationshipService.getChildForFeature(transcript, CDS.ontologyId)
+//        return (CDS) featureRelationshipService.getChildForFeature(transcript, CDS.ontologyId)
+        Feature cdsFeature = featureRelationshipService.getChildForFeature(transcript, CDS.ontologyId)
+        if(cdsFeature){
+            return CDS.findById(cdsFeature.id)
+        }
+        return null
 
     }
 
@@ -39,7 +44,14 @@ class TranscriptService {
      * @return Collection of exons associated with this transcript
      */
     Collection<Exon> getExons(Transcript transcript) {
-        return (Collection<Exon>) featureRelationshipService.getChildrenForFeatureAndTypes(transcript, Exon.ontologyId)
+        def exonFeatures = featureRelationshipService.getChildrenForFeatureAndTypes(transcript, Exon.ontologyId)
+        List<Exon> exonList = []
+
+        for(def e : exonFeatures){
+            exonList.add(Exon.get(e.id))
+        }
+
+        return exonList
     }
 
     Collection<Exon> getSortedExons(Transcript transcript, boolean sortByStrand ) {
@@ -56,7 +68,8 @@ class TranscriptService {
      * @return Gene that this Transcript is associated with
      */
     Gene getGene(Transcript transcript) {
-        return (Gene) featureRelationshipService.getParentForFeature(transcript, Gene.ontologyId, Pseudogene.ontologyId,PseudogenicRegion.ontologyId,ProcessedPseudogene.ontologyId)
+        def feature =  featureRelationshipService.getParentForFeature(transcript, Gene.ontologyId, Pseudogene.ontologyId,PseudogenicRegion.ontologyId,ProcessedPseudogene.ontologyId)
+        return feature ? Gene.findById(feature.id) : null
     }
 
     Pseudogene getPseudogene(Transcript transcript) {
