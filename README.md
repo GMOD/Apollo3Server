@@ -23,23 +23,49 @@ We provide a [Demonstration Apollo](docs/Demo.md) site and an integrated service
 
 The [User's Guide](docs/UsersGuide.md) provides guidance on how to use it.  Please feel free to update this documentation.
 
+### Requirements
+
+- Java 11
+- Neo4j 3.5
+- Set username / password same as `neo4j/testpass` or whatever is in `application.yml`
+
+
 
 ### Launch for development (server only)
 
-    ./grailsw run-app 
-    
-OR 
-    
     ./gradlew bootRun 
+
+Confirm it is up:
+
+    http://localhost:8080/
+
+Test API
+
+    http://localhost:8080/user/loadUsers
+
+
     
 ### Run tests 
 
-    ./grailsw test-app
+Only the unit tests run successfully currently. 
+
+    ./grailsw test-app -unit
     
-OR 
+OR  (runs all checks)
     
-    ./gradlew test
-    
+    ./gradlew check 
+ 
+
+#### Functional tests
+
+From https://github.com/GMOD/apollo-gmod-js/
+
+    git clone https://github.com/GMOD/apollo-gmod-js/
+    yarn
+    yarn test:nowatch
+
+Note that `redo.sh` script provided to clear and restart from a homebrew installation.  Modify, etc, as needed
+
 ### Run with Docker
 
      docker build . 
