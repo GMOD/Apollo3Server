@@ -2,13 +2,18 @@ package org.bbop.apollo.go
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
+import io.micronaut.http.annotation.Post
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.user.User
 import org.bbop.apollo.gwt.shared.PermissionEnum
 import org.bbop.apollo.history.FeatureOperation
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
-import io.swagger.annotations.*
+//import io.swagger.annotations.*
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 
@@ -21,11 +26,12 @@ class GoAnnotationController {
   def featureEventService
   def featureService
 
-  @ApiOperation(value = "Load Go Annotations for feature", nickname = "/goAnnotation", httpMethod = "POST")
-  @ApiImplicitParams([
-      @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-      , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-      , @ApiImplicitParam(name = "uniqueName", type = "Feature uniqueName", paramType = "query", example = "Feature name to query on")
+  @Post
+  @Operation(description = "Load Go Annotations for feature", summary = "/goAnnotation", method= "POST")
+  @Parameters([
+      @Parameter(name = "username",  in = ParameterIn.HEADER)
+      , @Parameter(name = "password",  in = ParameterIn.HEADER)
+      , @Parameter(name = "uniqueName",  in = ParameterIn.HEADER , example = "Feature name to query on")
   ]
   )
   def index() {

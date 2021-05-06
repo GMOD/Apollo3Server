@@ -2,7 +2,7 @@ buildscript {
     repositories {
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
-        maven { url "https://dl.bintray.com/steamcleaner/plugins/" }
+//        maven { url "https://dl.bintray.com/steamcleaner/plugins/" }
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
@@ -29,6 +29,7 @@ apply plugin: "org.grails.grails-gsp"
 // In this section you declare where to find the dependencies of your project
 repositories {
     mavenLocal()
+//    jcenter()
     maven {
         url "https://repo.grails.org/grails/core"
     }
@@ -41,6 +42,8 @@ repositories {
     }
     maven { url "https://oss.jfrog.org/repo/" }
     maven { url "https://dl.bintray.com/steamcleaner/plugins/"}
+//    maven { url "https://dl.bintray.com/bobyang/plugins" }
+
 
 }
 
@@ -60,12 +63,33 @@ configurations {
 dependencies {
     // START added dependencies
 //    compile 'org.grails.plugins:swagger:1.0.1'
+//    annotationProcessor "io.micronaut.configuration:micronaut-openapi:1.4.5"
+//    compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.5"
+//    compile "io.swagger.core.v3:swagger-annotations:2.1.9"
+//    compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.5"
+
+
+//    compileOnly "io.micronaut:micronaut-validation:2.4.2"
+//    compileOnly "io.micronaut.configuration:micronaut-openapi:1.5.3"
+//    compile "io.micronaut:micronaut-inject:2.4.2"
+//    compile "io.micronaut:micronaut-validation:2.4.2"
+//    compile "io.micronaut:micronaut-runtime:2.4.2"
+//    compile "io.swagger.core.v3:swagger-annotations:2.1.9"
+//    compile "io.micronaut:micronaut-http-client:2.4.2"
+//    compile "io.micronaut:micronaut-http-server-netty:2.4.2"
+
+    compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.5"
+    compile "io.swagger.core.v3:swagger-annotations:2.1.9"
+    compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.5"
+
 
 //    runtime 'mysql:mysql-connector-java:5.1.49'
 //    runtime 'org.postgresql:postgresql:9.4.1212'
 //    compile "org.grails.plugins:swagger-grails:0.4.0"
 //    compile "io.springfox.grails:springfox-grails:1.0.1-SNAPSHOT" //(1)
-    compile "org.grails.plugins:swagger-grails:0.4.0"
+//    compile "org.grails.plugins:swagger-grails:0.4.0"
+//    implementation 'swagger.grails4:swagger-grails4:0.0.2'
+
 
 
 //    annotationProcessor "io.micronaut.configuration:micronaut-openapi:1.4.0"
