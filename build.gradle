@@ -2,12 +2,9 @@ buildscript {
     repositories {
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
-        maven { url "https://dl.bintray.com/steamcleaner/plugins/" }
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-//        classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
-//        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.15.1"
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:3.0.10"
         classpath 'org.springframework:springloaded:1.2.8.RELEASE'
     }
@@ -29,16 +26,8 @@ apply plugin: "org.grails.grails-gsp"
 // In this section you declare where to find the dependencies of your project
 repositories {
     mavenLocal()
-    maven {
-        url "https://repo.grails.org/grails/core"
-    }
-    // added
-    maven {
-//        url "https://dl.bintray.com/ajay-kumar/plugins"
-//        url "https://dl.bintray.com/steamcleaner/plugins/"
-         url 'http://oss.jfrog.org/artifactory/oss-snapshot-local/'
-
-    }
+    maven {url "https://repo.grails.org/grails/core" }
+    maven { url "https://steamcleaner.jfrog.io/artifactory/grails-plugins" }
     maven { url "https://oss.jfrog.org/repo/" }
     maven { url "https://dl.bintray.com/steamcleaner/plugins/"}
 
