@@ -2,9 +2,9 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
-import io.swagger.annotations.ApiOperation
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.gwt.shared.PermissionEnum
 import org.bbop.apollo.history.FeatureOperation
@@ -24,11 +24,11 @@ class ProvenanceController {
   def featureEventService
   def featureService
 
-  @ApiOperation(value = "Load Annotations for feature", nickname = "/provenance", httpMethod = "POST")
-  @ApiImplicitParams([
-    @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-    , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-    , @ApiImplicitParam(name = "uniqueName", type = "Feature uniqueName", paramType = "query", example = "Feature name to query on")
+  @Operation(value = "Load Annotations for feature", nickname = "/provenance", httpMethod = "POST")
+  @Parameters([
+    @Parameter(name = "username", type = "email", paramType = "query")
+    , @Parameter(name = "password", type = "password", paramType = "query")
+    , @Parameter(name = "uniqueName", type = "Feature uniqueName", paramType = "query", example = "Feature name to query on")
   ]
   )
   def index() {
@@ -51,17 +51,17 @@ class ProvenanceController {
 //        "negate":false,
 //        "withOrFrom":["withprefix:12312321"],
 //        "references":["refprefix:44444444"]}
-  @ApiOperation(value = "Save New Go Annotations for feature", nickname = "/provenance/save", httpMethod = "POST")
-  @ApiImplicitParams([
-    @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-    , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-          , @ApiImplicitParam(name = "feature", type = "string", paramType = "query", example = "Feature uniqueName to query on")
-    , @ApiImplicitParam(name = "field", type = "string", paramType = "query", example = "Field type to annotate ")
-    , @ApiImplicitParam(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
-    , @ApiImplicitParam(name = "evidenceCodeLabel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
-    , @ApiImplicitParam(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312]]\"]}")
-      , @ApiImplicitParam(name = "notes", type = "string", paramType = "query", example = "JSON Array of notes  {[\"A simple note\"]}")
-          , @ApiImplicitParam(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312\"]}")
+  @Operation(value = "Save New Go Annotations for feature", nickname = "/provenance/save", httpMethod = "POST")
+  @Parameters([
+    @Parameter(name = "username", type = "email", paramType = "query")
+    , @Parameter(name = "password", type = "password", paramType = "query")
+          , @Parameter(name = "feature", type = "string", paramType = "query", example = "Feature uniqueName to query on")
+    , @Parameter(name = "field", type = "string", paramType = "query", example = "Field type to annotate ")
+    , @Parameter(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
+    , @Parameter(name = "evidenceCodeLabel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
+    , @Parameter(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312]]\"]}")
+      , @Parameter(name = "notes", type = "string", paramType = "query", example = "JSON Array of notes  {[\"A simple note\"]}")
+          , @Parameter(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312\"]}")
   ]
   )
   @Transactional
@@ -105,18 +105,18 @@ class ProvenanceController {
     render annotations as JSON
   }
 
-  @ApiOperation(value = "Update existing annotations for feature", nickname = "/provenance/update", httpMethod = "POST")
-  @ApiImplicitParams([
-    @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-    , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-    , @ApiImplicitParam(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to update (required)")
-    , @ApiImplicitParam(name = "feature", type = "string", paramType = "query", example = "uniqueName of feature to query on")
-    , @ApiImplicitParam(name = "field", type = "string", paramType = "query", example = "field type annotated")
-    , @ApiImplicitParam(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
-    , @ApiImplicitParam(name = "evidenceCodeLabel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
-    , @ApiImplicitParam(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312]]\"]}")
-    , @ApiImplicitParam(name = "notes", type = "string", paramType = "query", example = "JSON Array of notes  {[\"A simple note\"]}")
-    , @ApiImplicitParam(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312\"]}")
+  @Operation(value = "Update existing annotations for feature", nickname = "/provenance/update", httpMethod = "POST")
+  @Parameters([
+    @Parameter(name = "username", type = "email", paramType = "query")
+    , @Parameter(name = "password", type = "password", paramType = "query")
+    , @Parameter(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to update (required)")
+    , @Parameter(name = "feature", type = "string", paramType = "query", example = "uniqueName of feature to query on")
+    , @Parameter(name = "field", type = "string", paramType = "query", example = "field type annotated")
+    , @Parameter(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
+    , @Parameter(name = "evidenceCodeLabel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
+    , @Parameter(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312]]\"]}")
+    , @Parameter(name = "notes", type = "string", paramType = "query", example = "JSON Array of notes  {[\"A simple note\"]}")
+    , @Parameter(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312\"]}")
   ]
   )
   @Transactional
@@ -160,12 +160,12 @@ class ProvenanceController {
     render annotations as JSON
   }
 
-  @ApiOperation(value = "Delete existing annotations for feature", nickname = "/provenance/delete", httpMethod = "POST")
-  @ApiImplicitParams([
-    @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-    , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-    , @ApiImplicitParam(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to delete (required)")
-    , @ApiImplicitParam(name = "uniqueName", type = "string", paramType = "query", example = "Feature uniqueName to remove feature from")
+  @Operation(value = "Delete existing annotations for feature", nickname = "/provenance/delete", httpMethod = "POST")
+  @Parameters([
+    @Parameter(name = "username", type = "email", paramType = "query")
+    , @Parameter(name = "password", type = "password", paramType = "query")
+    , @Parameter(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to delete (required)")
+    , @Parameter(name = "uniqueName", type = "string", paramType = "query", example = "Feature uniqueName to remove feature from")
   ]
   )
   @Transactional

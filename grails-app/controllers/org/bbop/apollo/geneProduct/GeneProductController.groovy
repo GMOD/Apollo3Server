@@ -8,7 +8,7 @@ import org.bbop.apollo.gwt.shared.PermissionEnum
 import org.bbop.apollo.history.FeatureOperation
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
-import io.swagger.annotations.*
+import io.swagger.v3.oas.annotations.*
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 
@@ -21,9 +21,9 @@ class GeneProductController {
     def featureEventService
     def featureService
 
-    @ApiOperation(value = "Returns a JSON array of all suggested gene product names", nickname = "/geneProduct/search", httpMethod =  "get")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "query", type = "string", paramType = "query", example = "Query value")
+    @Operation(value = "Returns a JSON array of all suggested gene product names", nickname = "/geneProduct/search", httpMethod =  "get")
+    @Parameters([
+        @Parameter(name = "query", type = "string", paramType = "query", example = "Query value")
     ])
     def search() {
         try {
@@ -41,11 +41,11 @@ class GeneProductController {
         }
     }
 
-    @ApiOperation(value = "Load gene product for feature", nickname = "/geneProduct", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "uniqueName", type = "Feature uniqueName", paramType = "query", example = "Gene name to query on")
+    @Operation(value = "Load gene product for feature", nickname = "/geneProduct", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "uniqueName", type = "Feature uniqueName", paramType = "query", example = "Gene name to query on")
     ]
     )
     def index() {
@@ -68,19 +68,19 @@ class GeneProductController {
 //        "negate":false,
 //        "withOrFrom":["withprefix:12312321"],
 //        "references":["refprefix:44444444"]}
-    @ApiOperation(value = "Save New gene product for feature", nickname = "/geneProduct/save", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "feature", type = "string", paramType = "query", example = "uniqueName of gene feature to query on")
-        , @ApiImplicitParam(name = "productName", type = "string", paramType = "query", example = "Name of gene product")
-        , @ApiImplicitParam(name = "alternate", type = "boolean", paramType = "query", example = "Alternate (default false)")
-        , @ApiImplicitParam(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
-        , @ApiImplicitParam(name = "evidenceCodeLAbel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
-        , @ApiImplicitParam(name = "negate", type = "boolean", paramType = "query", example = "Negate evidence (default false)")
-        , @ApiImplicitParam(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312]]\"]}")
-        , @ApiImplicitParam(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312]]\"]}")
-        , @ApiImplicitParam(name = "notes", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312]]\"]}")
+    @Operation(value = "Save New gene product for feature", nickname = "/geneProduct/save", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "feature", type = "string", paramType = "query", example = "uniqueName of gene feature to query on")
+        , @Parameter(name = "productName", type = "string", paramType = "query", example = "Name of gene product")
+        , @Parameter(name = "alternate", type = "boolean", paramType = "query", example = "Alternate (default false)")
+        , @Parameter(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
+        , @Parameter(name = "evidenceCodeLAbel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
+        , @Parameter(name = "negate", type = "boolean", paramType = "query", example = "Negate evidence (default false)")
+        , @Parameter(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312]]\"]}")
+        , @Parameter(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312]]\"]}")
+        , @Parameter(name = "notes", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312]]\"]}")
     ]
     )
     @Transactional
@@ -125,20 +125,20 @@ class GeneProductController {
         render annotations as JSON
     }
 
-    @ApiOperation(value = "Update existing gene products for feature", nickname = "/geneProduct/update", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to update (required)")
-        , @ApiImplicitParam(name = "feature", type = "string", paramType = "query", example = "uniqueName of feature to query on")
-        , @ApiImplicitParam(name = "productName", type = "string", paramType = "query", example = "gene product name")
-        , @ApiImplicitParam(name = "alternate", type = "boolean", paramType = "query", example = "(default false) alternate")
-        , @ApiImplicitParam(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
-        , @ApiImplicitParam(name = "evidenceCodeLabel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
-        , @ApiImplicitParam(name = "negate", type = "boolean", paramType = "query", example = "Negate evidence (default false)")
-        , @ApiImplicitParam(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312\"]}")
-        , @ApiImplicitParam(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312\"]}")
-        , @ApiImplicitParam(name = "notes", type = "string", paramType = "query", example = "JSON Array of notes strings, e.g., {[\"This is a note\"]}")
+    @Operation(value = "Update existing gene products for feature", nickname = "/geneProduct/update", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to update (required)")
+        , @Parameter(name = "feature", type = "string", paramType = "query", example = "uniqueName of feature to query on")
+        , @Parameter(name = "productName", type = "string", paramType = "query", example = "gene product name")
+        , @Parameter(name = "alternate", type = "boolean", paramType = "query", example = "(default false) alternate")
+        , @Parameter(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
+        , @Parameter(name = "evidenceCodeLabel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
+        , @Parameter(name = "negate", type = "boolean", paramType = "query", example = "Negate evidence (default false)")
+        , @Parameter(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312\"]}")
+        , @Parameter(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312\"]}")
+        , @Parameter(name = "notes", type = "string", paramType = "query", example = "JSON Array of notes strings, e.g., {[\"This is a note\"]}")
     ]
     )
     @Transactional
@@ -183,12 +183,12 @@ class GeneProductController {
         render annotations as JSON
     }
 
-    @ApiOperation(value = "Delete existing gene product for feature", nickname = "/geneProduct/delete", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to delete (required)")
-        , @ApiImplicitParam(name = "uniqueName", type = "string", paramType = "query", example = "Feature uniqueName to remove feature from")
+    @Operation(value = "Delete existing gene product for feature", nickname = "/geneProduct/delete", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to delete (required)")
+        , @Parameter(name = "uniqueName", type = "string", paramType = "query", example = "Feature uniqueName to remove feature from")
     ]
     )
     @Transactional

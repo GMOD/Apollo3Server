@@ -2,10 +2,10 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
-import io.swagger.annotations.ApiOperation
+import io.swagger.v3.oas.annotations.Api
+import io.swagger.v3.oas.annotations.ApiImplicitParam
+import io.swagger.v3.oas.annotations.ApiImplicitParams
+import io.swagger.v3.oas.annotations.ApiOperation
 import org.bbop.apollo.attributes.CannedKey
 import org.bbop.apollo.attributes.CannedKeyOrganismFilter
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
@@ -15,7 +15,7 @@ import org.grails.web.json.JSONObject
 
 import static org.springframework.http.HttpStatus.*
 
-@Api(value="/cannedKey",tags = "Canned Keys Services: Methods for managing canned keys")
+@Controller(value="/cannedKey",tags = "Canned Keys Services: Methods for managing canned keys")
 @Transactional(readOnly = true)
 class CannedKeyController {
 
@@ -160,12 +160,12 @@ class CannedKeyController {
         }
     }
 
-    @ApiOperation(value = "Create canned key", nickname = "/cannedKey/createKey", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "key", type = "string", paramType = "query", example = "Canned key to add")
-            , @ApiImplicitParam(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
+    @Operation(value = "Create canned key", nickname = "/cannedKey/createKey", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "key", type = "string", paramType = "query", example = "Canned key to add")
+            , @Parameter(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
     ]
     )
     @Transactional
@@ -201,14 +201,14 @@ class CannedKeyController {
         }
     }
 
-    @ApiOperation(value = "Update canned key", nickname = "/cannedKey/updateKey", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Canned key ID to update (or specify the old_key)")
-            , @ApiImplicitParam(name = "old_key", type = "string", paramType = "query", example = "Canned key to update")
-            , @ApiImplicitParam(name = "new_key", type = "string", paramType = "query", example = "Canned key to change to (the only editable option)")
-            , @ApiImplicitParam(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
+    @Operation(value = "Update canned key", nickname = "/cannedKey/updateKey", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "id", type = "long", paramType = "query", example = "Canned key ID to update (or specify the old_key)")
+            , @Parameter(name = "old_key", type = "string", paramType = "query", example = "Canned key to update")
+            , @Parameter(name = "new_key", type = "string", paramType = "query", example = "Canned key to change to (the only editable option)")
+            , @Parameter(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
     ]
     )
     @Transactional
@@ -251,12 +251,12 @@ class CannedKeyController {
         }
     }
 
-    @ApiOperation(value = "Remove a canned key", nickname = "/cannedKey/deleteKey", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Canned key ID to remove (or specify the name)")
-            , @ApiImplicitParam(name = "key", type = "string", paramType = "query", example = "Canned key to delete")
+    @Operation(value = "Remove a canned key", nickname = "/cannedKey/deleteKey", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "id", type = "long", paramType = "query", example = "Canned key ID to remove (or specify the name)")
+            , @Parameter(name = "key", type = "string", paramType = "query", example = "Canned key to delete")
     ])
     @Transactional
     def deleteKey() {
@@ -291,12 +291,12 @@ class CannedKeyController {
         }
     }
 
-    @ApiOperation(value = "Returns a JSON array of all canned keys, or optionally, gets information about a specific canned key", nickname = "/cannedKey/showKey", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Key ID to show (or specify a key)")
-            , @ApiImplicitParam(name = "key", type = "string", paramType = "query", example = "Key to show")
+    @Operation(value = "Returns a JSON array of all canned keys, or optionally, gets information about a specific canned key", nickname = "/cannedKey/showKey", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "id", type = "long", paramType = "query", example = "Key ID to show (or specify a key)")
+            , @Parameter(name = "key", type = "string", paramType = "query", example = "Key to show")
     ])
     @Transactional
     def showKey() {

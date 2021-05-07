@@ -2,10 +2,10 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
-import io.swagger.annotations.ApiOperation
+import io.micronaut.http.annotation.Controller
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
 import org.apache.shiro.crypto.hash.Sha256Hash
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.gwt.shared.GlobalPermissionEnum
@@ -20,7 +20,7 @@ import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 import org.springframework.http.HttpStatus
 
-@Api(value = "/user", tags = "User Services: Methods for managing users")
+@Controller(value = "/user", tags = "User Services: Methods for managing users")
 @Transactional(readOnly = true)
 class UserController {
 
@@ -33,18 +33,18 @@ class UserController {
     }
 
 
-    @ApiOperation(value = "Load all users and their permissions", nickname = "/loadUsers", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "userId", type = "long / string", paramType = "query", example = "Optionally only user a specific userId as an integer database id or a username string")
-        , @ApiImplicitParam(name = "start", type = "long / string", paramType = "query", example = "(optional) Result start / offset")
-        , @ApiImplicitParam(name = "length", type = "long / string", paramType = "query", example = "(optional) Result length")
-        , @ApiImplicitParam(name = "name", type = "string", paramType = "query", example = "(optional) Search name")
-        , @ApiImplicitParam(name = "sortColumn", type = "string", paramType = "query", example = "(optional) Sort column, default 'name'")
-        , @ApiImplicitParam(name = "sortAscending", type = "boolean", paramType = "query", example = "(optional) Sort column is ascending if true (default false)")
-        , @ApiImplicitParam(name = "omitEmptyOrganisms", type = "boolean", paramType = "query", example = "(optional) Omits empty organism permissions from return (default false)")
-        , @ApiImplicitParam(name = "showInactiveUsers", type = "boolean", paramType = "query", example = "(optional) Shows inactive users without permissions (default false)")
+    @Operation(value = "Load all users and their permissions", nickname = "/loadUsers", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "userId", type = "long / string", paramType = "query", example = "Optionally only user a specific userId as an integer database id or a username string")
+        , @Parameter(name = "start", type = "long / string", paramType = "query", example = "(optional) Result start / offset")
+        , @Parameter(name = "length", type = "long / string", paramType = "query", example = "(optional) Result length")
+        , @Parameter(name = "name", type = "string", paramType = "query", example = "(optional) Search name")
+        , @Parameter(name = "sortColumn", type = "string", paramType = "query", example = "(optional) Sort column, default 'name'")
+        , @Parameter(name = "sortAscending", type = "boolean", paramType = "query", example = "(optional) Sort column is ascending if true (default false)")
+        , @Parameter(name = "omitEmptyOrganisms", type = "boolean", paramType = "query", example = "(optional) Omits empty organism permissions from return (default false)")
+        , @Parameter(name = "showInactiveUsers", type = "boolean", paramType = "query", example = "(optional) Shows inactive users without permissions (default false)")
     ])
     def loadUsers() {
         try {
@@ -309,13 +309,13 @@ class UserController {
     }
 
 
-    @ApiOperation(value = "Add user to group", nickname = "/addUserToGroup", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "group", type = "string", paramType = "query", example = "Group name")
-        , @ApiImplicitParam(name = "userId", type = "long", paramType = "query", example = "User id")
-        , @ApiImplicitParam(name = "user", type = "email", paramType = "query", example = "User email/username (supplied if user id unknown)")
+    @Operation(value = "Add user to group", nickname = "/addUserToGroup", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "group", type = "string", paramType = "query", example = "Group name")
+        , @Parameter(name = "userId", type = "long", paramType = "query", example = "User id")
+        , @Parameter(name = "user", type = "email", paramType = "query", example = "User email/username (supplied if user id unknown)")
     ])
     @Transactional
     def addUserToGroup() {
@@ -334,13 +334,13 @@ class UserController {
         render new JSONObject() as JSON
     }
 
-    @ApiOperation(value = "Remove user from group", nickname = "/removeUserFromGroup", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "group", type = "string", paramType = "query", example = "Group name")
-        , @ApiImplicitParam(name = "userId", type = "long", paramType = "query", example = "User id")
-        , @ApiImplicitParam(name = "user", type = "email", paramType = "query", example = "User email/username (supplied if user id unknown)")
+    @Operation(value = "Remove user from group", nickname = "/removeUserFromGroup", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "group", type = "string", paramType = "query", example = "Group name")
+        , @Parameter(name = "userId", type = "long", paramType = "query", example = "User id")
+        , @Parameter(name = "user", type = "email", paramType = "query", example = "User email/username (supplied if user id unknown)")
     ])
     @Transactional
     def removeUserFromGroup() {
@@ -359,9 +359,9 @@ class UserController {
         render new JSONObject() as JSON
     }
 
-    @ApiOperation(value = "Get user", nickname = "/getUser", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query", example = "Email of the user to add")
+    @Operation(value = "Get user", nickname = "/getUser", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query", example = "Email of the user to add")
     ])
     @Transactional
     def getUser() {
@@ -374,16 +374,16 @@ class UserController {
         }
     }
 
-    @ApiOperation(value = "Create user", nickname = "/createUser", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "email", type = "email", paramType = "query", example = "Email of the user to add")
-        , @ApiImplicitParam(name = "firstName", type = "string", paramType = "query", example = "First name of user to add")
-        , @ApiImplicitParam(name = "lastName", type = "string", paramType = "query", example = "Last name of user to add")
-        , @ApiImplicitParam(name = "metadata", type = "string", paramType = "query", example = "User metadata (optional)")
-        , @ApiImplicitParam(name = "role", type = "string", paramType = "query", example = "User role USER / ADMIN (optional: default USER) ")
-        , @ApiImplicitParam(name = "newPassword", type = "string", paramType = "query", example = "Password of user to add")
+    @Operation(value = "Create user", nickname = "/createUser", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "email", type = "email", paramType = "query", example = "Email of the user to add")
+        , @Parameter(name = "firstName", type = "string", paramType = "query", example = "First name of user to add")
+        , @Parameter(name = "lastName", type = "string", paramType = "query", example = "Last name of user to add")
+        , @Parameter(name = "metadata", type = "string", paramType = "query", example = "User metadata (optional)")
+        , @Parameter(name = "role", type = "string", paramType = "query", example = "User role USER / ADMIN (optional: default USER) ")
+        , @Parameter(name = "newPassword", type = "string", paramType = "query", example = "Password of user to add")
     ])
     @Transactional
     def createUser() {
@@ -455,12 +455,12 @@ class UserController {
 
     }
 
-    @ApiOperation(value = "Inactivate user, removing all permsissions and setting flag", nickname = "/inactivateUser", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "userId", type = "long", paramType = "query", example = "User ID to delete")
-        , @ApiImplicitParam(name = "userToDelete", type = "email", paramType = "query", example = "Username (email) to inactivate")
+    @Operation(value = "Inactivate user, removing all permsissions and setting flag", nickname = "/inactivateUser", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "userId", type = "long", paramType = "query", example = "User ID to delete")
+        , @Parameter(name = "userToDelete", type = "email", paramType = "query", example = "Username (email) to inactivate")
     ])
     @Transactional
     def inactivateUser() {
@@ -516,12 +516,12 @@ class UserController {
         }
     }
 
-    @ApiOperation(value = "Activate user", nickname = "/activateUser", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "userId", type = "long", paramType = "query", example = "User ID to delete")
-        , @ApiImplicitParam(name = "userToActivate", type = "email", paramType = "query", example = "Username (email) to inactivate")
+    @Operation(value = "Activate user", nickname = "/activateUser", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "userId", type = "long", paramType = "query", example = "User ID to delete")
+        , @Parameter(name = "userToActivate", type = "email", paramType = "query", example = "Username (email) to inactivate")
     ])
     @Transactional
     def activateUser() {
@@ -570,12 +570,12 @@ class UserController {
         }
     }
 
-    @ApiOperation(value = "Delete user", nickname = "/deleteUser", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "userId", type = "long", paramType = "query", example = "User ID to delete")
-        , @ApiImplicitParam(name = "userToDelete", type = "email", paramType = "query", example = "Username (email) to delete")
+    @Operation(value = "Delete user", nickname = "/deleteUser", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "userId", type = "long", paramType = "query", example = "User ID to delete")
+        , @Parameter(name = "userToDelete", type = "email", paramType = "query", example = "Username (email) to delete")
     ])
     @Transactional
     def deleteUser() {
@@ -637,16 +637,16 @@ class UserController {
         }
     }
 
-    @ApiOperation(value = "Update user", nickname = "/updateUser", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "userId", type = "long", paramType = "query", example = "User ID to update")
-        , @ApiImplicitParam(name = "email", type = "email", paramType = "query", example = "Email of the user to update")
-        , @ApiImplicitParam(name = "firstName", type = "string", paramType = "query", example = "First name of user to update")
-        , @ApiImplicitParam(name = "lastName", type = "string", paramType = "query", example = "Last name of user to update")
-        , @ApiImplicitParam(name = "metadata", type = "string", paramType = "query", example = "User metadata (optional)")
-        , @ApiImplicitParam(name = "newPassword", type = "string", paramType = "query", example = "Password of user to update")
+    @Operation(value = "Update user", nickname = "/updateUser", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "userId", type = "long", paramType = "query", example = "User ID to update")
+        , @Parameter(name = "email", type = "email", paramType = "query", example = "Email of the user to update")
+        , @Parameter(name = "firstName", type = "string", paramType = "query", example = "First name of user to update")
+        , @Parameter(name = "lastName", type = "string", paramType = "query", example = "Last name of user to update")
+        , @Parameter(name = "metadata", type = "string", paramType = "query", example = "User metadata (optional)")
+        , @Parameter(name = "newPassword", type = "string", paramType = "query", example = "Password of user to update")
     ]
     )
     @Transactional
@@ -719,11 +719,11 @@ class UserController {
 
     }
 
-    @ApiOperation(value = "Get organism permissions for user, returns an array of permission objects", nickname = "/getOrganismPermissionsForUser", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "userId", type = "long", paramType = "query", example = "User ID to fetch")
+    @Operation(value = "Get organism permissions for user, returns an array of permission objects", nickname = "/getOrganismPermissionsForUser", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "userId", type = "long", paramType = "query", example = "User ID to fetch")
     ])
     def getOrganismPermissionsForUser() {
         JSONObject dataObject = permissionService.handleInput(request, params)
@@ -738,20 +738,20 @@ class UserController {
      * Only changing one of the boolean permissions
      * @return
      */
-    @ApiOperation(value = "Update organism permissions", nickname = "/updateOrganismPermission", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
+    @Operation(value = "Update organism permissions", nickname = "/updateOrganismPermission", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
 
-        , @ApiImplicitParam(name = "userId", type = "long", paramType = "query", example = "User ID to modify permissions for")
-        , @ApiImplicitParam(name = "user", type = "email", paramType = "query", example = "(Optional) user email of the user to modify permissions for if User ID is not provided")
-        , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "Name of organism to update")
-        , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Permission ID to update (can get from userId/organism instead)")
+        , @Parameter(name = "userId", type = "long", paramType = "query", example = "User ID to modify permissions for")
+        , @Parameter(name = "user", type = "email", paramType = "query", example = "(Optional) user email of the user to modify permissions for if User ID is not provided")
+        , @Parameter(name = "organism", type = "string", paramType = "query", example = "Name of organism to update")
+        , @Parameter(name = "id", type = "long", paramType = "query", example = "Permission ID to update (can get from userId/organism instead)")
 
-        , @ApiImplicitParam(name = "ADMINISTRATE", type = "boolean", paramType = "query", example = "Indicate if user has administrative and all lesser (including user/group) privileges for the organism")
-        , @ApiImplicitParam(name = "WRITE", type = "boolean", paramType = "query", example = "Indicate if user has write and all lesser privileges for the organism")
-        , @ApiImplicitParam(name = "EXPORT", type = "boolean", paramType = "query", example = "Indicate if user has export and all lesser privileges for the organism")
-        , @ApiImplicitParam(name = "READ", type = "boolean", paramType = "query", example = "Indicate if user has read and all lesser privileges for the organism")
+        , @Parameter(name = "ADMINISTRATE", type = "boolean", paramType = "query", example = "Indicate if user has administrative and all lesser (including user/group) privileges for the organism")
+        , @Parameter(name = "WRITE", type = "boolean", paramType = "query", example = "Indicate if user has write and all lesser privileges for the organism")
+        , @Parameter(name = "EXPORT", type = "boolean", paramType = "query", example = "Indicate if user has export and all lesser privileges for the organism")
+        , @Parameter(name = "READ", type = "boolean", paramType = "query", example = "Indicate if user has read and all lesser privileges for the organism")
     ])
     @Transactional
     def updateOrganismPermission() {
@@ -819,11 +819,11 @@ class UserController {
 
     }
 
-    @ApiOperation(value = "Get creator metadata for user, returns creator userId as JSONObject", nickname = "/getUserCreator", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "email", type = "email", paramType = "query", example = "Email of the user")
+    @Operation(value = "Get creator metadata for user, returns creator userId as JSONObject", nickname = "/getUserCreator", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "email", type = "email", paramType = "query", example = "Email of the user")
     ])
     def getUserCreator() {
         JSONObject dataObject = permissionService.handleInput(request, params)

@@ -1,12 +1,12 @@
 package org.bbop.apollo
 
 import grails.gorm.transactions.Transactional
-import io.swagger.annotations.Api
+import io.swagger.v3.oas.annotations.Api
 import org.bbop.apollo.attributes.FeatureType
 
 import static org.springframework.http.HttpStatus.*
 
-@Api(value ="/featureType",tags = "Manage feature types for canned values and statuses")
+@Controller(value ="/featureType",tags = "Manage feature types for canned values and statuses")
 @Transactional(readOnly = true)
 class FeatureTypeController {
 

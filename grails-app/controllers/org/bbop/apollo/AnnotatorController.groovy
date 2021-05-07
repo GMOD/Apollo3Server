@@ -4,10 +4,10 @@ import grails.converters.JSON
 import grails.core.GrailsApplication
 import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
-import io.swagger.annotations.ApiOperation
+import io.micronaut.http.annotation.Controller
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
 import org.bbop.apollo.attributes.FeatureSynonym
 import org.bbop.apollo.attributes.Status
 import org.bbop.apollo.attributes.Synonym
@@ -33,7 +33,7 @@ import org.springframework.http.HttpStatus
 /**
  * This is server-side code supporting the high-level functionality of the GWT AnnotatorPanel class.
  */
-@Api(value = "/annotator", tags = "Annotator Engine Services")
+@Controller(value = "/annotator")
 class AnnotatorController {
 
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
@@ -196,16 +196,16 @@ class AnnotatorController {
  * updates shallow properties of gene / feature
  * @return
  */
-    @ApiOperation(value = "Update shallow feature properties", nickname = "/updateFeature", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "uniqueName", type = "string", paramType = "query", example = "Uniquename (UUID) of the feature we are editing")
-        , @ApiImplicitParam(name = "name", type = "string", paramType = "query", example = "Updated feature name")
-        , @ApiImplicitParam(name = "symbol", type = "string", paramType = "query", example = "Updated feature symbol")
-        , @ApiImplicitParam(name = "synonyms", type = "string", paramType = "query", example = "Updated synonyms pipe (|) separated")
-        , @ApiImplicitParam(name = "description", type = "string", paramType = "query", example = "Updated feature description")
-        , @ApiImplicitParam(name = "status", type = "string", paramType = "query", example = "Updated status")
+    @Operation(value = "Update shallow feature properties", nickname = "/updateFeature", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "uniqueName", type = "string", paramType = "query", example = "Uniquename (UUID) of the feature we are editing")
+        , @Parameter(name = "name", type = "string", paramType = "query", example = "Updated feature name")
+        , @Parameter(name = "symbol", type = "string", paramType = "query", example = "Updated feature symbol")
+        , @Parameter(name = "synonyms", type = "string", paramType = "query", example = "Updated synonyms pipe (|) separated")
+        , @Parameter(name = "description", type = "string", paramType = "query", example = "Updated feature description")
+        , @Parameter(name = "status", type = "string", paramType = "query", example = "Updated status")
     ]
     )
     @Transactional
@@ -315,14 +315,14 @@ class AnnotatorController {
     }
 
 
-    @ApiOperation(value = "Update exon boundaries", nickname = "/setExonBoundaries", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "uniqueName", type = "string", paramType = "query", example = "Uniquename (UUID) of the exon we are editing")
-        , @ApiImplicitParam(name = "fmin", type = "int", paramType = "query", example = "fmin for Exon Location")
-        , @ApiImplicitParam(name = "fmax", type = "int", paramType = "query", example = "fmax for Exon Location")
-        , @ApiImplicitParam(name = "strand", type = "int", paramType = "query", example = "strand for Feature Location 1 or -1")
+    @Operation(value = "Update exon boundaries", nickname = "/setExonBoundaries", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "uniqueName", type = "string", paramType = "query", example = "Uniquename (UUID) of the exon we are editing")
+        , @Parameter(name = "fmin", type = "int", paramType = "query", example = "fmin for Exon Location")
+        , @Parameter(name = "fmax", type = "int", paramType = "query", example = "fmax for Exon Location")
+        , @Parameter(name = "strand", type = "int", paramType = "query", example = "strand for Feature Location 1 or -1")
     ]
     )
     def setExonBoundaries() {
@@ -734,9 +734,9 @@ class AnnotatorController {
         render annotatorService.getAppState(params.get(FeatureStringEnum.CLIENT_TOKEN.value).toString()) as JSON
     }
 
-    @ApiOperation(value = "Update common path and return system info", nickname = "/updateCommonPath", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "directory", required = true, type = "string",example = "Relative or absolute common path directory")
+    @Operation(value = "Update common path and return system info", nickname = "/updateCommonPath", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "directory", required = true, type = "string",example = "Relative or absolute common path directory")
     ])
     @Transactional
     String updateCommonPath() {
@@ -759,9 +759,9 @@ class AnnotatorController {
         render returnObject as JSON
     }
 
-    @ApiOperation(value = "Get system info", nickname = "/getSystemInfo", httpMethod = "GET")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "directory", type = "new relative or absolute common path directory")
+    @Operation(value = "Get system info", nickname = "/getSystemInfo", httpMethod = "GET")
+    @Parameters([
+        @Parameter(name = "directory", type = "new relative or absolute common path directory")
     ])
     @Transactional(readOnly  = true )
     String getSystemInfo() {
@@ -958,12 +958,12 @@ class AnnotatorController {
         exportService.export(params.format, response.outputStream, annotatorGroupList, fields, labels, formatters, parameters)
     }
 
-    @ApiOperation(value = "Get annotators report for group", nickname = "/group/getAnnotatorsReportForGroup", httpMethod = "POST")
-    @ApiImplicitParams([
-        @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-        , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-        , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Group ID (or specify the name)")
-        , @ApiImplicitParam(name = "name", type = "string", paramType = "query", example = "Group name")
+    @Operation(value = "Get annotators report for group", nickname = "/group/getAnnotatorsReportForGroup", httpMethod = "POST")
+    @Parameters([
+        @Parameter(name = "username", type = "email", paramType = "query")
+        , @Parameter(name = "password", type = "password", paramType = "query")
+        , @Parameter(name = "id", type = "long", paramType = "query", example = "Group ID (or specify the name)")
+        , @Parameter(name = "name", type = "string", paramType = "query", example = "Group name")
     ]
     )
     def getAnnotatorsReportForGroup() {

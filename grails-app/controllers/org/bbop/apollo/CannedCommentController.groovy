@@ -2,10 +2,10 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
-import io.swagger.annotations.ApiOperation
+import io.swagger.v3.oas.annotations.Api
+import io.swagger.v3.oas.annotations.ApiImplicitParam
+import io.swagger.v3.oas.annotations.ApiImplicitParams
+import io.swagger.v3.oas.annotations.ApiOperation
 import org.bbop.apollo.attributes.CannedComment
 import org.bbop.apollo.attributes.CannedCommentOrganismFilter
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
@@ -15,7 +15,7 @@ import org.grails.web.json.JSONObject
 
 import static org.springframework.http.HttpStatus.*
 
-@Api(value = "/cannedComment", tags = "Canned Comments Services: Methods for managing default comments")
+@Controller(value = "/cannedComment", tags = "Canned Comments Services: Methods for managing default comments")
 @Transactional(readOnly = true)
 class CannedCommentController {
 
@@ -160,12 +160,12 @@ class CannedCommentController {
         }
     }
 
-    @ApiOperation(value = "Create canned comment", nickname = "/createComment", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "comment", type = "string", paramType = "query", example = "Canned comment to add")
-            , @ApiImplicitParam(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
+    @Operation(value = "Create canned comment", nickname = "/createComment", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "comment", type = "string", paramType = "query", example = "Canned comment to add")
+            , @Parameter(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
     ]
     )
     @Transactional
@@ -201,14 +201,14 @@ class CannedCommentController {
         }
     }
 
-    @ApiOperation(value = "Update canned comment", nickname = "/updateComment", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Canned comment ID to update (or specify the old_comment)")
-            , @ApiImplicitParam(name = "old_comment", type = "string", paramType = "query", example = "Canned comment to update")
-            , @ApiImplicitParam(name = "new_comment", type = "string", paramType = "query", example = "Canned comment to change to (the only editable option)")
-            , @ApiImplicitParam(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
+    @Operation(value = "Update canned comment", nickname = "/updateComment", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "id", type = "long", paramType = "query", example = "Canned comment ID to update (or specify the old_comment)")
+            , @Parameter(name = "old_comment", type = "string", paramType = "query", example = "Canned comment to update")
+            , @Parameter(name = "new_comment", type = "string", paramType = "query", example = "Canned comment to change to (the only editable option)")
+            , @Parameter(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
     ]
     )
     @Transactional
@@ -251,12 +251,12 @@ class CannedCommentController {
         }
     }
 
-    @ApiOperation(value = "Remove a canned comment", nickname = "/deleteComment", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Canned comment ID to remove (or specify the name)")
-            , @ApiImplicitParam(name = "comment", type = "string", paramType = "query", example = "Canned comment to delete")
+    @Operation(value = "Remove a canned comment", nickname = "/deleteComment", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "id", type = "long", paramType = "query", example = "Canned comment ID to remove (or specify the name)")
+            , @Parameter(name = "comment", type = "string", paramType = "query", example = "Canned comment to delete")
     ])
     @Transactional
     def deleteComment() {
@@ -291,12 +291,12 @@ class CannedCommentController {
         }
     }
 
-    @ApiOperation(value = "Returns a JSON array of all canned comments, or optionally, gets information about a specific canned comment", nickname = "/showComment", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Comment ID to show (or specify a comment)")
-            , @ApiImplicitParam(name = "comment", type = "string", paramType = "query", example = "Comment to show")
+    @Operation(value = "Returns a JSON array of all canned comments, or optionally, gets information about a specific canned comment", nickname = "/showComment", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "id", type = "long", paramType = "query", example = "Comment ID to show (or specify a comment)")
+            , @Parameter(name = "comment", type = "string", paramType = "query", example = "Comment to show")
     ])
     @Transactional
     def showComment() {

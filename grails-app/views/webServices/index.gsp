@@ -91,7 +91,7 @@
 
             %{--TODO: simulate formatting:--}%
             %{--http://loic911.github.io/restapidoc/demo/sample/demo.html?doc_url=http://loic911.github.io/restapidoc/demo/sample/restapidoc.json#--}%
-            %{--http://loic911.github.io/restapidoc/#// @ApiResponseObject--}%
+            %{--http://loic911.github.io/restapidoc/#// @ControllerResponseObject--}%
 
             <accordion ng-cloak class="col-sm-11">
                 <accordion-group ng-repeat="api in ctrl.apis" is-open="status.open">
