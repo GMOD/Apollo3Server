@@ -2,12 +2,11 @@ buildscript {
     repositories {
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
-//        maven { url "https://dl.bintray.com/steamcleaner/plugins/" }
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-//        classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
-//        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.15.1"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:3.0.10"
+        classpath 'org.springframework:springloaded:1.2.8.RELEASE'
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:3.0.10"
         classpath 'org.springframework:springloaded:1.2.8.RELEASE'
     }
@@ -35,16 +34,10 @@ repositories {
     }
     // added
     maven {
-//        url "https://dl.bintray.com/ajay-kumar/plugins"
-//        url "https://dl.bintray.com/steamcleaner/plugins/"
          url 'http://oss.jfrog.org/artifactory/oss-snapshot-local/'
 
     }
     maven { url "https://oss.jfrog.org/repo/" }
-    maven { url "https://dl.bintray.com/steamcleaner/plugins/"}
-//    maven { url "https://dl.bintray.com/bobyang/plugins" }
-
-
 }
 
 configurations {
@@ -62,48 +55,20 @@ configurations {
 // In this section you declare the dependencies for your production and test code
 dependencies {
     // START added dependencies
-//    compile 'org.grails.plugins:swagger:1.0.1'
-//    annotationProcessor "io.micronaut.configuration:micronaut-openapi:1.4.5"
-//    compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.5"
-//    compile "io.swagger.core.v3:swagger-annotations:2.1.9"
-//    compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.5"
 
-
-//    compileOnly "io.micronaut:micronaut-validation:2.4.2"
-//    compileOnly "io.micronaut.configuration:micronaut-openapi:1.5.3"
-//    compile "io.micronaut:micronaut-inject:2.4.2"
-//    compile "io.micronaut:micronaut-validation:2.4.2"
-//    compile "io.micronaut:micronaut-runtime:2.4.2"
-//    compile "io.swagger.core.v3:swagger-annotations:2.1.9"
-//    compile "io.micronaut:micronaut-http-client:2.4.2"
-//    compile "io.micronaut:micronaut-http-server-netty:2.4.2"
+    compileOnly "io.micronaut:micronaut-inject-groovy:2.4.2" // used to pull in micronaut libraries
+    compileOnly "io.micronaut:micronaut-inject-java:2.4.2" // used to pull in micronaut libraries
 
     compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.5"
     compile "io.swagger.core.v3:swagger-annotations:2.1.9"
     compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.5"
-
-
-//    runtime 'mysql:mysql-connector-java:5.1.49'
-//    runtime 'org.postgresql:postgresql:9.4.1212'
-//    compile "org.grails.plugins:swagger-grails:0.4.0"
-//    compile "io.springfox.grails:springfox-grails:1.0.1-SNAPSHOT" //(1)
-//    compile "org.grails.plugins:swagger-grails:0.4.0"
-//    implementation 'swagger.grails4:swagger-grails4:0.0.2'
-
-
-
-//    annotationProcessor "io.micronaut.configuration:micronaut-openapi:1.4.0"
-////    compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.0"
-//    compile "io.swagger.core.v3:swagger-annotations:2.1.1"
-//    compileOnly "io.micronaut.configuration:micronaut-openapi:1.4.0"
+    compile group: 'io.micronaut', name: 'http-client', version: '1.0.0.RC2'
 
 
     // HTSJDK
     compile group: 'com.github.samtools', name: 'htsjdk', version: '2.21.3'
 
     // svg generation
-//    compile group: 'org.apache.xmlgraphics', name: 'batik-svg-dom', version: '1.9'
-//    compile group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.7'
     compile group: 'org.apache.commons', name: 'commons-compress', version: '1.18'
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile 'commons-codec:commons-codec:1.14'
@@ -111,10 +76,7 @@ dependencies {
     compile group: 'commons-fileupload', name: 'commons-fileupload', version: '1.2'
 
 
-//    compile "org.grails.plugins:rest-api-doc:0.6.1"
-//    compile ":spring-websocket:1.3.1"
     compile 'org.grails.plugins:grails-spring-websocket:2.5.0.RC1'
-//    compile 'org.grails.plugins:grails-spring-websocket:2.4.1'
 
     // shiro:
     compile 'org.grails.plugins:grails-shiro:3.3'
@@ -128,7 +90,7 @@ dependencies {
     // END added dependencies
 
 //    development "org.springframework.boot:spring-boot-devtools"
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    developmentOnly "org.springframework.boot:spring-boot-devtools"
     compile "org.springframework.boot:spring-boot-starter-logging"
     compile "org.springframework.boot:spring-boot-autoconfigure"
     compile "org.grails:grails-core"
@@ -150,9 +112,6 @@ dependencies {
     compile "org.grails.plugins:events"
     compile "org.grails.plugins:neo4j"
 //    compile 'org.grails.plugins:neo4j:7.0.2'
-//    compile "org.grails.plugins:hibernate5"
-//    compile "org.hibernate:hibernate-core:5.1.17.Final"
-//    compile "org.hibernate:hibernate-validator:5.4.3.Final"
     compile 'org.springframework.boot:spring-boot-starter-validation'
     compile "org.grails.plugins:gsp"
     compile 'org.grails.plugins:external-config:2.0.0' // or latest version
@@ -165,7 +124,6 @@ dependencies {
     testCompile "org.grails:grails-gorm-testing-support"
     testCompile "org.grails.plugins:geb"
     testCompile "org.grails:grails-web-testing-support"
-//    testCompile "org.grails.plugins:geb:1.1.2"
     testCompile "org.grails:grails-test-mixins:3.3.0"
     testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"
     testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"

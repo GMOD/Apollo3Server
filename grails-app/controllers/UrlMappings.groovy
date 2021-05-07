@@ -92,8 +92,11 @@ class UrlMappings {
         "/IOService/download"(controller:"IOService",action: "download", params:params)
 //        "/${clientToken}/IOService/download"(controller:"IOService",action: "download", params:params)
 
-        "/jbrowse/web_services/api"(controller:"swagger",action: "api", params:params)
-        "/jbrowse/web_services/api"(controller:"swagger",action: "api", params:params)
+//        "/jbrowse/web_services/api"(controller:"swagger",action: "api", params:params)
+//        "/jbrowse/web_services/api"(controller:"swagger",action: "api", params:params)
+
+        "/openapi"(redirect: "/swagger/views/swagger-ui/index.html")
+        "/api"(controller:"webServices",action: "index", params:params)
 //        "/${clientToken}/jbrowse/web_services/api"(controller:"swagger",action: "api", params:params)
 
 //        // if all else fails

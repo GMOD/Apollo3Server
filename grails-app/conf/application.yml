@@ -45,6 +45,9 @@ endpoints:
     jmx:
         enabled: true
 
+hibernate:
+    allow_update_outside_transaction: true
+
 ---
 grails:
     cors:
@@ -223,3 +226,26 @@ environments:
 #                testOnReturn: false
 #                jdbcInterceptors: ConnectionState
 #                defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
+grails:
+    resources:
+        pattern: '/**'
+#            paths: classpath:META-INF/swagger
+#            mapping: /swagger/**
+#micronaut:
+#    router:
+#        static-resources:
+#            swagger:
+#                paths: classpath:META-INF/swagger
+#                mapping: /swagger/**
+##            swagger:
+##                paths: classpath:META-INF/swagger
+##                mapping: /swaggerYAML/**
+#            redoc:
+#                paths: classpath:META-INF/swagger/views/redoc
+#                mapping: /redoc/**
+#            rapidoc:
+#                paths: classpath:META-INF/swagger/views/rapidoc
+#                mapping: /rapidoc/**
+#            swagger-ui:
+#                paths: classpath:META-INF/swagger/views/swagger-ui
+#                mapping: /swagger-ui/**

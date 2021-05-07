@@ -11,12 +11,11 @@ import io.swagger.v3.oas.annotations.info.License
 @CompileStatic
 @OpenAPIDefinition(
         info = @Info(
-                title = "TODO",
-                version = "1.0",
-                description = "TODO",
-                license = @License(name = "TODO", url = "TODO"),
-                contact = @Contact(url = "TODO", name = "TODO", email = "TODO")
-        )
+                title = "Apollo",
+                version = "3.0.0",
+                description = "Web Apollo Server",
+                license = @License(name = "Modified BSD License", url = "https://raw.githubusercontent.com/GMOD/Apollo3Server/master/LICENSE.md"),
+                contact = @Contact(url = "https://github.com/GMOD/Apollo3Server/issues", name = "Raise issue", email = "ndunnme@gmail.com")        )
 )
 class Application extends GrailsAutoConfiguration {
     static void main(String[] args) {
