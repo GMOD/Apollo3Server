@@ -3,10 +3,10 @@ package org.bbop.apollo
 import grails.converters.JSON
 import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
-import io.swagger.annotations.ApiOperation
+import io.micronaut.http.annotation.Controller
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.session.Session
 import org.bbop.apollo.feature.Feature
@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 
-@Api(value = "/sequence" , tags = "Sequence Services: Methods for retrieving sequence data")
+@Controller(value = "/sequence" , tags = "Sequence Services: Methods for retrieving sequence data")
 @Transactional(readOnly = true)
 class SequenceController {
 
@@ -241,13 +241,13 @@ class SequenceController {
         render view: "report", model: [sequenceInstanceList: sequenceInstanceList, organisms: organisms, organism: organism, sequenceInstanceCount: sequenceInstanceCount]
     }
 
-    @ApiOperation(value = "Get sequence data within a range", nickname = "/<organism name>/<sequence name>:<fmin>..<fmax>?ignoreCache=<ignoreCache>", httpMethod = "get")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "organismString", type = "string", paramType = "query", example = "Organism common name or ID(required)")
-            , @ApiImplicitParam(name = "sequenceName", type = "string", paramType = "query", example = "Sequence name(required)")
-            , @ApiImplicitParam(name = "fmin", type = "integer", paramType = "query", example = "Minimum range(required)")
-            , @ApiImplicitParam(name = "fmax", type = "integer", paramType = "query", example = "Maximum range (required)")
-            , @ApiImplicitParam(name = "ignoreCache", type = "boolean", paramType = "query", example = "(default false).  Use cache for request if available.")
+    @Operation(value = "Get sequence data within a range", nickname = "/<organism name>/<sequence name>:<fmin>..<fmax>?ignoreCache=<ignoreCache>", httpMethod = "get")
+    @Parameters([
+            @Parameter(name = "organismString", type = "string", paramType = "query", example = "Organism common name or ID(required)")
+            , @Parameter(name = "sequenceName", type = "string", paramType = "query", example = "Sequence name(required)")
+            , @Parameter(name = "fmin", type = "integer", paramType = "query", example = "Minimum range(required)")
+            , @Parameter(name = "fmax", type = "integer", paramType = "query", example = "Maximum range (required)")
+            , @Parameter(name = "ignoreCache", type = "boolean", paramType = "query", example = "(default false).  Use cache for request if available.")
     ])
     @Transactional
     String sequenceByLocation(String organismString, String sequenceName, int fmin, int fmax) {
@@ -273,13 +273,13 @@ class SequenceController {
 
     }
 
-    @ApiOperation(value = "Get sequence data as for a selected name", nickname = "/<organism name>/<sequence name>/<feature name>.<type>?ignoreCache=<ignoreCache>", httpMethod = "get")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "organismString", type = "string", paramType = "query", example = "Organism common name or ID (required)")
-            , @ApiImplicitParam(name = "sequenceName", type = "string", paramType = "query", example = "Sequence name (required)")
-            , @ApiImplicitParam(name = "featureName", type = "string", paramType = "query", example = "The uniqueName (UUID) or given name of the feature (typically transcript) of the element to retrieve sequence from")
-            , @ApiImplicitParam(name = "type", type = "string", paramType = "query", example = "(default genomic) Return type: genomic, cds, cdna, peptide")
-            , @ApiImplicitParam(name = "ignoreCache", type = "boolean", paramType = "query", example = "(default false).  Use cache for request if available.")
+    @Operation(value = "Get sequence data as for a selected name", nickname = "/<organism name>/<sequence name>/<feature name>.<type>?ignoreCache=<ignoreCache>", httpMethod = "get")
+    @Parameters([
+            @Parameter(name = "organismString", type = "string", paramType = "query", example = "Organism common name or ID (required)")
+            , @Parameter(name = "sequenceName", type = "string", paramType = "query", example = "Sequence name (required)")
+            , @Parameter(name = "featureName", type = "string", paramType = "query", example = "The uniqueName (UUID) or given name of the feature (typically transcript) of the element to retrieve sequence from")
+            , @Parameter(name = "type", type = "string", paramType = "query", example = "(default genomic) Return type: genomic, cds, cdna, peptide")
+            , @Parameter(name = "ignoreCache", type = "boolean", paramType = "query", example = "(default false).  Use cache for request if available.")
     ])
     @Deprecated
     @Transactional
@@ -329,10 +329,10 @@ class SequenceController {
         response.status = 404
     }
 
-    @ApiOperation(value = "Remove sequence cache for an organism and sequence", nickname = "/cache/clear/<organism name>/<sequence name>", httpMethod = "get")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "organismName", type = "string", paramType = "query", example = "Organism common name (required)")
-            , @ApiImplicitParam(name = "sequenceName", type = "string", paramType = "query", example = "Sequence name (required)")
+    @Operation(value = "Remove sequence cache for an organism and sequence", nickname = "/cache/clear/<organism name>/<sequence name>", httpMethod = "get")
+    @Parameters([
+            @Parameter(name = "organismName", type = "string", paramType = "query", example = "Organism common name (required)")
+            , @Parameter(name = "sequenceName", type = "string", paramType = "query", example = "Sequence name (required)")
     ])
     @Transactional
     def clearSequenceCache(String organismName, String sequenceName) {
@@ -342,9 +342,9 @@ class SequenceController {
         render new JSONObject(removed: removed) as JSON
     }
 
-    @ApiOperation(value = "Remove sequence cache for an organism", nickname = "/cache/clear/<organism name>", httpMethod = "get")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "organismName", type = "string", paramType = "query", example = "Organism common name (required) or 'ALL' if admin")
+    @Operation(value = "Remove sequence cache for an organism", nickname = "/cache/clear/<organism name>", httpMethod = "get")
+    @Parameters([
+            @Parameter(name = "organismName", type = "string", paramType = "query", example = "Organism common name (required) or 'ALL' if admin")
     ])
     @Transactional
     def clearOrganismCache(String organismName) {

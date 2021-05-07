@@ -2,13 +2,17 @@ package org.bbop.apollo.go
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
+import io.micronaut.http.annotation.Post
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import org.bbop.apollo.feature.Feature
 import org.bbop.apollo.user.User
 import org.bbop.apollo.gwt.shared.PermissionEnum
 import org.bbop.apollo.history.FeatureOperation
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
-import io.swagger.annotations.*
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 
@@ -21,11 +25,12 @@ class GoAnnotationController {
   def featureEventService
   def featureService
 
-  @ApiOperation(value = "Load Go Annotations for feature", nickname = "/goAnnotation", httpMethod = "POST")
-  @ApiImplicitParams([
-      @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-      , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-      , @ApiImplicitParam(name = "uniqueName", type = "Feature uniqueName", paramType = "query", example = "Feature name to query on")
+  @Post
+  @Operation(description = "Load Go Annotations for feature", summary = "/goAnnotation", method= "POST")
+  @Parameters([
+      @Parameter(name = "username",  in = ParameterIn.HEADER)
+      , @Parameter(name = "password",  in = ParameterIn.HEADER)
+      , @Parameter(name = "uniqueName",  in = ParameterIn.HEADER , example = "Feature name to query on")
   ]
   )
   def index() {
@@ -48,20 +53,20 @@ class GoAnnotationController {
 //        "negate":false,
 //        "withOrFrom":["withprefix:12312321"],
 //        "references":["refprefix:44444444"]}
-  @ApiOperation(value = "Save New Go Annotations for feature", nickname = "/goAnnotation/save", httpMethod = "POST")
-  @ApiImplicitParams([
-      @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-      , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-      , @ApiImplicitParam(name = "feature", type = "string", paramType = "query", example = "uniqueName of feature feature to query on")
-      , @ApiImplicitParam(name = "goTerm", type = "string", paramType = "query", example = "GO CURIE")
-      , @ApiImplicitParam(name = "goTermLabel", type = "string", paramType = "query", example = "GO Term Label")
-      , @ApiImplicitParam(name = "aspect", type = "string", paramType = "query", example = "(required) BP, MF, CC")
-      , @ApiImplicitParam(name = "geneRelationship", type = "string", paramType = "query", example = "Gene relationship (RO) CURIE")
-      , @ApiImplicitParam(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
-      , @ApiImplicitParam(name = "evidenceCodeLAbel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
-      , @ApiImplicitParam(name = "negate", type = "boolean", paramType = "query", example = "Negate evidence (default false)")
-      , @ApiImplicitParam(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312]]\"]}")
-      , @ApiImplicitParam(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312]]\"]}")
+  @Operation(value = "Save New Go Annotations for feature", nickname = "/goAnnotation/save", httpMethod = "POST")
+  @Parameters([
+      @Parameter(name = "username", type = "email", paramType = "query")
+      , @Parameter(name = "password", type = "password", paramType = "query")
+      , @Parameter(name = "feature", type = "string", paramType = "query", example = "uniqueName of feature feature to query on")
+      , @Parameter(name = "goTerm", type = "string", paramType = "query", example = "GO CURIE")
+      , @Parameter(name = "goTermLabel", type = "string", paramType = "query", example = "GO Term Label")
+      , @Parameter(name = "aspect", type = "string", paramType = "query", example = "(required) BP, MF, CC")
+      , @Parameter(name = "geneRelationship", type = "string", paramType = "query", example = "Gene relationship (RO) CURIE")
+      , @Parameter(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
+      , @Parameter(name = "evidenceCodeLAbel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
+      , @Parameter(name = "negate", type = "boolean", paramType = "query", example = "Negate evidence (default false)")
+      , @Parameter(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312]]\"]}")
+      , @Parameter(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312]]\"]}")
   ]
   )
   @Transactional
@@ -109,21 +114,21 @@ class GoAnnotationController {
     render annotations as JSON
   }
 
-  @ApiOperation(value = "Update existing Go Annotations for feature", nickname = "/goAnnotation/update", httpMethod = "POST")
-  @ApiImplicitParams([
-      @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-      , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-      , @ApiImplicitParam(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to update (required)")
-      , @ApiImplicitParam(name = "feature", type = "string", paramType = "query", example = "uniqueName of feature to query on")
-      , @ApiImplicitParam(name = "goTerm", type = "string", paramType = "query", example = "GO CURIE")
-      , @ApiImplicitParam(name = "goTermLabel", type = "string", paramType = "query", example = "GO Term Label")
-      , @ApiImplicitParam(name = "aspect", type = "string", paramType = "query", example = "(required) BP, MF, CC")
-      , @ApiImplicitParam(name = "geneRelationship", type = "string", paramType = "query", example = "Gene relationship (RO) CURIE")
-      , @ApiImplicitParam(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
-      , @ApiImplicitParam(name = "evidenceCodeLabel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
-      , @ApiImplicitParam(name = "negate", type = "boolean", paramType = "query", example = "Negate evidence (default false)")
-      , @ApiImplicitParam(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312]]\"]}")
-      , @ApiImplicitParam(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312]]\"]}")
+  @Operation(value = "Update existing Go Annotations for feature", nickname = "/goAnnotation/update", httpMethod = "POST")
+  @Parameters([
+      @Parameter(name = "username", type = "email", paramType = "query")
+      , @Parameter(name = "password", type = "password", paramType = "query")
+      , @Parameter(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to update (required)")
+      , @Parameter(name = "feature", type = "string", paramType = "query", example = "uniqueName of feature to query on")
+      , @Parameter(name = "goTerm", type = "string", paramType = "query", example = "GO CURIE")
+      , @Parameter(name = "goTermLabel", type = "string", paramType = "query", example = "GO Term Label")
+      , @Parameter(name = "aspect", type = "string", paramType = "query", example = "(required) BP, MF, CC")
+      , @Parameter(name = "geneRelationship", type = "string", paramType = "query", example = "Gene relationship (RO) CURIE")
+      , @Parameter(name = "evidenceCode", type = "string", paramType = "query", example = "Evidence (ECO) CURIE")
+      , @Parameter(name = "evidenceCodeLabel", type = "string", paramType = "query", example = "Evidence (ECO) Label")
+      , @Parameter(name = "negate", type = "boolean", paramType = "query", example = "Negate evidence (default false)")
+      , @Parameter(name = "withOrFrom", type = "string", paramType = "query", example = "JSON Array of with or from CURIE strings, e.g., {[\"UniProtKB:12312]]\"]}")
+      , @Parameter(name = "references", type = "string", paramType = "query", example = "JSON Array of reference CURIE strings, e.g., {[\"PMID:12312]]\"]}")
   ]
   )
   @Transactional
@@ -169,12 +174,12 @@ class GoAnnotationController {
     render annotations as JSON
   }
 
-  @ApiOperation(value = "Delete existing Go Annotations for feature", nickname = "/goAnnotation/delete", httpMethod = "POST")
-  @ApiImplicitParams([
-      @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-      , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-      , @ApiImplicitParam(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to delete (required)")
-      , @ApiImplicitParam(name = "uniqueName", type = "string", paramType = "query", example = "Gene uniqueName to remove feature from")
+  @Operation(value = "Delete existing Go Annotations for feature", nickname = "/goAnnotation/delete", httpMethod = "POST")
+  @Parameters([
+      @Parameter(name = "username", type = "email", paramType = "query")
+      , @Parameter(name = "password", type = "password", paramType = "query")
+      , @Parameter(name = "id", type = "string", paramType = "query", example = "GO Annotation ID to delete (required)")
+      , @Parameter(name = "uniqueName", type = "string", paramType = "query", example = "Gene uniqueName to remove feature from")
   ]
   )
   @Transactional

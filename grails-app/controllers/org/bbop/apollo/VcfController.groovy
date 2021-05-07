@@ -3,16 +3,16 @@ package org.bbop.apollo
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import htsjdk.variant.vcf.VCFFileReader
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
-import io.swagger.annotations.ApiOperation
+import io.micronaut.http.annotation.Controller
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
 import org.bbop.apollo.gwt.shared.FeatureStringEnum
 import org.bbop.apollo.organism.Organism
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
-@Api(value = "/vcf",tags = "VCF Services: Methods for retrieving VCF track data as JSON")
+@Controller(value = "/vcf",tags = "VCF Services: Methods for retrieving VCF track data as JSON")
 @Transactional
 class VcfController {
 
@@ -27,16 +27,16 @@ class VcfController {
 //    }
 
 
-    @ApiOperation(value = "Get VCF track data for a given range as JSON", nickname = "/vcf/<organism_name>/<track_name>/<sequence_name>:<fmin>..<fmax>.<type>?includeGenotypes=<includeGenotypes>&ignoreCache=<ignoreCache>", httpMethod = "get")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "organismString", type = "string", paramType = "query", example = "Organism common name or ID (required)"),
-            @ApiImplicitParam(name = "trackName", type = "string", paramType = "query", example = "Track name by label in trackList.json (required)"),
-            @ApiImplicitParam(name = "sequence", type = "string", paramType = "query", example = "Sequence name (required)"),
-            @ApiImplicitParam(name = "fmin", type = "integer", paramType = "query", example = "Minimum range (required)"),
-            @ApiImplicitParam(name = "fmax", type = "integer", paramType = "query", example = "Maximum range (required)"),
-            @ApiImplicitParam(name = "type", type = "string", paramType = "query", example = ".json (required)"),
-            @ApiImplicitParam(name = "includeGenotypes", type = "boolean", paramType = "query", example = "(default: false).  If true, will include genotypes associated with variants from VCF."),
-            @ApiImplicitParam(name = "ignoreCache", type = "boolean", paramType = "query", example = "(default: false).  Use cache for request, if available."),
+    @Operation(value = "Get VCF track data for a given range as JSON", nickname = "/vcf/<organism_name>/<track_name>/<sequence_name>:<fmin>..<fmax>.<type>?includeGenotypes=<includeGenotypes>&ignoreCache=<ignoreCache>", httpMethod = "get")
+    @Parameters([
+            @Parameter(name = "organismString", type = "string", paramType = "query", example = "Organism common name or ID (required)"),
+            @Parameter(name = "trackName", type = "string", paramType = "query", example = "Track name by label in trackList.json (required)"),
+            @Parameter(name = "sequence", type = "string", paramType = "query", example = "Sequence name (required)"),
+            @Parameter(name = "fmin", type = "integer", paramType = "query", example = "Minimum range (required)"),
+            @Parameter(name = "fmax", type = "integer", paramType = "query", example = "Maximum range (required)"),
+            @Parameter(name = "type", type = "string", paramType = "query", example = ".json (required)"),
+            @Parameter(name = "includeGenotypes", type = "boolean", paramType = "query", example = "(default: false).  If true, will include genotypes associated with variants from VCF."),
+            @Parameter(name = "ignoreCache", type = "boolean", paramType = "query", example = "(default: false).  Use cache for request, if available."),
     ])
     def featuresByLocation(String organismString, String trackName, String sequence, Long fmin, Long fmax, String type, boolean includeGenotypes) {
         if(!trackService.checkPermission(response, organismString)) return

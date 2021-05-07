@@ -2,10 +2,14 @@ package org.bbop.apollo
 
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
-import io.swagger.annotations.ApiOperation
+import io.micronaut.http.annotation.Controller
+import io.swagger.v3.oas.annotations.Api
+import io.swagger.v3.oas.annotations.ApiImplicitParam
+import io.swagger.v3.oas.annotations.ApiImplicitParams
+import io.swagger.v3.oas.annotations.ApiOperation
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
 import org.bbop.apollo.attributes.FeatureType
 import org.bbop.apollo.attributes.SuggestedName
 import org.bbop.apollo.attributes.SuggestedNameOrganismFilter
@@ -16,7 +20,7 @@ import org.grails.web.json.JSONObject
 
 import static org.springframework.http.HttpStatus.*
 
-@Api(value = "/suggestedName",tags= "Suggested Names Services: Methods for managing suggested names")
+@Controller(value = "/suggestedName",tags= "Suggested Names Services: Methods for managing suggested names")
 @Transactional(readOnly = true)
 class SuggestedNameController {
 
@@ -161,12 +165,12 @@ class SuggestedNameController {
         }
     }
 
-    @ApiOperation(value = "Create suggested name", nickname = "/createName", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "name", type = "string", paramType = "query", example = "Suggested name to add")
-            , @ApiImplicitParam(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
+    @Operation(value = "Create suggested name", nickname = "/createName", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "name", type = "string", paramType = "query", example = "Suggested name to add")
+            , @Parameter(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
     ]
     )
     @Transactional
@@ -203,14 +207,14 @@ class SuggestedNameController {
     }
 
 
-    @ApiOperation(value = "Update suggested name", nickname = "/updateName", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Suggested name ID to update (or specify the old_name)")
-            , @ApiImplicitParam(name = "old_name", type = "string", paramType = "query", example = "Suggested name to update")
-            , @ApiImplicitParam(name = "new_name", type = "string", paramType = "query", example = "Suggested name to change to (the only editable option)")
-            , @ApiImplicitParam(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
+    @Operation(value = "Update suggested name", nickname = "/updateName", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "id", type = "long", paramType = "query", example = "Suggested name ID to update (or specify the old_name)")
+            , @Parameter(name = "old_name", type = "string", paramType = "query", example = "Suggested name to update")
+            , @Parameter(name = "new_name", type = "string", paramType = "query", example = "Suggested name to change to (the only editable option)")
+            , @Parameter(name = "metadata", type = "string", paramType = "query", example = "Optional additional information")
     ]
     )
     @Transactional
@@ -253,12 +257,12 @@ class SuggestedNameController {
         }
     }
 
-    @ApiOperation(value = "Remove a suggested name", nickname = "/deleteName", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Suggested name ID to remove (or specify the name)")
-            , @ApiImplicitParam(name = "name", type = "string", paramType = "query", example = "Suggested name to delete")
+    @Operation(value = "Remove a suggested name", nickname = "/deleteName", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "id", type = "long", paramType = "query", example = "Suggested name ID to remove (or specify the name)")
+            , @Parameter(name = "name", type = "string", paramType = "query", example = "Suggested name to delete")
     ])
     @Transactional
     def deleteName() {
@@ -293,11 +297,11 @@ class SuggestedNameController {
         }
     }
 
-    @ApiOperation(value = "Returns a JSON array of all suggested names, or optionally, gets information about a specific suggested name", nickname = "/search", httpMethod = "get")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "featureType", type = "string", paramType = "query", example = "Feature type")
-            , @ApiImplicitParam(name = "organism", type = "string", paramType = "query", example = "Organism name")
-            , @ApiImplicitParam(name = "query", type = "string", paramType = "query", example = "Query value")
+    @Operation(value = "Returns a JSON array of all suggested names, or optionally, gets information about a specific suggested name", nickname = "/search", httpMethod = "get")
+    @Parameters([
+            @Parameter(name = "featureType", type = "string", paramType = "query", example = "Feature type")
+            , @Parameter(name = "organism", type = "string", paramType = "query", example = "Organism name")
+            , @Parameter(name = "query", type = "string", paramType = "query", example = "Query value")
     ])
     @Transactional
     def search() {
@@ -353,12 +357,12 @@ class SuggestedNameController {
         }
     }
 
-    @ApiOperation(value = "Returns a JSON array of all suggested names, or optionally, gets information about a specific suggested name", nickname = "/showName", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "id", type = "long", paramType = "query", example = "Name ID to show (or specify a name)")
-            , @ApiImplicitParam(name = "name", type = "string", paramType = "query", example = "Name to show")
+    @Operation(value = "Returns a JSON array of all suggested names, or optionally, gets information about a specific suggested name", nickname = "/showName", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "id", type = "long", paramType = "query", example = "Name ID to show (or specify a name)")
+            , @Parameter(name = "name", type = "string", paramType = "query", example = "Name to show")
     ])
     @Transactional
     def showName() {
@@ -396,11 +400,11 @@ class SuggestedNameController {
         }
     }
 
-    @ApiOperation(value = "A comma-delimited list of names", nickname = "/addNames", httpMethod = "POST")
-    @ApiImplicitParams([
-            @ApiImplicitParam(name = "username", type = "email", paramType = "query")
-            , @ApiImplicitParam(name = "password", type = "password", paramType = "query")
-            , @ApiImplicitParam(name = "names", type = "string", paramType = "query", example = "A comma-delimited list of names to add")
+    @Operation(value = "A comma-delimited list of names", nickname = "/addNames", httpMethod = "POST")
+    @Parameters([
+            @Parameter(name = "username", type = "email", paramType = "query")
+            , @Parameter(name = "password", type = "password", paramType = "query")
+            , @Parameter(name = "names", type = "string", paramType = "query", example = "A comma-delimited list of names to add")
     ])
     @Transactional
     def addNames() {
