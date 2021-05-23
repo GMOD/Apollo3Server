@@ -80,6 +80,7 @@ class CdsService {
     /**
      * TODO: is this right?  I think it should be CDS , not transcript?
      * TODO: is this just remove parents and children?
+     * @deprecated
      * @param cds
      * @param stopCodonReadThrough
      * @return

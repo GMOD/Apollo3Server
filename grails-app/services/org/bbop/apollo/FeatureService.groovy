@@ -662,28 +662,29 @@ class FeatureService {
     @Transactional
     def addTranscriptToGene(Gene gene, Transcript transcript) {
         removeExonOverlapsAndAdjacencies(transcript);
+        FeatureLocation geneFeatureLocation = FeatureLocation.findByFrom(gene)
+        FeatureLocation transcriptFeatureLocation = transcript.featureLocation
         // no feature location, set location to transcript's
-        if (gene.featureLocation == null) {
-            FeatureLocation transcriptFeatureLocation = transcript.featureLocation
+        if (geneFeatureLocation == null) {
             FeatureLocation featureLocation = new FeatureLocation()
 //            featureLocation.properties = transcriptFeatureLocation.properties
             featureLocation.strand = transcriptFeatureLocation.strand
             featureLocation.fmin = transcriptFeatureLocation.fmin
             featureLocation.fmax = transcriptFeatureLocation.fmax
 //            featureLocation.id = null
-            featureLocation.to = transcript.featureLocation.to
+            featureLocation.to = transcriptFeatureLocation.to
             featureLocation.from = gene
             featureLocation.save(flush: true)
-            gene.featureLocation = featureLocation
+            geneFeatureLocation = featureLocation
             gene.save(flush: true)
 //            gene.addToFeatureLocations(featureLocation);
         } else {
             // if the transcript's bounds are beyond the gene's bounds, need to adjust the gene's bounds
-            if (transcript.getFeatureLocation().getFmin() < gene.getFeatureLocation().getFmin()) {
-                gene.featureLocation.setFmin(transcript.featureLocation.fmin);
+            if (transcriptFeatureLocation().getFmin() < geneFeatureLocation().getFmin()) {
+                geneFeatureLocation.setFmin(transcriptFeatureLocation.fmin);
             }
-            if (transcript.getFeatureLocation().getFmax() > gene.getFeatureLocation().getFmax()) {
-                gene.featureLocation.setFmax(transcript.featureLocation.fmax);
+            if (transcriptFeatureLocation().getFmax() > geneFeatureLocation().getFmax()) {
+                geneFeatureLocation.setFmax(transcriptFeatureLocation.fmax);
             }
         }
 
@@ -4174,11 +4175,16 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             Gene gene = jsonFeature.has(FeatureStringEnum.PARENT_ID.value) ? (Gene) Feature.findByUniqueName(jsonFeature.getString(FeatureStringEnum.PARENT_ID.value)) : null
             Transcript transcript = null
 
+            println "has a gene? ${gene}"
+
             if (gene) {
                 // Scenario I - if 'parent_id' attribute is given then find the gene
+                println "processing gene "
                 transcript = (Transcript) convertJSONToFeature(jsonFeature, sequence)
+                println "gene has transcript"
+                FeatureLocation transcriptFeatureLocation = FeatureLocation.findByFrom(transcript)
                 transcript.save()
-                if (transcript.fmin < 0 || transcript.fmax < 0) {
+                if (transcriptFeatureLocation.fmin < 0 || transcriptFeatureLocation.fmax < 0) {
                     throw new AnnotationException("Feature cannot have negative coordinates")
                 }
 
@@ -4194,7 +4200,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 if (useName && jsonFeature.has(FeatureStringEnum.NAME.value)) {
                     transcript.name = jsonFeature.get(FeatureStringEnum.NAME.value)
                 }
-                transcript.save()
+                transcript.save(flush: true )
 
             } else {
                 // Scenario II - find and overlapping isoform and if present, add current transcript to its gene.
@@ -4202,7 +4208,7 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             }
 
             if (gene == null) {
-//                log.debug "gene is still NULL"
+                println "gene is still NULL"
                 // Scenario III - create a de-novo gene
                 JSONObject jsonGene = new JSONObject()
                 if (jsonFeature.has(FeatureStringEnum.PARENT.value)) {
@@ -4220,17 +4226,17 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                 String geneName = null
                 if (jsonGene.has(FeatureStringEnum.NAME.value)) {
                     geneName = jsonGene.getString(FeatureStringEnum.NAME.value)
-//                    log.debug "jsonGene already has 'name': ${geneName}"
+                    println "jsonGene already has 'name': ${geneName}"
                 } else if (jsonFeature.has(FeatureStringEnum.PARENT_NAME.value)) {
                     String principalName = jsonFeature.getString(FeatureStringEnum.PARENT_NAME.value)
                     geneName = nameService.makeUniqueGeneName(sequence.organism, principalName, false)
-//                    log.debug "jsonFeature has 'parent_name' attribute; using ${principalName} to generate ${geneName}"
+                    println "jsonFeature has 'parent_name' attribute; using ${principalName} to generate ${geneName}"
                 } else if (jsonFeature.has(FeatureStringEnum.NAME.value)) {
                     geneName = jsonFeature.getString(FeatureStringEnum.NAME.value)
-//                    log.debug "jsonGene already has 'name': ${geneName}"
+                    println "jsonGene already has 'name': ${geneName}"
                 } else {
                     geneName = nameService.makeUniqueGeneName(sequence.organism, sequence.name, false)
-                    log.debug "Making a new unique gene name: ${geneName}"
+                    println "Making a new unique gene name: ${geneName}"
                 }
 
                 if (!suppressHistory) {
@@ -4242,19 +4248,17 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                     geneName = jsonFeature.getString(FeatureStringEnum.GENE_NAME.value)
                 }
                 jsonGene.put(FeatureStringEnum.NAME.value, geneName)
-
+                println "there is not transcdript ${transcript} or gene ${gene}"
                 gene = (Gene) convertJSONToFeature(jsonGene, sequence)
-                gene.save(flush: true)
                 setSequenceForChildFeatures(gene, sequence)
-                gene.save(flush: true)
 
-                if (gene.fmin < 0 || gene.fmax < 0) {
+                FeatureLocation geneFeatureLocation = FeatureLocation.findByFrom(gene)
+
+                if (geneFeatureLocation.fmin < 0 || geneFeatureLocation.fmax < 0) {
                     throw new AnnotationException("Feature cannot have negative coordinates")
                 }
 
                 transcript = transcriptService.getTranscripts(gene).first()
-//                transcript.save()
-                transcript.save(flush: true)
                 removeExonOverlapsAndAdjacenciesForFeature(gene)
                 if (!suppressHistory) {
                     String name = nameService.generateUniqueName(transcript, geneName)
@@ -4266,8 +4270,9 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
                     transcript.name = jsonFeature.get(FeatureStringEnum.NAME.value)
                 }
 
-                gene.save(insert: true)
-                transcript.save(flush: true)
+//                gene.save(insert: true)
+//                transcript.save(flush: true)
+
 
                 setOwner(gene, user);
                 setOwner(transcript, user);
@@ -4276,9 +4281,14 @@ public void setTranslationEnd(Transcript transcript, int translationEnd) {
             removeExonOverlapsAndAdjacencies(transcript)
             CDS cds = transcriptService.getCDS(transcript)
             if (cds != null) {
-                featureRelationshipService.deleteChildrenForTypes(transcript, CDS.ontologyId)
-                if (cds.parentFeatureRelationships) featureRelationshipService.deleteChildrenForTypes(cds, StopCodonReadThrough.ontologyId)
-                cds.delete()
+                // delete everying associated with the CDS
+                // delete stop codons
+                CDS.executeUpdate("MATCH (cds:CDS)-[r]-(s:StopCodonReadThrough) where cds.uniqueName = ${cds.uniqueName} delete r,s")
+                // delete delete everything else
+                CDS.executeUpdate("MATCH (cds:CDS)-[r]-() where cds.uniqueName = ${cds.uniqueName} delete cds,r")
+//                featureRelationshipService.deleteChildrenForTypes(transcript, CDS.ontologyId)
+//                if (cds.parentFeatureRelationships) featureRelationshipService.deleteChildrenForTypes(cds, StopCodonReadThrough.ontologyId)
+//                cds.delete()
             }
             nonCanonicalSplitSiteService.findNonCanonicalAcceptorDonorSpliceSites(transcript)
             returnFeature = transcript

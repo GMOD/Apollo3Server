@@ -229,7 +229,7 @@ class IOServiceController extends AbstractApolloController {
                 if (sequences) {
                     'in'('name', sequences)
                 }
-            }
+            } as Collection<Sequence>
             println "sequenceList ${sequenceList}"
 
             outputFile = File.createTempFile("Annotations", "." + typeOfExport.toLowerCase())
@@ -244,10 +244,12 @@ class IOServiceController extends AbstractApolloController {
                 }
                 // call gff3HandlerService
                 if (exportGff3Fasta) {
-                    gff3HandlerService.writeNeo4jFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String, true, sequenceList)
+//                    gff3HandlerService.writeNeo4jFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String, true, sequenceList)
+                    gff3HandlerService.writeFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String, true, sequenceList)
                 } else {
 //                    gff3HandlerService.writeFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String)
-                    gff3HandlerService.writeNeo4jFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String)
+//                    gff3HandlerService.writeNeo4jFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String)
+                    gff3HandlerService.writeFeaturesToText(outputFile.path, features, grailsApplication.config.apollo.gff3.source as String)
                 }
             } else if (typeOfExport == FeatureStringEnum.TYPE_GO.value) {
                 String sequenceString = organism.commonName

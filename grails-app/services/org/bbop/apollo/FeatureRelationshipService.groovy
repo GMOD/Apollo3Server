@@ -82,6 +82,14 @@ class FeatureRelationshipService {
         return list
     }
 
+    /**
+     * TODO: remove  / edit
+     * @deprecated
+     * @param feature
+     * @param parentOntologyId
+     * @param childOntologyId
+     * @return
+     */
     @Transactional
     def deleteRelationships(Feature feature, String parentOntologyId, String childOntologyId) {
         deleteChildrenForTypes(feature, childOntologyId)
@@ -110,6 +118,12 @@ class FeatureRelationshipService {
 
     }
 
+    /**
+     * @deprecated
+     * TODO: remove or update
+     * @param feature
+     * @param ontologyIds
+     */
     @Transactional
     def deleteChildrenForTypes(Feature feature, String... ontologyIds) {
         def criteria = FeatureRelationship.createCriteria()
@@ -127,6 +141,12 @@ class FeatureRelationshipService {
         }
     }
 
+    /**
+     * @deprecated
+     * @param feature
+     * @param ontologyIds
+     * @return
+     */
     @Transactional
     def deleteParentForTypes(Feature feature, String... ontologyIds) {
         // delete transcript -> non canonical 3' splice site child relationship
